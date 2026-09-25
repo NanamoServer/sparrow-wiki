@@ -65,5 +65,3 @@ npm run serve
 Pushing to `master` triggers GitHub Actions to install dependencies, check types, build both locales, update `gh-pages`, and deploy to GitHub Pages. You can also run **Build and deploy documentation** manually from the Actions tab.
 
 Before the first deployment, select **GitHub Actions** under **Settings → Pages → Build and deployment → Source** in the repository. The workflow uses the built-in `GITHUB_TOKEN`; no personal access token is required. It creates `gh-pages` automatically if the branch does not exist.
-
-The site is published at <https://nanamoserver.github.io/sparrow-wiki/>, with Chinese documentation under `/zh-Hans/`. See [deploy-pages.yml](.github/workflows/deploy-pages.yml) for the workflow.
