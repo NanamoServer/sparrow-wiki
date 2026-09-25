@@ -18,14 +18,14 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://catnies.github.io',
+  url: 'https://nanamoserver.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/sparrow-wiki/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'Catnies', // Usually your GitHub org/user name.
+  organizationName: 'NanamoServer', // Usually your GitHub org/user name.
   projectName: 'sparrow-wiki', // Usually your repo name.
 
   onBrokenLinks: 'throw',
@@ -73,7 +73,7 @@ const config: Config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           routeBasePath: '/',
-          editUrl: 'https://github.com/Catnies/sparrow-wiki/edit/master/',
+          editUrl: 'https://github.com/NanamoServer/sparrow-wiki/edit/master/',
           editLocalizedFiles: true,
           showLastUpdateTime: false,
           showLastUpdateAuthor: false,
