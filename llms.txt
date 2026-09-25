@@ -1,0 +1,20 @@
+# Sparrow
+
+> Sparrow provides Minecraft server administration commands, portable workstations, item editing, and configurable player features.
+
+Every link below points to the Markdown version of that page. All pages combined into one file: [llms-full.txt](https://nanamoserver.github.io/sparrow-wiki/llms-full.txt).
+
+简体中文: [llms.txt](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/llms.txt)
+
+- [Introduction](https://nanamoserver.github.io/sparrow-wiki/index.md): Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, and region highlighting.
+- [Installation](https://nanamoserver.github.io/sparrow-wiki/installation.md): Install Sparrow, assign a server ID, and connect Redis and persistent storage.
+- [Permissions & Commands Quick Reference](https://nanamoserver.github.io/sparrow-wiki/commands.md): <argument> is required; [argument] is optional. player generally means a local online player, and targets accepts player or entity selectors.
+- [Frequently Asked Questions](https://nanamoserver.github.io/sparrow-wiki/faq.md)
+- [Developer API](https://nanamoserver.github.io/sparrow-wiki/developer-api.md)
+
+## Features
+
+- [Quick Shulker](https://nanamoserver.github.io/sparrow-wiki/features/quick-shulker.md): Access a shulker box without placing it. By default, hold the box, sneak, and right-click the air.
+- [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.md): Use /patrol to visit online players on the current server in rotation. Players not inspected recently are selected first; newly joined players enter at the front of the queue.
+- [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.md): Select a region and show glowing block outlines to players. Use it to explain building boundaries or inspect an area. The display is sent to selected viewers without changing real blocks.
+- [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.md): Use /head to fetch heads from player names or UUIDs. The command detects the source automatically. Player lookups support online profiles and external APIs, with memory and Redis caches to reduce repeated requests.

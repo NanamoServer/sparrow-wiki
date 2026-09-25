@@ -1,0 +1,7 @@
+# 简介
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/>
+
+Sparrow 为 Minecraft 服务器提供日常管理和玩家便利功能。你可以用命令打开工作台、调整玩家状态、编辑物品、发送标题，也可以启用潜影盒快捷打开、玩家巡查和区域高亮等功能。
+
+从[安装插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.mdx)开始部署，或在[权限命令速查表](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.mdx)中查找具体用法。

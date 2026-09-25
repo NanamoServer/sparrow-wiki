@@ -1,0 +1,443 @@
+# Sparrow
+
+> Sparrow provides Minecraft server administration commands, portable workstations, item editing, and configurable player features.
+
+# Introduction
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/>
+
+Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, and region highlighting.
+
+Start with [Installation](https://nanamoserver.github.io/sparrow-wiki/installation.mdx), or find a specific tool in [Permissions & Commands Quick Reference](https://nanamoserver.github.io/sparrow-wiki/commands.mdx).
+
+# Installation
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/installation>
+
+Install Sparrow, assign a server ID, and connect Redis and persistent storage.
+
+## Requirements
+
+The current build provides Paper, Folia, and Spigot entry points and declares **1.21.11** as its minimum API version. For Spigot, use **26.2 or a newer adapted version**. Match the server version to the Sparrow build you install.
+
+The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders.
+
+**Redis and one persistent database are required at startup.** Choose MongoDB, MySQL, MariaDB, or PostgreSQL.
+
+> **Storage service versions**
+>
+> Redis must be newer than **7.2.4**. When using MySQL, its version must be newer than **8.0.0**.
+
+## Install
+
+Place the Sparrow `.jar` in `plugins/` and start the server. Configuration files are generated under `plugins/Sparrow/`:
+
+**Sparrow**
+
+- `libs` — Automatically managed runtime dependencies
+- `translations` — Localized messages and interface text
+- `config.yml` — Redis, database, language, and text parsing
+- `server.yml` — Unique server ID
+- `commands.yml` — Command switches, entry points, and permissions; restart required
+- `features.yml` — Feature switches and settings
+
+> **The first startup shuts down the server**
+>
+> `server-id` in `server.yml` is empty by default. Sparrow reports the missing ID and shuts down the server. Configure the ID and connections before starting again.
+
+## Server ID
+
+Change the existing `server-id` in `plugins/Sparrow/server.yml`:
+
+```yaml title="server.yml · Server ID"
+server-id: 'lobby'
+```
+
+Every server sharing Redis and storage needs a different ID, such as `lobby`, `survival-1`, or `survival-2`. With a proxy, match its configured backend name. Change this value when copying configuration to another server.
+
+## Redis and database
+
+The following snippets show only connection settings. **Do not replace the whole file with them.** Keep the generated `__version__` value.
+
+### Redis
+
+```yaml title="config.yml · Redis"
+redis:
+  url: 'redis://localhost:6379/0'
+  username: ''
+  password: ''
+```
+
+Set the actual host, port, and credentials. Servers in the same group should use the same Redis database; `/0` selects database 0.
+
+### Persistent storage
+
+The default is `MONGODB`. To use MySQL, create a database and an account with table creation and read/write access, then configure:
+
+```yaml title="config.yml · MySQL example"
+database:
+  type: MYSQL
+  mysql:
+    url: 'jdbc:mysql://localhost:3306/minecraft?connectTimeout=5000&socketTimeout=10000&characterEncoding=UTF-8'
+    username: 'sparrow'
+    password: 'your_database_password'
+    table-prefix: 'sparrow_'
+```
+
+Alternatively, select `MARIADB`, `POSTGRESQL`, or `MONGODB` and edit its corresponding section. Servers sharing data need the same database and table prefix. MongoDB uses a shared database name and `collection-prefix`.
+
+Restart, check the console for connection results, and run `/sparrow feature-list` to inspect feature state.
+
+## Features and commands
+
+`features.yml` controls modules; `commands.yml` controls command registration. For example:
+
+```yaml title="features.yml · Patrol"
+patrol:
+  enabled: true
+  skip-spectators: true
+  excluded-worlds: []
+```
+
+```yaml title="commands.yml · Patrol command"
+patrol:
+  enable: true
+  usages:
+    - /sparrow patrol
+    - /patrol
+  permission: sparrow.command.patrol
+```
+
+Features use `enabled`; commands use `enable`. Disabling an entry point and disabling its feature are separate actions.
+
+| Setting | How to apply |
+| - | - |
+| Feature settings in `features.yml` | `/sparrow reload` |
+| Feature switches | `/sparrow feature-enable <feature>` or `feature-disable`; saved to the file |
+| Command switches, entry points, and permissions | Restart |
+| Redis, database connections, or `server-id` | Restart |
+
+Set `forced-locale: en_US` in `config.yml` to select the console language. See [Permissions & Commands](https://nanamoserver.github.io/sparrow-wiki/commands.mdx) and the individual feature pages for details.
+
+# Permissions & Commands Quick Reference
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/commands>
+
+`<argument>` is required; `[argument]` is optional. `player` generally means a local online player, and `targets` accepts player or entity selectors.
+
+These are the default entry points and permissions. Short commands also accept `/sparrow <command>`. Restart after editing `commands.yml`.
+
+## ⚙️ Plugin management
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/sparrow reload [--silent]` | Reload settings that support runtime changes. | `sparrow.command.admin.reload` |
+| `/sparrow feature-list [page]` | List feature states by page. | `sparrow.command.admin.feature` |
+| `/sparrow feature-enable <feature>` | Enable a feature and save its switch. | `sparrow.command.admin.feature` |
+| `/sparrow feature-disable <feature>` | Disable a feature and save its switch. | `sparrow.command.admin.feature` |
+
+## 🧍 Player and entity state
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/heal [player]` | Restore player health. | `sparrow.command.heal` |
+| `/feed [player]` | Restore player hunger. | `sparrow.command.feed` |
+| `/fly [player] [enabled]` | Toggle flight permission, or set true / false explicitly. | `sparrow.command.fly` |
+| `/fly-speed <speed> [player]` | Set flight speed from -1 to 1. | `sparrow.command.fly-speed` |
+| `/walk-speed <speed> [player]` | Set walking speed from -1 to 1. | `sparrow.command.walk-speed` |
+| `/suicide` | Kill yourself; players only. | `sparrow.command.suicide` |
+| `/burn <targets> <time>` | Set target entities on fire. | `sparrow.command.burn` |
+| `/extinguish [targets]` | Extinguish target entities. | `sparrow.command.extinguish` |
+| `/look [targets] <facing-option>` | Change the facing of target entities. | `sparrow.command.look` |
+
+## 🔍 Patrol and command execution
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/patrol [targets]` | Patrol local online players in rotation; players only. | `sparrow.command.patrol` |
+| `/sudo <targets> <command>` | Make selected players execute a command. | `sparrow.command.sudo` |
+
+## 🧭 Teleportation
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/world [world] [targets]` | Switch to a world, or the next world when omitted. | `sparrow.command.world` |
+| `/top-block [targets]` | Move targets to the highest usable position in their current block column. | `sparrow.command.top-block` |
+| `/tp-offline <player> [targets] [--silent]` | Teleport targets to the named player’s last recorded location. | `sparrow.command.tp-offline` |
+| `/server <server> [targets]` | Request a backend transfer through the proxy. | `sparrow.command.server` |
+
+## 🛠️ Portable workstations and containers
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/workbench [player]` | Open a crafting table for a player. | `sparrow.command.workbench` |
+| `/anvil [player]` | Open an anvil for a player. | `sparrow.command.anvil` |
+| `/grindstone [player]` | Open a grindstone for a player. | `sparrow.command.grindstone` |
+| `/smithing-table [player]` | Open a smithing table for a player. | `sparrow.command.smithing-table` |
+| `/stonecutter [player]` | Open a stonecutter for a player. | `sparrow.command.stonecutter` |
+| `/cartography-table [player]` | Open a cartography table for a player. | `sparrow.command.cartography-table` |
+| `/enchantment-table [player]` | Open an enchanting table for a player. | `sparrow.command.enchantment-table` |
+| `/ender_chest [player] [--silent]` | Open the selected player’s own ender chest for that player. | `sparrow.command.ender-chest` |
+
+## 📦 Item editing and acquisition
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/enchant <targets> <enchantment> [level] [--slot <slot>]` | Edit an enchantment in a target entity’s equipment slot. | `sparrow.command.enchant` |
+| `/item_data [--full] [--chat]` | Inspect the main-hand item’s data; players only. | `sparrow.command.item-data` |
+| `/item_name <player> [name] [options]` | Read or edit the main-hand item\_name component. | `sparrow.command.item-name` |
+| `/custom_name <player> [name] [options]` | Read or edit the main-hand custom\_name component. | `sparrow.command.custom-name` |
+| `/item_lore [options]` | View or edit main-hand lore; players only. | `sparrow.command.item-lore` |
+| `/color [color] [--player <player>] [--slot <slot>] [--silent]` | Read or edit item dye color. | `sparrow.command.color` |
+| `/custom_model_data [value]` | Read or edit the first custom model data float; players only. | `sparrow.command.custom-model-data` |
+| `/more [amount] [--player <player>] [--silent]` | Replenish or copy the main-hand item; amount 1–6400. | `sparrow.command.more` |
+| `/head [source] [options]` | Fetch a head by player name or UUID. | `sparrow.command.head` |
+
+## 📐 Regions and measurement
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/highlight [targets] [options]` | Select or specify a region to highlight. | `sparrow.command.highlight` |
+| `/distance [--max-distance <distance>] [--disable-marker]` | Measure distance to the targeted block; players only. | `sparrow.command.distance` |
+
+## 💬 Messages and effects
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/broadcast <targets> <message> [options]` | Send a chat message to selected players. | `sparrow.command.broadcast` |
+| `/actionbar <targets> <message> [options]` | Send an action bar to selected players. | `sparrow.command.actionbar` |
+| `/title <targets> <fadeIn> <stay> <fadeOut> <message> [options]` | Send a title with an optional subtitle. | `sparrow.command.title` |
+| `/toast <targets> <type> <item> <message> [options]` | Send an advancement toast with an item icon. | `sparrow.command.toast` |
+| `/totem-animation <targets> <item> [--silent]` | Play a totem animation with the specified item icon. | `sparrow.command.totem-animation` |
+| `/demo [player]` | Display the demo prompt. | `sparrow.command.demo` |
+| `/credits [player]` | Display the credits screen. | `sparrow.command.credits` |
+
+## 🔑 Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.bypass.patrol` | Exclude the holder from patrol selection. |
+
+See [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.mdx), [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx), and [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.mdx) for their complete usage.
+
+# Quick Shulker
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/quick-shulker>
+
+Access a shulker box without placing it. By default, hold the box, **sneak, and right-click the air**.
+
+## Usage
+
+Both hands are supported. If both hold shulker boxes, the main hand takes priority. Right-clicking a block does not trigger quick access.
+
+There is no dedicated open command or separate usage permission. The feature switch, sneaking requirement, and world restrictions determine availability.
+
+## Configuration
+
+```yaml title="features.yml · quick-shulker"
+quick-shulker:
+  enabled: true
+  require-sneaking: true
+  allow-offhand: true
+  title: '<arg:hover_name>'
+  disabled-worlds: []
+```
+
+| Setting | Meaning |
+| - | - |
+| `enabled` | Enable the feature. |
+| `require-sneaking` | Require sneaking; `false` allows a normal right-click in the air. |
+| `allow-offhand` | Allow the off-hand box. |
+| `title` | Menu title; `<arg:hover_name>` inserts the held box's item name. |
+| `disabled-worlds` | World names where access is disabled; empty allows all worlds. |
+
+For example, `disabled-worlds: [minigame]` disables quick access in `minigame`.
+
+# Patrol
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/patrol>
+
+Use `/patrol` to visit online players on the current server in rotation. Players not inspected recently are selected first; newly joined players enter at the front of the queue.
+
+## Commands and permissions
+
+| Command or permission | Purpose | Default command permission |
+| - | - | - |
+| `/patrol [targets]` | Select the next player from the candidate set. | `sparrow.command.patrol` |
+| `sparrow.bypass.patrol` | Exclude the permission holder from patrol selection. | — |
+
+The full entry point is `/sparrow patrol [targets]`. Only players can run it. Without `targets`, all eligible local online players are considered. A name or player selector narrows the candidates.
+
+```text title="Examples"
+/patrol
+/patrol @a
+```
+
+Selection skips the sender, players with the bypass permission, and players excluded by configuration. Patrol does not change the sender's game mode; switch to spectator mode first if desired.
+
+## Configuration
+
+```yaml title="features.yml · patrol"
+patrol:
+  enabled: true
+  skip-spectators: true
+  excluded-worlds: []
+```
+
+`skip-spectators` excludes spectators by default. Add world names to `excluded-worlds`, for example `[minigame, lobby]`. An empty list allows all worlds.
+
+# Highlight
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/highlight>
+
+Select a region and show glowing block outlines to players. Use it to explain building boundaries or inspect an area. The display is sent to selected viewers without changing real blocks.
+
+## Commands and permissions
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/highlight [targets] [options]` | Select and display a region. | `sparrow.command.highlight` |
+
+The full entry point is `/sparrow highlight`. **Omitting `targets` shows the region to all online players in that world.** Use `/highlight @s` for yourself only.
+
+### Interactive selection
+
+1. Run `/highlight @s`.
+2. Left-click to record your own position, or right-click a block to record its position.
+3. Repeat to record the second endpoint and display the region.
+
+The first and second clicks determine the endpoints; left and right click are not tied to a particular endpoint. Run `/highlight` again without coordinates to cancel an active selection. The default selection timeout is 30 seconds.
+
+### Coordinates
+
+```text title="Green outlines for yourself, lasting 20 seconds"
+/highlight @s --from 0 64 0 --to 5 68 5 --highlight-color green --highlight-duration 20
+```
+
+Supply `--from` and `--to` together. The console must provide both coordinates and `--world <world>`.
+
+| Option | Meaning |
+| - | - |
+| `--from <x> <y> <z>` | First endpoint. |
+| `--to <x> <y> <z>` | Second endpoint. |
+| `--world <world>` | Coordinate world; defaults to the sender's world. |
+| `--highlight-duration <seconds>` / `-d` | 0–300 seconds; 0 removes the display immediately. |
+| `--highlight-color <color>` / `-c` | Named color, such as `green`, `red`, or `yellow`. |
+| `--solid-only` | Show non-passable blocks exposed to passable neighbors or the selection boundary. |
+| `--silent` / `-s` | Suppress command feedback. |
+
+> **World and selection limits**
+>
+> Peaceful worlds are not supported. Viewers must be online and in the selected world. The size limit covers the full volume including both endpoints, with a default maximum of 32,768 blocks.
+
+## Configuration
+
+```yaml title="features.yml · highlight"
+highlight:
+  enabled: true
+  default-color: green
+  default-duration: 30
+  max-blocks: 32768
+  solid-only: false
+  selection-timeout: 30
+```
+
+Color, duration, and `solid-only` provide defaults. If `solid-only` is enabled in configuration, it remains active for commands. `max-blocks` limits the complete selection volume, not the filtered display count.
+
+# Heads
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/head>
+
+Use `/head` to fetch heads from player names or UUIDs. The command detects the source automatically. Player lookups support online profiles and external APIs, with memory and Redis caches to reduce repeated requests.
+
+## Commands and permissions
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/head [source] [options]` | Fetch by player name or UUID; a player defaults to their own name. | `sparrow.command.head` |
+
+The full entry point is `/sparrow head`. All sources share the same command and permission. UUIDs may use dashes or 32 hexadecimal digits without dashes.
+
+| Option | Meaning |
+| - | - |
+| `--player <targets>` | Recipient name or player selector; defaults to the sender when run by a player. |
+| `--amount <amount>` | 1–6400 heads, default 1. |
+| `--force` | Bypass memory and Redis cache reads, fetch again, and cache successful API results. |
+| `--silent` / `-s` | Suppress success feedback; timeouts and failures are still reported. |
+
+The console must specify a source and `--player`. Heads are dropped at the recipients in stacks of up to 64.
+
+```text title="Examples"
+/head
+/head Notch --amount 1
+/head Notch --player Alex --force
+/head 069a79f4-44e9-4726-a5be-fca90e38aaf5
+/head --force
+```
+
+## Sources and caches
+
+By default, Sparrow reads a local online player's texture first, then falls back to an API. Online textures are not written to the API cache. External profile lookup uses Mojang's name and UUID endpoints by default.
+
+`--force` still follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
+
+This is a partial `features.yml` example; keep the remaining settings:
+
+```yaml title="features.yml · head"
+head:
+  enabled: true
+  source-order:
+    - online
+    - api
+  request-timeout: 15s
+  cache:
+    memory:
+      enabled: true
+      ttl: 5m
+      max-size: 4096
+    redis:
+      enabled: true
+      ttl: 24h
+```
+
+`source-order` may contain either or both sources without duplicates. The memory cache holds up to 4,096 keys for 5 minutes. Redis caches entries for 24 hours using the shared connection in `config.yml`. Each cache has its own `enabled` switch and configurable `ttl`. Cache lifetime starts when data is fetched: reads do not renew it, and refilling memory from Redis preserves the original data age.
+
+Durations support `d`, `h`, `m`, `s`, and `ms`, including combinations such as `1m30s`, and must be greater than zero. Failed lookups are not cached. If a Redis read or write fails, Sparrow still attempts to fetch and return the head data.
+
+### Custom profile endpoints
+
+To use a different profile service, replace the URLs under `head.api`. These are the defaults; merge them into your existing `head` section:
+
+```yaml title="features.yml · head.api"
+head:
+  api:
+    name-url: 'https://api.mojang.com/users/profiles/minecraft/{name}'
+    profile-url: 'https://sessionserver.mojang.com/session/minecraft/profile/{uuid}'
+    headers: {}
+    connect-timeout: 3s
+    request-timeout: 5s
+```
+
+`name-url` must contain `{name}`, which is replaced with the URL-encoded player name. `profile-url` must contain `{uuid}` (without dashes) or `{uuid-dashed}` (with dashes). The service must return Mojang-compatible JSON: `id` and `name` for name lookups, and a player profile with a `textures` property for profile lookups. UUID lookups go directly to the profile endpoint.
+
+Use `head.api.headers` for required request headers, such as `Authorization`. These headers are sent only to the two profile endpoints. Changing the endpoint URLs or headers uses a separate cache so that results from the previous service are not reused.
+
+## Async lookups and timeouts
+
+Cache and HTTP lookups run asynchronously, so waiting for external services does not block the server's main thread. Online profile access, item creation, and head drops run on the relevant player's thread.
+
+| Setting | Default | Scope |
+| - | - | - |
+| `head.request-timeout` | `15s` | Total lookup time for player names and UUIDs, including caches and online profiles. |
+| `head.api.connect-timeout` | `3s` | Time allowed to establish an HTTP connection. |
+| `head.api.request-timeout` | `5s` | Time allowed for each HTTP request. |
+
+When a lookup times out, Sparrow interrupts it and notifies the command sender, even with `--silent`. Disabling or reloading the head module cancels pending requests. Old requests cannot deliver heads after the module is enabled again.
+
+# Frequently Asked Questions
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/faq>
+
+# Developer API
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/developer-api>

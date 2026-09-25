@@ -1,0 +1,20 @@
+# Sparrow
+
+> Sparrow 提供 Minecraft 服务器管理命令、便携工作站、物品编辑与可配置的玩家功能。
+
+下面每个链接都指向对应页面的 Markdown 版本。全部文档合并在一个文件里：[llms-full.txt](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/llms-full.txt)。
+
+English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
+
+- [简介](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/index.md): Sparrow 为 Minecraft 服务器提供日常管理和玩家便利功能。你可以用命令打开工作台、调整玩家状态、编辑物品、发送标题，也可以启用潜影盒快捷打开、玩家巡查和区域高亮等功能。
+- [安装插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.md): 本章将完成 Sparrow 的安装，并配置服务器 ID、Redis 和数据库。
+- [权限命令速查表](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.md): <参数> 为必填，[参数] 为可选。player 通常为本服在线玩家名，targets 为玩家或实体选择器。
+- [常见问题](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/faq.md)
+- [开发者 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/developer-api.md)
+
+## 功能
+
+- [快捷潜影盒](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/quick-shulker.md): 不需要放置潜影盒，就能直接存取其中的物品。默认情况下，手持潜影盒，潜行并对着空气右键即可打开。
+- [玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.md): 使用 /patrol 轮流传送到本服在线玩家，适合管理员巡查。每次选择最久未被巡查的玩家，新加入的玩家会优先进入队列。
+- [区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.md): 选择一个区域，向玩家显示方块的发光轮廓，便于说明建筑范围或检查选区。显示只发送给指定玩家，不会改变实际方块。
+- [头颅获取](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): 使用 /head，根据玩家名称或 UUID 获取头颅。命令会自动识别来源；玩家资料查询支持在线玩家和外部 API，并通过内存与 Redis 缓存减少重复请求。

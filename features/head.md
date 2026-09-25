@@ -1,0 +1,89 @@
+# Heads
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/head>
+
+Use `/head` to fetch heads from player names or UUIDs. The command detects the source automatically. Player lookups support online profiles and external APIs, with memory and Redis caches to reduce repeated requests.
+
+## Commands and permissions
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/head [source] [options]` | Fetch by player name or UUID; a player defaults to their own name. | `sparrow.command.head` |
+
+The full entry point is `/sparrow head`. All sources share the same command and permission. UUIDs may use dashes or 32 hexadecimal digits without dashes.
+
+| Option | Meaning |
+| - | - |
+| `--player <targets>` | Recipient name or player selector; defaults to the sender when run by a player. |
+| `--amount <amount>` | 1–6400 heads, default 1. |
+| `--force` | Bypass memory and Redis cache reads, fetch again, and cache successful API results. |
+| `--silent` / `-s` | Suppress success feedback; timeouts and failures are still reported. |
+
+The console must specify a source and `--player`. Heads are dropped at the recipients in stacks of up to 64.
+
+```text title="Examples"
+/head
+/head Notch --amount 1
+/head Notch --player Alex --force
+/head 069a79f4-44e9-4726-a5be-fca90e38aaf5
+/head --force
+```
+
+## Sources and caches
+
+By default, Sparrow reads a local online player's texture first, then falls back to an API. Online textures are not written to the API cache. External profile lookup uses Mojang's name and UUID endpoints by default.
+
+`--force` still follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
+
+This is a partial `features.yml` example; keep the remaining settings:
+
+```yaml title="features.yml · head"
+head:
+  enabled: true
+  source-order:
+    - online
+    - api
+  request-timeout: 15s
+  cache:
+    memory:
+      enabled: true
+      ttl: 5m
+      max-size: 4096
+    redis:
+      enabled: true
+      ttl: 24h
+```
+
+`source-order` may contain either or both sources without duplicates. The memory cache holds up to 4,096 keys for 5 minutes. Redis caches entries for 24 hours using the shared connection in `config.yml`. Each cache has its own `enabled` switch and configurable `ttl`. Cache lifetime starts when data is fetched: reads do not renew it, and refilling memory from Redis preserves the original data age.
+
+Durations support `d`, `h`, `m`, `s`, and `ms`, including combinations such as `1m30s`, and must be greater than zero. Failed lookups are not cached. If a Redis read or write fails, Sparrow still attempts to fetch and return the head data.
+
+### Custom profile endpoints
+
+To use a different profile service, replace the URLs under `head.api`. These are the defaults; merge them into your existing `head` section:
+
+```yaml title="features.yml · head.api"
+head:
+  api:
+    name-url: 'https://api.mojang.com/users/profiles/minecraft/{name}'
+    profile-url: 'https://sessionserver.mojang.com/session/minecraft/profile/{uuid}'
+    headers: {}
+    connect-timeout: 3s
+    request-timeout: 5s
+```
+
+`name-url` must contain `{name}`, which is replaced with the URL-encoded player name. `profile-url` must contain `{uuid}` (without dashes) or `{uuid-dashed}` (with dashes). The service must return Mojang-compatible JSON: `id` and `name` for name lookups, and a player profile with a `textures` property for profile lookups. UUID lookups go directly to the profile endpoint.
+
+Use `head.api.headers` for required request headers, such as `Authorization`. These headers are sent only to the two profile endpoints. Changing the endpoint URLs or headers uses a separate cache so that results from the previous service are not reused.
+
+## Async lookups and timeouts
+
+Cache and HTTP lookups run asynchronously, so waiting for external services does not block the server's main thread. Online profile access, item creation, and head drops run on the relevant player's thread.
+
+| Setting | Default | Scope |
+| - | - | - |
+| `head.request-timeout` | `15s` | Total lookup time for player names and UUIDs, including caches and online profiles. |
+| `head.api.connect-timeout` | `3s` | Time allowed to establish an HTTP connection. |
+| `head.api.request-timeout` | `5s` | Time allowed for each HTTP request. |
+
+When a lookup times out, Sparrow interrupts it and notifies the command sender, even with `--silent`. Disabling or reloading the head module cancels pending requests. Old requests cannot deliver heads after the module is enabled again.

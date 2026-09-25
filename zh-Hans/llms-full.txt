@@ -1,0 +1,443 @@
+# Sparrow
+
+> Sparrow 提供 Minecraft 服务器管理命令、便携工作站、物品编辑与可配置的玩家功能。
+
+# 简介
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/>
+
+Sparrow 为 Minecraft 服务器提供日常管理和玩家便利功能。你可以用命令打开工作台、调整玩家状态、编辑物品、发送标题，也可以启用潜影盒快捷打开、玩家巡查和区域高亮等功能。
+
+从[安装插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.mdx)开始部署，或在[权限命令速查表](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.mdx)中查找具体用法。
+
+# 安装插件
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation>
+
+本章将完成 Sparrow 的安装，并配置服务器 ID、Redis 和数据库。
+
+## 运行环境
+
+当前版本提供 Paper、Folia 和 Spigot 加载入口，插件声明的最低 API 版本为 **1.21.11**。Spigot 请使用 **26.2 或更新的适配版本**。具体服务端版本应与所用 Sparrow 构建匹配。
+
+插件以 Java 21 编译；运行时还需要满足所用 Minecraft 服务端的 Java 要求。PlaceholderAPI 是可选插件，需要解析其占位符时再安装。
+
+**Redis 和一种持久化数据库是当前版本启动所需的服务。** 数据库可选 MongoDB、MySQL、MariaDB 或 PostgreSQL。
+
+> **存储服务版本**
+>
+> Redis 版本必须大于 **7.2.4**；使用 MySQL 时，MySQL 版本必须大于 **8.0.0**。
+
+## 安装
+
+将 Sparrow 的 `.jar` 文件放入服务器的 `plugins/` 文件夹，然后启动服务器。配置文件生成在 `plugins/Sparrow/` 中：
+
+**Sparrow**
+
+- `libs` — 自动下载和加载的运行时依赖
+- `translations` — 命令反馈和界面的多语言文本
+- `config.yml` — Redis、数据库、语言和文本解析选项
+- `server.yml` — 本服在集群中的唯一 ID
+- `commands.yml` — 命令开关、入口和权限，修改后重启
+- `features.yml` — 各功能模块的开关和设置
+
+> **首次启动会自动关服**
+>
+> `server.yml` 中的 `server-id` 默认为空。未填写时，Sparrow 会提示缺少服务器 ID 并主动关闭服务器。重新启动前，请完成服务器 ID 和连接配置。
+
+## 设置服务器 ID
+
+修改 `plugins/Sparrow/server.yml` 中已有的 `server-id`：
+
+```yaml title="server.yml · 服务器 ID"
+server-id: 'lobby'
+```
+
+共用 Redis 和数据库的服务器必须使用不同的 ID，例如 `lobby`、`survival-1`、`survival-2`。使用代理时，ID 应与代理配置中的后端服务器名称一致。复制配置到另一台服务器后，需要单独修改此项。
+
+## 配置 Redis 和数据库
+
+以下片段只展示需要修改的连接项，**不要用它们覆盖整个配置文件**。保留自动生成的 `__version__`。
+
+### Redis
+
+```yaml title="config.yml · Redis"
+redis:
+  url: 'redis://localhost:6379/0'
+  username: ''
+  password: ''
+```
+
+将地址、端口和认证信息改为实际配置。同一组服务器使用同一个 Redis 数据库；`/0` 表示第 0 号数据库。
+
+### 持久化数据库
+
+默认存储类型为 `MONGODB`。若使用 MySQL，先创建数据库和具有建表、读写权限的账号，然后修改：
+
+```yaml title="config.yml · MySQL 示例"
+database:
+  type: MYSQL
+  mysql:
+    url: 'jdbc:mysql://localhost:3306/minecraft?connectTimeout=5000&socketTimeout=10000&characterEncoding=UTF-8'
+    username: 'sparrow'
+    password: 'your_database_password'
+    table-prefix: 'sparrow_'
+```
+
+也可以选择 `MARIADB`、`POSTGRESQL` 或 `MONGODB`，并填写对应分组。共用数据的服务器需要连接同一个数据库，使用相同的表前缀；MongoDB 使用相同的数据库名称和 `collection-prefix`。
+
+保存后重新启动服务器，检查控制台的 Redis、数据库连接结果，再执行 `/sparrow feature-list` 检查功能状态。
+
+## 调整功能和命令
+
+`features.yml` 管理功能模块；`commands.yml` 管理命令注册。以巡查为例：
+
+```yaml title="features.yml · 巡查"
+patrol:
+  enabled: true
+  skip-spectators: true
+  excluded-worlds: []
+```
+
+```yaml title="commands.yml · 巡查命令"
+patrol:
+  enable: true
+  usages:
+    - /sparrow patrol
+    - /patrol
+  permission: sparrow.command.patrol
+```
+
+注意功能配置使用 `enabled`，命令配置使用 `enable`。关闭命令入口与停用功能模块是两个独立操作。
+
+| 修改内容 | 生效方式 |
+| - | - |
+| `features.yml` 的功能设置 | `/sparrow reload` |
+| 功能模块开关 | `/sparrow feature-enable <feature>` 或 `feature-disable`，会保存到文件 |
+| `commands.yml` 的命令开关、入口、权限 | 重启服务器 |
+| Redis、数据库连接或 `server-id` | 重启服务器 |
+
+控制台语言可以通过 `config.yml` 的 `forced-locale: zh_CN` 设置。更多命令见[权限命令速查表](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.mdx)，每个功能的配置见左侧功能分组。
+
+# 权限命令速查表
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands>
+
+`<参数>` 为必填，`[参数]` 为可选。`player` 通常为本服在线玩家名，`targets` 为玩家或实体选择器。
+
+以下为默认入口与权限。短命令也可写成 `/sparrow <命令>`；修改 `commands.yml` 后需要重启服务器。
+
+## ⚙️ 插件管理
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/sparrow reload [--silent]` | 重载支持运行时更新的配置。 | `sparrow.command.admin.reload` |
+| `/sparrow feature-list [page]` | 分页查看功能状态。 | `sparrow.command.admin.feature` |
+| `/sparrow feature-enable <feature>` | 启用指定功能并保存开关。 | `sparrow.command.admin.feature` |
+| `/sparrow feature-disable <feature>` | 停用指定功能并保存开关。 | `sparrow.command.admin.feature` |
+
+## 🧍 玩家与实体状态
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/heal [player]` | 恢复玩家生命值。 | `sparrow.command.heal` |
+| `/feed [player]` | 恢复玩家饥饿状态。 | `sparrow.command.feed` |
+| `/fly [player] [enabled]` | 切换飞行许可，或用 true / false 明确设置。 | `sparrow.command.fly` |
+| `/fly-speed <speed> [player]` | 设置飞行速度，范围 -1 到 1。 | `sparrow.command.fly-speed` |
+| `/walk-speed <speed> [player]` | 设置行走速度，范围 -1 到 1。 | `sparrow.command.walk-speed` |
+| `/suicide` | 结束自己的生命，仅玩家可执行。 | `sparrow.command.suicide` |
+| `/burn <targets> <time>` | 使目标实体燃烧。 | `sparrow.command.burn` |
+| `/extinguish [targets]` | 熄灭目标实体身上的火。 | `sparrow.command.extinguish` |
+| `/look [targets] <朝向选项>` | 调整目标实体朝向。 | `sparrow.command.look` |
+
+## 🔍 巡查与代执行
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/patrol [targets]` | 轮流巡查本服在线玩家，仅玩家可执行。 | `sparrow.command.patrol` |
+| `/sudo <targets> <command>` | 让指定玩家执行命令。 | `sparrow.command.sudo` |
+
+## 🧭 传送
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/world [world] [targets]` | 切换到指定世界；省略世界时选择下一个世界。 | `sparrow.command.world` |
+| `/top-block [targets]` | 将目标传送到当前坐标列的最高可站立位置。 | `sparrow.command.top-block` |
+| `/tp-offline <player> [targets] [--silent]` | 将目标传送到指定玩家最后记录的位置。 | `sparrow.command.tp-offline` |
+| `/server <server> [targets]` | 通过代理请求切换后端服务器。 | `sparrow.command.server` |
+
+## 🛠️ 便携工作站与容器
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/workbench [player]` | 为玩家打开工作台。 | `sparrow.command.workbench` |
+| `/anvil [player]` | 为玩家打开铁砧。 | `sparrow.command.anvil` |
+| `/grindstone [player]` | 为玩家打开砂轮。 | `sparrow.command.grindstone` |
+| `/smithing-table [player]` | 为玩家打开锻造台。 | `sparrow.command.smithing-table` |
+| `/stonecutter [player]` | 为玩家打开切石机。 | `sparrow.command.stonecutter` |
+| `/cartography-table [player]` | 为玩家打开制图台。 | `sparrow.command.cartography-table` |
+| `/enchantment-table [player]` | 为玩家打开附魔台。 | `sparrow.command.enchantment-table` |
+| `/ender_chest [player] [--silent]` | 让指定玩家打开他自己的末影箱。 | `sparrow.command.ender-chest` |
+
+## 📦 物品编辑与获取
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/enchant <targets> <enchantment> [level] [--slot <slot>]` | 修改目标实体指定装备槽的附魔。 | `sparrow.command.enchant` |
+| `/item_data [--full] [--chat]` | 查看主手物品数据，仅玩家可执行。 | `sparrow.command.item-data` |
+| `/item_name <player> [name] [选项]` | 查询或修改主手物品的 item\_name 组件。 | `sparrow.command.item-name` |
+| `/custom_name <player> [name] [选项]` | 查询或修改主手物品的 custom\_name 组件。 | `sparrow.command.custom-name` |
+| `/item_lore [选项]` | 查看或编辑主手物品 Lore，仅玩家可执行。 | `sparrow.command.item-lore` |
+| `/color [color] [--player <player>] [--slot <slot>] [--silent]` | 查询或修改物品染色。 | `sparrow.command.color` |
+| `/custom_model_data [value]` | 查询或修改主手物品第一个模型数据 float，仅玩家可执行。 | `sparrow.command.custom-model-data` |
+| `/more [amount] [--player <player>] [--silent]` | 补充或复制主手物品，数量范围 1–6400。 | `sparrow.command.more` |
+| `/head [source] [选项]` | 按玩家名或 UUID 获取头颅。 | `sparrow.command.head` |
+
+## 📐 区域与测量
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/highlight [targets] [选项]` | 选点或按坐标显示区域高亮。 | `sparrow.command.highlight` |
+| `/distance [--max-distance <distance>] [--disable-marker]` | 测量到视线方块的距离，仅玩家可执行。 | `sparrow.command.distance` |
+
+## 💬 消息与画面
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/broadcast <targets> <message> [选项]` | 向指定玩家发送聊天消息。 | `sparrow.command.broadcast` |
+| `/actionbar <targets> <message> [选项]` | 向指定玩家发送 ActionBar。 | `sparrow.command.actionbar` |
+| `/title <targets> <fadeIn> <stay> <fadeOut> <message> [选项]` | 发送标题与可选副标题。 | `sparrow.command.title` |
+| `/toast <targets> <type> <item> <message> [选项]` | 发送带物品图标的进度提示。 | `sparrow.command.toast` |
+| `/totem-animation <targets> <item> [--silent]` | 播放使用指定物品图标的图腾动画。 | `sparrow.command.totem-animation` |
+| `/demo [player]` | 显示试玩提示。 | `sparrow.command.demo` |
+| `/credits [player]` | 显示终末之诗画面。 | `sparrow.command.credits` |
+
+## 🔑 额外权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.bypass.patrol` | 让持有者不被巡查命令选中。 |
+
+巡查、高亮和头颅的完整用法分别见[玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.mdx)、[区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.mdx)和[头颅获取](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.mdx)。
+
+# 快捷潜影盒
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/quick-shulker>
+
+不需要放置潜影盒，就能直接存取其中的物品。默认情况下，手持潜影盒，**潜行并对着空气右键**即可打开。
+
+## 使用方式
+
+主手和副手都可以使用。两只手同时持有潜影盒时，优先打开主手中的潜影盒。右键方块不会触发快捷打开。
+
+此功能没有独立的打开命令，也没有单独的使用权限节点。是否可用由功能开关、潜行要求和世界限制决定。
+
+## 配置
+
+```yaml title="features.yml · quick-shulker"
+quick-shulker:
+  enabled: true
+  require-sneaking: true
+  allow-offhand: true
+  title: '<arg:hover_name>'
+  disabled-worlds: []
+```
+
+| 配置 | 说明 |
+| - | - |
+| `enabled` | 是否启用。 |
+| `require-sneaking` | 是否要求潜行；改为 `false` 后，直接对空气右键即可。 |
+| `allow-offhand` | 是否允许打开副手潜影盒。 |
+| `title` | 界面标题，`<arg:hover_name>` 显示当前潜影盒的物品名称。 |
+| `disabled-worlds` | 禁用此功能的世界名称，空列表表示不限制。 |
+
+例如 `disabled-worlds: [minigame]` 会在 `minigame` 世界停用快捷打开。
+
+# 玩家巡查
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol>
+
+使用 `/patrol` 轮流传送到本服在线玩家，适合管理员巡查。每次选择最久未被巡查的玩家，新加入的玩家会优先进入队列。
+
+## 命令与权限
+
+| 命令或权限 | 用途 | 默认命令权限 |
+| - | - | - |
+| `/patrol [targets]` | 从候选玩家中选择下一位巡查对象。 | `sparrow.command.patrol` |
+| `sparrow.bypass.patrol` | 拥有此权限的玩家不会被选为巡查对象。 | — |
+
+完整入口为 `/sparrow patrol [targets]`。此命令只能由玩家执行；省略 `targets` 时，从本服所有符合条件的在线玩家中选择。填写玩家名或玩家选择器可以缩小候选范围。
+
+```text title="示例"
+/patrol
+/patrol @a
+```
+
+巡查会跳过执行者自己、拥有绕过权限的玩家，以及不符合配置规则的玩家。它不会自动切换执行者的游戏模式；需要旁观视角时，请先自行切换。
+
+## 配置
+
+```yaml title="features.yml · patrol"
+patrol:
+  enabled: true
+  skip-spectators: true
+  excluded-worlds: []
+```
+
+`skip-spectators` 默认跳过旁观模式的玩家。`excluded-worlds` 填写不参与巡查的世界名称，例如 `[minigame, lobby]`；空列表不限制世界。
+
+# 区域高亮
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight>
+
+选择一个区域，向玩家显示方块的发光轮廓，便于说明建筑范围或检查选区。显示只发送给指定玩家，不会改变实际方块。
+
+## 命令与权限
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/highlight [targets] [选项]` | 选取并显示区域。 | `sparrow.command.highlight` |
+
+完整入口为 `/sparrow highlight`。**省略 `targets` 时，默认向该世界的所有在线玩家显示**；仅自己查看可以使用 `/highlight @s`。
+
+### 交互选点
+
+1. 输入 `/highlight @s` 开始选点。
+2. 左键记录自己所在的位置，或右键方块记录被点击方块的位置。
+3. 重复一次记录第二个点，随后显示高亮。
+
+两次点击按先后分别记录两个端点，不是固定左键第一个点、右键第二个点。选择期间再次运行不带坐标的 `/highlight` 会取消当前选点。默认需要在 30 秒内完成。
+
+### 直接指定坐标
+
+```text title="仅向自己显示绿色轮廓，持续 20 秒"
+/highlight @s --from 0 64 0 --to 5 68 5 --highlight-color green --highlight-duration 20
+```
+
+`--from` 和 `--to` 必须成对提供。控制台需要同时指定坐标和 `--world <world>`。
+
+| 选项 | 说明 |
+| - | - |
+| `--from <x> <y> <z>` | 第一个端点。 |
+| `--to <x> <y> <z>` | 第二个端点。 |
+| `--world <world>` | 坐标所在世界，玩家默认使用当前世界。 |
+| `--highlight-duration <seconds>` / `-d` | 持续 0–300 秒；0 会立即清除。 |
+| `--highlight-color <color>` / `-c` | 命名颜色，例如 `green`、`red`、`yellow`。 |
+| `--solid-only` | 只显示不可穿过且邻接可穿过方块、或位于选区边界的方块。 |
+| `--silent` / `-s` | 隐藏命令反馈。 |
+
+> **世界和选区限制**
+>
+> 和平难度的世界不支持此功能。接收者必须在线且处于选区所在世界。区域大小按包含两个端点的完整体积计算，默认最多 32,768 个方块。
+
+## 配置
+
+```yaml title="features.yml · highlight"
+highlight:
+  enabled: true
+  default-color: green
+  default-duration: 30
+  max-blocks: 32768
+  solid-only: false
+  selection-timeout: 30
+```
+
+颜色、持续时间和 `solid-only` 是未指定选项时的默认值。配置已开启 `solid-only` 时，命令也会使用此筛选规则。`max-blocks` 限制整个选区体积，不是筛选后最终显示的数量。
+
+# 头颅获取
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head>
+
+使用 `/head`，根据玩家名称或 UUID 获取头颅。命令会自动识别来源；玩家资料查询支持在线玩家和外部 API，并通过内存与 Redis 缓存减少重复请求。
+
+## 命令与权限
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/head [source] [选项]` | 按玩家名称或 UUID 获取头颅；玩家省略来源时使用自己的名称。 | `sparrow.command.head` |
+
+完整入口为 `/sparrow head`，所有来源共用一个命令和权限。UUID 可以带连字符，也可以使用连续的 32 位十六进制形式。
+
+| 选项 | 说明 |
+| - | - |
+| `--player <targets>` | 接收头颅的玩家名或玩家选择器，玩家执行时默认自己。 |
+| `--amount <amount>` | 数量，范围 1–6400，默认 1。 |
+| `--force` | 跳过内存和 Redis 缓存读取，重新获取；成功取得 API 结果后刷新缓存。 |
+| `--silent` / `-s` | 隐藏成功反馈；超时和失败仍会提示。 |
+
+控制台需要明确来源和 `--player`。头颅在接收玩家处掉落，按每组最多 64 个分组处理。
+
+```text title="示例"
+/head
+/head Notch --amount 1
+/head Notch --player Alex --force
+/head 069a79f4-44e9-4726-a5be-fca90e38aaf5
+/head --force
+```
+
+## 获取来源与缓存
+
+默认优先读取本服在线玩家的纹理，找不到时再查询 API。在线纹理不会写入 API 缓存。外部资料查询默认使用 Mojang 的名称和 UUID 资料接口。
+
+`--force` 仍遵循 `source-order`。如果在线玩家已有纹理，会直接使用当前在线资料；需要始终从外部接口获取时，将来源设置为 `source-order: [api]`。
+
+下面是 `features.yml` 中头颅配置的一部分，保留文件中的其他分组：
+
+```yaml title="features.yml · head"
+head:
+  enabled: true
+  source-order:
+    - online
+    - api
+  request-timeout: 15s
+  cache:
+    memory:
+      enabled: true
+      ttl: 5m
+      max-size: 4096
+    redis:
+      enabled: true
+      ttl: 24h
+```
+
+`source-order` 可保留一种或两种来源，但不能重复。内存缓存默认最多 4,096 个键，保留 5 分钟；Redis 缓存保留 24 小时，使用 `config.yml` 的共享 Redis 连接。两层缓存均可通过各自的 `enabled` 独立关闭，并通过 `ttl` 自定义保留时长。缓存时间从获取数据时计算，读取不会续期；从 Redis 回填内存也不会重置数据年龄。
+
+时长支持 `d`、`h`、`m`、`s`、`ms` 及 `1m30s` 这样的组合，必须大于零。查询失败不会写入缓存；Redis 读写失败时仍会尝试获取并返回头颅资料。
+
+### 自定义资料接口
+
+可以在 `head.api` 中替换资料接口 URL。以下为默认配置，合并到已有的 `head` 分组中：
+
+```yaml title="features.yml · head.api"
+head:
+  api:
+    name-url: 'https://api.mojang.com/users/profiles/minecraft/{name}'
+    profile-url: 'https://sessionserver.mojang.com/session/minecraft/profile/{uuid}'
+    headers: {}
+    connect-timeout: 3s
+    request-timeout: 5s
+```
+
+`name-url` 必须包含 `{name}`，请求时会替换为经过 URL 编码的玩家名；`profile-url` 必须包含 `{uuid}`（无连字符）或 `{uuid-dashed}`（带连字符）。自定义服务需要返回 Mojang 兼容 JSON：名称查询返回 `id` 和 `name`，资料查询返回含 `textures` 属性的玩家 Profile。通过 UUID 查询时会直接使用资料接口。
+
+`head.api.headers` 可以填写接口需要的请求头，例如 `Authorization`；这些请求头只发送到上述两个资料接口。切换接口地址或请求头后，会使用独立的缓存，避免读到旧资料源的结果。
+
+## 异步查询与超时
+
+缓存和 HTTP 查询异步执行，等待外部服务时不会阻塞服务器主线程。读取在线玩家资料、制作和掉落头颅时会切回对应玩家线程。
+
+| 配置 | 默认值 | 范围 |
+| - | - | - |
+| `head.request-timeout` | `15s` | 玩家名称和 UUID的查询总时间，包含缓存与在线资料读取。 |
+| `head.api.connect-timeout` | `3s` | HTTP 连接建立时间。 |
+| `head.api.request-timeout` | `5s` | 单次 HTTP 请求时间。 |
+
+超时后会中断请求并提示命令执行者，即使使用 `--silent` 也会提示。停用或重载头颅模块会取消正在处理的请求，旧请求不会在模块重新启用后继续发放头颅。
+
+# 常见问题
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/faq>
+
+# 开发者 API
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/developer-api>
