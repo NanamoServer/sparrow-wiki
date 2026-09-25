@@ -31,7 +31,7 @@ The console must specify a source and `--player`. Heads are dropped at the recip
 
 ## Sources and caches
 
-By default, Sparrow reads a local online player's texture first, then falls back to an API. Online textures are not written to the API cache. External profile lookup uses Mojang's name and UUID endpoints by default.
+By default, Sparrow reads a local online player's texture first, then falls back to an API. Online textures are not written to the API cache. External profile lookup uses Mojang's name and UUID endpoints by default, with Ashcon as a fallback when the primary API fails or returns no textures.
 
 `--force` still follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
 
@@ -67,6 +67,8 @@ head:
   api:
     name-url: 'https://api.mojang.com/users/profiles/minecraft/{name}'
     profile-url: 'https://sessionserver.mojang.com/session/minecraft/profile/{uuid}'
+    fallback-urls:
+      - 'https://api.ashcon.app/mojang/v2/user/{player}'
     headers: {}
     connect-timeout: 3s
     request-timeout: 5s
@@ -74,7 +76,22 @@ head:
 
 `name-url` must contain `{name}`, which is replaced with the URL-encoded player name. `profile-url` must contain `{uuid}` (without dashes) or `{uuid-dashed}` (with dashes). The service must return Mojang-compatible JSON: `id` and `name` for name lookups, and a player profile with a `textures` property for profile lookups. UUID lookups go directly to the profile endpoint.
 
-Use `head.api.headers` for required request headers, such as `Authorization`. These headers are sent only to the two profile endpoints. Changing the endpoint URLs or headers uses a separate cache so that results from the previous service are not reused.
+Use `head.api.headers` for required request headers, such as `Authorization`. These headers are sent only to `name-url` and `profile-url`, not to fallback endpoints. Changing the primary URLs, fallback list or its order, or headers uses a separate cache so that results from the previous source configuration are not reused.
+
+### Automatic fallback
+
+`head.api.fallback-urls` is an ordered list of backup profile endpoints. Add URLs in the order you want Sparrow to try them. Set `fallback-urls: []` to disable fallback.
+
+Each URL must contain `{player}`. Sparrow replaces it with the URL-encoded name or dashed UUID from the original query. The endpoint must return a complete profile in a single response, using either of these formats:
+
+| Response format | Player identity | Texture fields |
+| - | - | - |
+| Ashcon | `uuid`, `username` | `textures.raw.value` and optional `textures.raw.signature` |
+| Mojang | `id`, `name` | An entry named `textures` in `properties`, with `value` and optional `signature` |
+
+Fallback starts when the primary API reports an error, is rate limited, exceeds its individual HTTP timeout, returns no player, or provides no textures. Sparrow tries each backup in order and stops at the first valid textured profile. Successful results use the existing memory and Redis caches; `--force` also bypasses cached fallback results.
+
+If every endpoint reports no profile or no textures, Sparrow reports that the head was not found. If any endpoint fails and none succeeds, it reports the last error. All fallback requests share the original total lookup timeout; switching endpoints does not restart that timeout.
 
 ## Async lookups and timeouts
 
@@ -82,8 +99,8 @@ Cache and HTTP lookups run asynchronously, so waiting for external services does
 
 | Setting | Default | Scope |
 | - | - | - |
-| `head.request-timeout` | `15s` | Total lookup time for player names and UUIDs, including caches and online profiles. |
-| `head.api.connect-timeout` | `3s` | Time allowed to establish an HTTP connection. |
-| `head.api.request-timeout` | `5s` | Time allowed for each HTTP request. |
+| `head.request-timeout` | `15s` | Total lookup time for player names and UUIDs, including caches, online profiles, and all primary and fallback requests. |
+| `head.api.connect-timeout` | `3s` | Time allowed to establish an HTTP connection to a primary or fallback endpoint. |
+| `head.api.request-timeout` | `5s` | Time allowed for each primary or fallback HTTP request. |
 
 When a lookup times out, Sparrow interrupts it and notifies the command sender, even with `--silent`. Disabling or reloading the head module cancels pending requests. Old requests cannot deliver heads after the module is enabled again.
