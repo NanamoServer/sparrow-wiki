@@ -15,6 +15,13 @@ title: 🔑 权限命令速查表
 | `/sparrow feature-enable <feature>` | 启用指定功能并保存开关。 | `sparrow.command.admin.feature` |
 | `/sparrow feature-disable <feature>` | 停用指定功能并保存开关。 | `sparrow.command.admin.feature` |
 
+## 🚧 进服管理
+
+| 命令 | 用途 | 默认权限 |
+| --- | --- | --- |
+| `/maintenance [true\|false]` | 开启或关闭维护模式，或查看当前状态。 | `sparrow.command.maintenance` |
+| `/max-players [amount]` | 运行时修改人数上限，或查看在线人数和当前上限。 | `sparrow.command.max-players` |
+
 ## 🧍 玩家与实体状态
 
 | 命令 | 用途 | 默认权限 |
@@ -62,7 +69,7 @@ title: 🔑 权限命令速查表
 
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
-| `/enchant <targets> <enchantment> [level] [--slot <slot>]` | 修改目标实体指定装备槽的附魔。 | `sparrow.command.enchant` |
+| `/enchant <targets> <enchantment> [level] [--slot <slot>] [--check]` | 修改目标实体指定装备槽的附魔，等级为负数时移除；`--check` 按原版 `/enchant` 规则校验。 | `sparrow.command.enchant` |
 | `/item_data [--full] [--chat]` | 查看主手物品数据，仅玩家可执行。 | `sparrow.command.item-data` |
 | `/item_name <player> [name] [选项]` | 查询或修改主手物品的 item_name 组件。 | `sparrow.command.item-name` |
 | `/custom_name <player> [name] [选项]` | 查询或修改主手物品的 custom_name 组件。 | `sparrow.command.custom-name` |
@@ -96,5 +103,9 @@ title: 🔑 权限命令速查表
 | 权限 | 用途 |
 | --- | --- |
 | `sparrow.bypass.patrol` | 让持有者不被巡查命令选中。 |
+| `sparrow.bypass.maintenance` | 维护期间仍可留在服务器或进入服务器。 |
+| `sparrow.bypass.player-limit` | 服务器满员时仍可进入。 |
 
-巡查、高亮和头颅的完整用法分别见[玩家巡查](./features/patrol.mdx)、[区域高亮](./features/highlight.mdx)和[头颅获取](./features/head.mdx)。
+`/enchant` 加上 `--check` 后与原版命令一致：等级不能超过附魔的最高等级，物品必须支持该附魔，且不能与已有附魔冲突，物品上已有同一附魔也算冲突。原版中附魔书不属于任何附魔的适用物品，因此同样会被拒绝。移除附魔时不做校验。
+
+巡查、高亮、头颅、维护模式和人数上限的完整用法分别见[玩家巡查](./features/patrol.mdx)、[区域高亮](./features/highlight.mdx)、[头颅获取](./features/head.mdx)、[维护模式](./features/maintenance.mdx)和[人数上限](./features/player-limit.mdx)。

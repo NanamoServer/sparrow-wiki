@@ -14,6 +14,8 @@ const sidebars: SidebarsConfig = {
         'features/patrol',
         'features/highlight',
         'features/head',
+        'features/maintenance',
+        'features/player-limit',
       ],
     },
     'faq',

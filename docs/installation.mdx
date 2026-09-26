@@ -12,7 +12,7 @@ Install Sparrow, assign a server ID, and connect Redis and persistent storage.
 
 The current build provides Paper, Folia, and Spigot entry points and declares **1.21.11** as its minimum API version. For Spigot, use **26.2 or a newer adapted version**. Match the server version to the Sparrow build you install.
 
-The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders.
+The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders. LuckPerms is also optional; with it installed, [Maintenance](./features/maintenance.mdx) and [Player limit](./features/player-limit.mdx) use LuckPerms permissions to decide who can bypass them before joining. Without it, only operators can bypass.
 
 **Redis and one persistent database are required at startup.** Choose MongoDB, MySQL, MariaDB, or PostgreSQL.
 

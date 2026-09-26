@@ -12,7 +12,7 @@ import PluginFileTree from '@site/src/components/PluginFileTree';
 
 当前版本提供 Paper、Folia 和 Spigot 加载入口，插件声明的最低 API 版本为 **1.21.11**。Spigot 请使用 **26.2 或更新的适配版本**。具体服务端版本应与所用 Sparrow 构建匹配。
 
-插件以 Java 21 编译；运行时还需要满足所用 Minecraft 服务端的 Java 要求。PlaceholderAPI 是可选插件，需要解析其占位符时再安装。
+插件以 Java 21 编译；运行时还需要满足所用 Minecraft 服务端的 Java 要求。PlaceholderAPI 是可选插件，需要解析其占位符时再安装。LuckPerms 也是可选插件，安装后[维护模式](./features/maintenance.mdx)和[人数上限](./features/player-limit.mdx)会在玩家进入前按 LuckPerms 权限判断能否绕过；未安装时只有 OP 可以绕过。
 
 **Redis 和一种持久化数据库是当前版本启动所需的服务。** 数据库可选 MongoDB、MySQL、MariaDB 或 PostgreSQL。
 
