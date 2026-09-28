@@ -6,6 +6,8 @@
 
 以下为默认入口与权限。短命令也可写成 `/sparrow <命令>`；修改 `commands.yml` 后需要重启服务器。
 
+属于某个功能的命令（例如 `/maintenance`、`/ban`）在该功能停用期间会对玩家隐藏，执行时提示功能未启用；重新启用后立即恢复。
+
 ## ⚙️ 插件管理
 
 | 命令 | 用途 | 默认权限 |
@@ -14,6 +16,36 @@
 | `/sparrow feature-list [page]` | 分页查看功能状态。 | `sparrow.command.admin.feature` |
 | `/sparrow feature-enable <feature>` | 启用指定功能并保存开关。 | `sparrow.command.admin.feature` |
 | `/sparrow feature-disable <feature>` | 停用指定功能并保存开关。 | `sparrow.command.admin.feature` |
+
+## 🚧 进服管理
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/maintenance [true\|false]` | 开启或关闭维护模式，或查看当前状态。 | `sparrow.command.maintenance` |
+| `/max-players [amount]` | 运行时修改人数上限，或查看在线人数和当前上限。 | `sparrow.command.max-players` |
+
+## 🔨 处罚管理
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/kick <player> [reason] [-s]` | 把玩家从其所在的服务器踢出，踢出界面会显示原因和执行人。 | `sparrow.command.kick` |
+| `/ban <player> [reason] [-t <时长>] [-I] [-s]` | 全服封禁账号；加上 `-I` 会同时封禁其最近一次登录的 IP。 | `sparrow.command.ban` |
+| `/ban-ip <ip> [reason] [-t <时长>] [-s]` | 封禁一个 IP 或 `1.2.3.*` 这样的 IP 段。 | `sparrow.command.ban-ip` |
+| `/unban <对象> [-s]` | 按玩家名、UUID、IP 或处罚 ID 解除封禁。 | `sparrow.command.unban` |
+| `/ban-history [对象] [选项]` | 查看封禁记录，可按执行人、时间范围和是否生效筛选。 | `sparrow.command.ban-history` |
+
+`/kick` 可以踢出集群内任意服务器上的在线玩家。`--silent` / `-s` 会隐藏给执行人的成功提示；用在封禁相关命令上时，也不会通知管理员。
+
+## 🔎 玩家记录查询
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/ip <player>` | 查看玩家最近一次登录的 IP 与时间，并提供查询同 IP 玩家的按钮。 | `sparrow.command.ip` |
+| `/ip-history <对象> [page]` | 列出最近一次登录 IP 与指定 IP、`1.2.3.*` 这样的 IP 段，或某名玩家最近登录 IP 相同的玩家。 | `sparrow.command.ip-history` |
+| `/player-uuid <player>` | 按玩家名查询 UUID。 | `sparrow.command.player-uuid` |
+| `/player-name <uuid>` | 按 UUID 查询最近使用的玩家名。 | `sparrow.command.player-name` |
+
+这些命令只能查到进入过你的服务器的玩家，不会向 Mojang 查询。这里的 `player` 可以是其中任何一名玩家，不要求在线；`/ip` 与 `/ip-history` 也接受 UUID。玩家每次进服都会更新最近登录 IP，只记录 IPv4 地址。`/ip-history` 每页显示 8 名玩家，包含在线状态或最后所在服务器、最近登录时间和 IP。
 
 ## 🧍 玩家与实体状态
 
@@ -62,7 +94,7 @@
 
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
-| `/enchant <targets> <enchantment> [level] [--slot <slot>]` | 修改目标实体指定装备槽的附魔。 | `sparrow.command.enchant` |
+| `/enchant <targets> <enchantment> [level] [--slot <slot>] [--check]` | 修改目标实体指定装备槽的附魔，等级为负数时移除；`--check` 按原版 `/enchant` 规则校验。 | `sparrow.command.enchant` |
 | `/item_data [--full] [--chat]` | 查看主手物品数据，仅玩家可执行。 | `sparrow.command.item-data` |
 | `/item_name <player> [name] [选项]` | 查询或修改主手物品的 item\_name 组件。 | `sparrow.command.item-name` |
 | `/custom_name <player> [name] [选项]` | 查询或修改主手物品的 custom\_name 组件。 | `sparrow.command.custom-name` |
@@ -96,5 +128,10 @@
 | 权限 | 用途 |
 | - | - |
 | `sparrow.bypass.patrol` | 让持有者不被巡查命令选中。 |
+| `sparrow.bypass.maintenance` | 维护期间仍可留在服务器或进入服务器。 |
+| `sparrow.bypass.player-limit` | 服务器满员时仍可进入。 |
+| `sparrow.notify.ban` | 接收所有服务器的封禁与解封通知。默认只有 OP 拥有。 |
 
-巡查、高亮和头颅的完整用法分别见[玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.mdx)、[区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.mdx)和[头颅获取](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.mdx)。
+`/enchant` 加上 `--check` 后与原版命令一致：等级不能超过附魔的最高等级，物品必须支持该附魔，且不能与已有附魔冲突，物品上已有同一附魔也算冲突。原版中附魔书不属于任何附魔的适用物品，因此同样会被拒绝。移除附魔时不做校验。
+
+巡查、高亮、头颅、维护模式、人数上限和全服封禁的完整用法分别见[玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.mdx)、[区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.mdx)、[头颅获取](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.mdx)、[维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.mdx)、[人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.mdx)和[全服封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.mdx)。

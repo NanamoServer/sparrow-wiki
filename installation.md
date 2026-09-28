@@ -8,7 +8,7 @@ Install Sparrow, assign a server ID, and connect Redis and persistent storage.
 
 The current build provides Paper, Folia, and Spigot entry points and declares **1.21.11** as its minimum API version. For Spigot, use **26.2 or a newer adapted version**. Match the server version to the Sparrow build you install.
 
-The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders.
+The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders. LuckPerms is also optional; with it installed, [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx) and [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx) use LuckPerms permissions to decide who can bypass them before joining. Without it, only operators can bypass.
 
 **Redis and one persistent database are required at startup.** Choose MongoDB, MySQL, MariaDB, or PostgreSQL.
 
@@ -78,7 +78,7 @@ Restart, check the console for connection results, and run `/sparrow feature-lis
 
 ## Features and commands
 
-`features.yml` controls modules; `commands.yml` controls command registration. For example:
+`features.yml` controls features; `commands.yml` controls which commands exist, their entry points, and their permissions. For example:
 
 ```yaml title="features.yml · Patrol"
 patrol:
@@ -96,7 +96,7 @@ patrol:
   permission: sparrow.command.patrol
 ```
 
-Features use `enabled`; commands use `enable`. Disabling an entry point and disabling its feature are separate actions.
+Features use `enabled`; commands use `enable`. Disabling an entry point and disabling its feature are separate actions. A command turned off in `commands.yml` does not exist on the server at all, while the commands of a disabled feature are hidden from players and answer with a notice until the feature is enabled again.
 
 | Setting | How to apply |
 | - | - |

@@ -6,7 +6,7 @@
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/>
 
-Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, and region highlighting.
+Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, region highlighting, and network-wide bans.
 
 Start with [Installation](https://nanamoserver.github.io/sparrow-wiki/installation.mdx), or find a specific tool in [Permissions & Commands Quick Reference](https://nanamoserver.github.io/sparrow-wiki/commands.mdx).
 
@@ -20,7 +20,7 @@ Install Sparrow, assign a server ID, and connect Redis and persistent storage.
 
 The current build provides Paper, Folia, and Spigot entry points and declares **1.21.11** as its minimum API version. For Spigot, use **26.2 or a newer adapted version**. Match the server version to the Sparrow build you install.
 
-The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders.
+The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders. LuckPerms is also optional; with it installed, [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx) and [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx) use LuckPerms permissions to decide who can bypass them before joining. Without it, only operators can bypass.
 
 **Redis and one persistent database are required at startup.** Choose MongoDB, MySQL, MariaDB, or PostgreSQL.
 
@@ -90,7 +90,7 @@ Restart, check the console for connection results, and run `/sparrow feature-lis
 
 ## Features and commands
 
-`features.yml` controls modules; `commands.yml` controls command registration. For example:
+`features.yml` controls features; `commands.yml` controls which commands exist, their entry points, and their permissions. For example:
 
 ```yaml title="features.yml · Patrol"
 patrol:
@@ -108,7 +108,7 @@ patrol:
   permission: sparrow.command.patrol
 ```
 
-Features use `enabled`; commands use `enable`. Disabling an entry point and disabling its feature are separate actions.
+Features use `enabled`; commands use `enable`. Disabling an entry point and disabling its feature are separate actions. A command turned off in `commands.yml` does not exist on the server at all, while the commands of a disabled feature are hidden from players and answer with a notice until the feature is enabled again.
 
 | Setting | How to apply |
 | - | - |
@@ -127,6 +127,8 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/commands>
 
 These are the default entry points and permissions. Short commands also accept `/sparrow <command>`. Restart after editing `commands.yml`.
 
+Commands that belong to a feature, such as `/maintenance` or `/ban`, are hidden from players and refused with a notice while that feature is disabled. They reappear as soon as the feature is enabled again.
+
 ## ⚙️ Plugin management
 
 | Command | Purpose | Default permission |
@@ -135,6 +137,36 @@ These are the default entry points and permissions. Short commands also accept `
 | `/sparrow feature-list [page]` | List feature states by page. | `sparrow.command.admin.feature` |
 | `/sparrow feature-enable <feature>` | Enable a feature and save its switch. | `sparrow.command.admin.feature` |
 | `/sparrow feature-disable <feature>` | Disable a feature and save its switch. | `sparrow.command.admin.feature` |
+
+## 🚧 Server access
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/maintenance [true\|false]` | Turn maintenance mode on or off, or show its state. | `sparrow.command.maintenance` |
+| `/max-players [amount]` | Change the player limit at runtime, or show online players and the limit. | `sparrow.command.max-players` |
+
+## 🔨 Moderation
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/kick <player> [reason] [-s]` | Kick a player from whichever server they are on; the kick screen shows the reason and who kicked them. | `sparrow.command.kick` |
+| `/ban <player> [reason] [-t <time>] [-I] [-s]` | Ban an account network-wide; `-I` also bans its last login IP. | `sparrow.command.ban` |
+| `/ban-ip <ip> [reason] [-t <time>] [-s]` | Ban an IP address or range such as `1.2.3.*`. | `sparrow.command.ban-ip` |
+| `/unban <target> [-s]` | Lift bans by player name, UUID, IP, or punishment ID. | `sparrow.command.unban` |
+| `/ban-history [target] [options]` | Browse ban records with operator, time, and active filters. | `sparrow.command.ban-history` |
+
+`/kick` works for any player online in the network. `--silent` / `-s` hides the success message from the executor; on ban commands it also skips staff notices.
+
+## 🔎 Player records
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/ip <player>` | Show a player's last login IP and time, with a button to list players on the same IP. | `sparrow.command.ip` |
+| `/ip-history <target> [page]` | List players whose last login IP matches an IP, a range such as `1.2.3.*`, or a player's last login IP. | `sparrow.command.ip-history` |
+| `/player-uuid <player>` | Look up a player's UUID by name. | `sparrow.command.player-uuid` |
+| `/player-name <uuid>` | Look up the last name used by a UUID. | `sparrow.command.player-name` |
+
+These commands only know players who have joined your servers; nothing is looked up from Mojang. `player` here can be any such player, whether online or not, and `/ip` and `/ip-history` also accept a UUID. The last login IP is updated every time a player joins; only IPv4 addresses are recorded. `/ip-history` shows 8 players per page with their online status or last server, last login time, and IP.
 
 ## 🧍 Player and entity state
 
@@ -183,7 +215,7 @@ These are the default entry points and permissions. Short commands also accept `
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/enchant <targets> <enchantment> [level] [--slot <slot>]` | Edit an enchantment in a target entity’s equipment slot. | `sparrow.command.enchant` |
+| `/enchant <targets> <enchantment> [level] [--slot <slot>] [--check]` | Edit an enchantment in a target entity’s equipment slot; a negative level removes it. `--check` applies the vanilla `/enchant` rules. | `sparrow.command.enchant` |
 | `/item_data [--full] [--chat]` | Inspect the main-hand item’s data; players only. | `sparrow.command.item-data` |
 | `/item_name <player> [name] [options]` | Read or edit the main-hand item\_name component. | `sparrow.command.item-name` |
 | `/custom_name <player> [name] [options]` | Read or edit the main-hand custom\_name component. | `sparrow.command.custom-name` |
@@ -217,8 +249,13 @@ These are the default entry points and permissions. Short commands also accept `
 | Permission | Purpose |
 | - | - |
 | `sparrow.bypass.patrol` | Exclude the holder from patrol selection. |
+| `sparrow.bypass.maintenance` | Stay on or join the server during maintenance. |
+| `sparrow.bypass.player-limit` | Join even when the server is full. |
+| `sparrow.notify.ban` | Receive ban and unban notices from every server. Only operators have it by default. |
 
-See [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.mdx), [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx), and [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.mdx) for their complete usage.
+With `--check`, `/enchant` follows the vanilla command: the level cannot exceed the enchantment's maximum level, the item must support the enchantment, and the enchantment must not conflict with existing ones, including the same enchantment already on the item. Enchanted books are not supported items in vanilla, so they are refused as well. Removing an enchantment is never checked.
+
+See [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.mdx), [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx), [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.mdx), [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx), [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx), and [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx) for their complete usage.
 
 # Quick Shulker
 
@@ -377,7 +414,7 @@ The console must specify a source and `--player`. Heads are dropped at the recip
 
 ## Sources and caches
 
-By default, Sparrow reads a local online player's texture first, then falls back to an API. Online textures are not written to the API cache. External profile lookup uses Mojang's name and UUID endpoints by default, with Ashcon as a fallback when the primary API fails or returns no textures.
+By default, Sparrow reads a local online player's texture first, then falls back to an API. External profile lookup uses Mojang's name and UUID endpoints by default, with Ashcon as a fallback when the primary API fails or returns no textures.
 
 `--force` still follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
 
@@ -400,9 +437,9 @@ head:
       ttl: 24h
 ```
 
-`source-order` may contain either or both sources without duplicates. The memory cache holds up to 4,096 keys for 5 minutes. Redis caches entries for 24 hours using the shared connection in `config.yml`. Each cache has its own `enabled` switch and configurable `ttl`. Cache lifetime starts when data is fetched: reads do not renew it, and refilling memory from Redis preserves the original data age.
+`source-order` may contain either or both sources without duplicates. The memory cache holds up to 4,096 keys for 5 minutes. Redis caches entries for 24 hours using the shared connection in `config.yml`. Each cache has its own `enabled` switch and configurable `ttl`. A cached head expires a fixed time after it was fetched; using it does not extend that time.
 
-Durations support `d`, `h`, `m`, `s`, and `ms`, including combinations such as `1m30s`, and must be greater than zero. Failed lookups are not cached. If a Redis read or write fails, Sparrow still attempts to fetch and return the head data.
+Durations support `d`, `h`, `m`, `s`, and `ms`, including combinations such as `1m30s`, and must be greater than zero. Failed lookups are not cached. If Redis is unavailable, heads can still be fetched.
 
 ### Custom profile endpoints
 
@@ -422,7 +459,7 @@ head:
 
 `name-url` must contain `{name}`, which is replaced with the URL-encoded player name. `profile-url` must contain `{uuid}` (without dashes) or `{uuid-dashed}` (with dashes). The service must return Mojang-compatible JSON: `id` and `name` for name lookups, and a player profile with a `textures` property for profile lookups. UUID lookups go directly to the profile endpoint.
 
-Use `head.api.headers` for required request headers, such as `Authorization`. These headers are sent only to `name-url` and `profile-url`, not to fallback endpoints. Changing the primary URLs, fallback list or its order, or headers uses a separate cache so that results from the previous source configuration are not reused.
+Use `head.api.headers` for required request headers, such as `Authorization`. These headers are sent only to `name-url` and `profile-url`, not to fallback endpoints. After you change the URLs, the fallback list or its order, or the headers, heads cached under the old settings are not reused.
 
 ### Automatic fallback
 
@@ -437,11 +474,9 @@ Each URL must contain `{player}`. Sparrow replaces it with the URL-encoded name 
 
 Fallback starts when the primary API reports an error, is rate limited, exceeds its individual HTTP timeout, returns no player, or provides no textures. Sparrow tries each backup in order and stops at the first valid textured profile. Successful results use the existing memory and Redis caches; `--force` also bypasses cached fallback results.
 
-If every endpoint reports no profile or no textures, Sparrow reports that the head was not found. If any endpoint fails and none succeeds, it reports the last error. All fallback requests share the original total lookup timeout; switching endpoints does not restart that timeout.
+If no endpoint finds the player or a texture, Sparrow reports that the head was not found. If an endpoint fails and none succeeds, the last error is reported. Trying backup endpoints does not extend `head.request-timeout`.
 
-## Async lookups and timeouts
-
-Cache and HTTP lookups run asynchronously, so waiting for external services does not block the server's main thread. Online profile access, item creation, and head drops run on the relevant player's thread.
+## Timeouts
 
 | Setting | Default | Scope |
 | - | - | - |
@@ -449,7 +484,200 @@ Cache and HTTP lookups run asynchronously, so waiting for external services does
 | `head.api.connect-timeout` | `3s` | Time allowed to establish an HTTP connection to a primary or fallback endpoint. |
 | `head.api.request-timeout` | `5s` | Time allowed for each primary or fallback HTTP request. |
 
-When a lookup times out, Sparrow interrupts it and notifies the command sender, even with `--silent`. Disabling or reloading the head module cancels pending requests. Old requests cannot deliver heads after the module is enabled again.
+When a lookup times out, the sender is told, even with `--silent`. Disabling or reloading the feature cancels lookups that are still in progress.
+
+# Maintenance
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/maintenance>
+
+When maintenance mode is on, online players without the bypass permission are removed from the server and new players cannot join. Players who stay see a boss bar notice.
+
+## Commands and permissions
+
+| Command or permission | Purpose | Default command permission |
+| - | - | - |
+| `/maintenance [true\|false]` | Turn maintenance mode on or off; without an argument, show the current state. | `sparrow.command.maintenance` |
+| `sparrow.bypass.maintenance` | Stay on or join the server during maintenance. | — |
+
+The full entry point is `/sparrow maintenance`. The state is saved to `features.yml` and survives restarts.
+
+```text title="Examples"
+/maintenance
+/maintenance true
+/maintenance false
+```
+
+## Who can stay or join
+
+Players with `sparrow.bypass.maintenance` can stay on the server and join during maintenance. Everyone else is removed, and anyone trying to join sees the maintenance message instead.
+
+- With LuckPerms installed, the permission set in LuckPerms is used. A player explicitly set to `false` cannot join, even as an operator.
+- Without LuckPerms, or if the permission is not set, only operators can join.
+- Permissions granted only for a specific world, game mode, or other context do not count when joining.
+
+When maintenance is turned on, players already online are checked with their current permissions.
+
+## Configuration
+
+```yaml title="features.yml · maintenance"
+maintenance:
+  enabled: true
+  active: false
+  boss-bar:
+    enabled: true
+    color: RED
+    overlay: PROGRESS
+```
+
+`active` is the current maintenance state and is saved automatically by the command. `boss-bar.color` accepts `PINK`, `BLUE`, `RED`, `GREEN`, `YELLOW`, `PURPLE`, and `WHITE`; `boss-bar.overlay` accepts `PROGRESS`, `NOTCHED_6`, `NOTCHED_10`, `NOTCHED_12`, and `NOTCHED_20`.
+
+Edit the boss bar title and kick message in the translation files under `maintenance.boss_bar` and `maintenance.kick`.
+
+Disabling the feature with `/sparrow feature-disable maintenance` removes the boss bar and stops refusing players, but keeps the saved state. Enabling it again restores the saved state.
+
+# Player limit
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/player-limit>
+
+Use `/max-players` to change the server's player limit at runtime without a restart. Players with the bypass permission can join when the server is full.
+
+## Commands and permissions
+
+| Command or permission | Purpose | Default command permission |
+| - | - | - |
+| `/max-players [amount]` | Set the player limit; `-1` restores the value from `server.properties`; without an argument, show online players and the current limit. | `sparrow.command.max-players` |
+| `sparrow.bypass.player-limit` | Join even when the server is full. | — |
+
+The full entry point is `/sparrow max-players`. Lowering the limit does not remove players already online; it only affects later joins.
+
+```text title="Examples"
+/max-players
+/max-players 100
+/max-players -1
+```
+
+The limit is saved to `features.yml` and survives restarts; `server.properties` is never modified. Disabling the feature with `/sparrow feature-disable player-limit` restores the value from `server.properties`.
+
+## Joining a full server
+
+Players with `sparrow.bypass.player-limit` can join when the server is full.
+
+- With LuckPerms installed, the permission set in LuckPerms is used.
+- Without LuckPerms, or if the permission is not set, only operators can bypass the limit.
+- Permissions granted only for a specific world, game mode, or other context do not count when joining.
+- On Spigot servers, the player's regular permissions are used instead.
+
+Operators with `bypassesPlayerLimit` set to `true` in the vanilla `ops.json` can still bypass the limit.
+
+## Configuration
+
+```yaml title="features.yml · player-limit"
+player-limit:
+  enabled: true
+  max-players: -1
+```
+
+When `max-players` is `-1`, the `max-players` value from `server.properties` is used. The command saves changes automatically.
+
+> **Note**
+>
+> With Velocity or BungeeCord, the proxy has its own player limit and server list display. This feature only affects the current backend server.
+
+# Bans
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/ban>
+
+Ban accounts, IP addresses, or IP ranges on every server in your network. Banned players cannot join, and players who are already online are removed at once, whichever server they are on.
+
+## Commands and permissions
+
+| Command or permission | Purpose | Default command permission |
+| - | - | - |
+| `/ban <player> [reason] [-t <time>] [-I] [-s]` | Ban an account by player name or UUID. `-I` also bans the player's last login IP. | `sparrow.command.ban` |
+| `/ban-ip <ip> [reason] [-t <time>] [-s]` | Ban an IP address or IP range. | `sparrow.command.ban-ip` |
+| `/unban <target> [-s]` | Lift active bans by player name, UUID, IP, or punishment ID. | `sparrow.command.unban` |
+| `/ban-history [target] [options]` | Browse ban records page by page. | `sparrow.command.ban-history` |
+| `sparrow.notify.ban` | Receive ban and unban notices from every server. | — |
+
+Each command also has a `/sparrow <command>` entry point.
+
+```text title="Examples"
+/ban Steve Griefing at spawn -t 7d
+/ban Steve Alt account abuse -I
+/ban-ip 203.0.113.* Proxy abuse -t 1mo
+/unban Steve
+/unban #K7Q2M9XD
+/ban-history Steve
+/ban-history --operator Alex --within 30d --active
+```
+
+## What can be banned
+
+- **Account**: a player name or UUID, with or without dashes. A player name must belong to someone who has joined one of your servers before; a UUID can be banned even if that player has never joined.
+- **Account and IP**: `/ban -I` adds the player's last login IP to the same ban. Logins from the account, or from any account on that IP, are refused.
+- **IP address**: for example `/ban-ip 203.0.113.7`.
+- **IP range**: replace the trailing parts with `*`, such as `203.0.113.*` or `203.0.*.*`.
+
+Only IPv4 is supported, and CIDR notation such as `203.0.113.0/24` is not accepted. Players connected over IPv6 can only be banned by account.
+
+The reason is optional and can be up to 256 characters.
+
+## Duration
+
+Without `-t`, the ban is permanent. `-t` accepts `y` (365 days), `mo` (30 days), `w`, `d`, `h`, `m`, and `s`. Units can be combined and decimals are allowed, for example `1.5h`, `3d12h`, or `1mo2w`.
+
+## Punishment IDs
+
+Every ban gets a random ID such as `#K7Q2M9XD`. It appears in the command result, the kick screen, staff notices, and the ban history. Pass it to `/unban` or `/ban-history` to target exactly that record; letters are not case-sensitive.
+
+## Replacing and lifting bans
+
+- Banning a player who already has an active ban replaces the old one. The old record stays in the history as revoked.
+- An IP-only ban replaces an active IP-only ban on exactly the same address or range.
+- `/unban <player>` lifts every active ban on that account, including account-and-IP bans.
+- `/unban <ip>` lifts only IP-only bans on exactly the same address or range. Use the player or the punishment ID to lift an account-and-IP ban.
+- `/unban #ID` lifts that one record.
+
+## How bans take effect
+
+- Online players are removed at once, whichever server they are on. An IP ban removes every online account connected from that address or range.
+- Banned players cannot join any server. During [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx) they still see the ban reason rather than the maintenance message.
+- A player sees "You are banned" when their own account is banned, and "Your IP address is banned" when the address they connect from is banned.
+- If Sparrow cannot reach the database while a player is joining, the player is let in and the error is shown in the console.
+
+## Staff notices and `-s`
+
+Without `-s`, online holders of `sparrow.notify.ban` on every server receive a notice with the target, operator, reason, expiry, and punishment ID. Only operators have this permission by default; grant it to your staff with a permission plugin.
+
+With `-s`:
+
+- The executor does not see the success message. Errors are still shown.
+- No notices are sent.
+- The ban still takes effect, and online players are still removed.
+
+## Ban history
+
+`/ban-history [target]` lists records from newest to oldest, 8 per page. Without a target, it lists every ban. The target can be a player name, UUID, IP, or punishment ID; an IP matches every ban whose range covers it.
+
+| Option | Purpose |
+| - | - |
+| `--operator <name>`, `-o` | Only bans issued by this operator; not case-sensitive. |
+| `--within <time>`, `-w` | Only bans created within this period, such as `7d`. Uses the same units as `-t`. |
+| `--active`, `-a` | Only bans that are still in effect. |
+| `--page <page>`, `-p` | Page number. |
+
+Each row shows the status (active, expired, or revoked), punishment ID, time, target, and operator, followed by an **\[Unban]** button that fills in `/unban #ID` for you to confirm. Hover the ID for full details. The page buttons keep the current target and filters.
+
+## Configuration
+
+```yaml title="features.yml · ban"
+ban:
+  enabled: true
+```
+
+Bans are saved in the database configured in `config.yml`. While the feature is disabled, bans are not enforced and the ban commands are hidden.
+
+Edit the kick screens and staff notices in the translation files under `ban.kick.player`, `ban.kick.ip`, `ban.notify.ban`, and `ban.notify.unban`.
 
 # Frequently Asked Questions
 

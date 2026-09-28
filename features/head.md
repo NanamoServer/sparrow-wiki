@@ -31,7 +31,7 @@ The console must specify a source and `--player`. Heads are dropped at the recip
 
 ## Sources and caches
 
-By default, Sparrow reads a local online player's texture first, then falls back to an API. Online textures are not written to the API cache. External profile lookup uses Mojang's name and UUID endpoints by default, with Ashcon as a fallback when the primary API fails or returns no textures.
+By default, Sparrow reads a local online player's texture first, then falls back to an API. External profile lookup uses Mojang's name and UUID endpoints by default, with Ashcon as a fallback when the primary API fails or returns no textures.
 
 `--force` still follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
 
@@ -54,9 +54,9 @@ head:
       ttl: 24h
 ```
 
-`source-order` may contain either or both sources without duplicates. The memory cache holds up to 4,096 keys for 5 minutes. Redis caches entries for 24 hours using the shared connection in `config.yml`. Each cache has its own `enabled` switch and configurable `ttl`. Cache lifetime starts when data is fetched: reads do not renew it, and refilling memory from Redis preserves the original data age.
+`source-order` may contain either or both sources without duplicates. The memory cache holds up to 4,096 keys for 5 minutes. Redis caches entries for 24 hours using the shared connection in `config.yml`. Each cache has its own `enabled` switch and configurable `ttl`. A cached head expires a fixed time after it was fetched; using it does not extend that time.
 
-Durations support `d`, `h`, `m`, `s`, and `ms`, including combinations such as `1m30s`, and must be greater than zero. Failed lookups are not cached. If a Redis read or write fails, Sparrow still attempts to fetch and return the head data.
+Durations support `d`, `h`, `m`, `s`, and `ms`, including combinations such as `1m30s`, and must be greater than zero. Failed lookups are not cached. If Redis is unavailable, heads can still be fetched.
 
 ### Custom profile endpoints
 
@@ -76,7 +76,7 @@ head:
 
 `name-url` must contain `{name}`, which is replaced with the URL-encoded player name. `profile-url` must contain `{uuid}` (without dashes) or `{uuid-dashed}` (with dashes). The service must return Mojang-compatible JSON: `id` and `name` for name lookups, and a player profile with a `textures` property for profile lookups. UUID lookups go directly to the profile endpoint.
 
-Use `head.api.headers` for required request headers, such as `Authorization`. These headers are sent only to `name-url` and `profile-url`, not to fallback endpoints. Changing the primary URLs, fallback list or its order, or headers uses a separate cache so that results from the previous source configuration are not reused.
+Use `head.api.headers` for required request headers, such as `Authorization`. These headers are sent only to `name-url` and `profile-url`, not to fallback endpoints. After you change the URLs, the fallback list or its order, or the headers, heads cached under the old settings are not reused.
 
 ### Automatic fallback
 
@@ -91,11 +91,9 @@ Each URL must contain `{player}`. Sparrow replaces it with the URL-encoded name 
 
 Fallback starts when the primary API reports an error, is rate limited, exceeds its individual HTTP timeout, returns no player, or provides no textures. Sparrow tries each backup in order and stops at the first valid textured profile. Successful results use the existing memory and Redis caches; `--force` also bypasses cached fallback results.
 
-If every endpoint reports no profile or no textures, Sparrow reports that the head was not found. If any endpoint fails and none succeeds, it reports the last error. All fallback requests share the original total lookup timeout; switching endpoints does not restart that timeout.
+If no endpoint finds the player or a texture, Sparrow reports that the head was not found. If an endpoint fails and none succeeds, the last error is reported. Trying backup endpoints does not extend `head.request-timeout`.
 
-## Async lookups and timeouts
-
-Cache and HTTP lookups run asynchronously, so waiting for external services does not block the server's main thread. Online profile access, item creation, and head drops run on the relevant player's thread.
+## Timeouts
 
 | Setting | Default | Scope |
 | - | - | - |
@@ -103,4 +101,4 @@ Cache and HTTP lookups run asynchronously, so waiting for external services does
 | `head.api.connect-timeout` | `3s` | Time allowed to establish an HTTP connection to a primary or fallback endpoint. |
 | `head.api.request-timeout` | `5s` | Time allowed for each primary or fallback HTTP request. |
 
-When a lookup times out, Sparrow interrupts it and notifies the command sender, even with `--silent`. Disabling or reloading the head module cancels pending requests. Old requests cannot deliver heads after the module is enabled again.
+When a lookup times out, the sender is told, even with `--silent`. Disabling or reloading the feature cancels lookups that are still in progress.

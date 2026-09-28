@@ -1,0 +1,48 @@
+# Maintenance
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/maintenance>
+
+When maintenance mode is on, online players without the bypass permission are removed from the server and new players cannot join. Players who stay see a boss bar notice.
+
+## Commands and permissions
+
+| Command or permission | Purpose | Default command permission |
+| - | - | - |
+| `/maintenance [true\|false]` | Turn maintenance mode on or off; without an argument, show the current state. | `sparrow.command.maintenance` |
+| `sparrow.bypass.maintenance` | Stay on or join the server during maintenance. | — |
+
+The full entry point is `/sparrow maintenance`. The state is saved to `features.yml` and survives restarts.
+
+```text title="Examples"
+/maintenance
+/maintenance true
+/maintenance false
+```
+
+## Who can stay or join
+
+Players with `sparrow.bypass.maintenance` can stay on the server and join during maintenance. Everyone else is removed, and anyone trying to join sees the maintenance message instead.
+
+- With LuckPerms installed, the permission set in LuckPerms is used. A player explicitly set to `false` cannot join, even as an operator.
+- Without LuckPerms, or if the permission is not set, only operators can join.
+- Permissions granted only for a specific world, game mode, or other context do not count when joining.
+
+When maintenance is turned on, players already online are checked with their current permissions.
+
+## Configuration
+
+```yaml title="features.yml · maintenance"
+maintenance:
+  enabled: true
+  active: false
+  boss-bar:
+    enabled: true
+    color: RED
+    overlay: PROGRESS
+```
+
+`active` is the current maintenance state and is saved automatically by the command. `boss-bar.color` accepts `PINK`, `BLUE`, `RED`, `GREEN`, `YELLOW`, `PURPLE`, and `WHITE`; `boss-bar.overlay` accepts `PROGRESS`, `NOTCHED_6`, `NOTCHED_10`, `NOTCHED_12`, and `NOTCHED_20`.
+
+Edit the boss bar title and kick message in the translation files under `maintenance.boss_bar` and `maintenance.kick`.
+
+Disabling the feature with `/sparrow feature-disable maintenance` removes the boss bar and stops refusing players, but keeps the saved state. Enabling it again restores the saved state.

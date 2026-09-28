@@ -1,0 +1,47 @@
+# Player limit
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/player-limit>
+
+Use `/max-players` to change the server's player limit at runtime without a restart. Players with the bypass permission can join when the server is full.
+
+## Commands and permissions
+
+| Command or permission | Purpose | Default command permission |
+| - | - | - |
+| `/max-players [amount]` | Set the player limit; `-1` restores the value from `server.properties`; without an argument, show online players and the current limit. | `sparrow.command.max-players` |
+| `sparrow.bypass.player-limit` | Join even when the server is full. | — |
+
+The full entry point is `/sparrow max-players`. Lowering the limit does not remove players already online; it only affects later joins.
+
+```text title="Examples"
+/max-players
+/max-players 100
+/max-players -1
+```
+
+The limit is saved to `features.yml` and survives restarts; `server.properties` is never modified. Disabling the feature with `/sparrow feature-disable player-limit` restores the value from `server.properties`.
+
+## Joining a full server
+
+Players with `sparrow.bypass.player-limit` can join when the server is full.
+
+- With LuckPerms installed, the permission set in LuckPerms is used.
+- Without LuckPerms, or if the permission is not set, only operators can bypass the limit.
+- Permissions granted only for a specific world, game mode, or other context do not count when joining.
+- On Spigot servers, the player's regular permissions are used instead.
+
+Operators with `bypassesPlayerLimit` set to `true` in the vanilla `ops.json` can still bypass the limit.
+
+## Configuration
+
+```yaml title="features.yml · player-limit"
+player-limit:
+  enabled: true
+  max-players: -1
+```
+
+When `max-players` is `-1`, the `max-players` value from `server.properties` is used. The command saves changes automatically.
+
+> **Note**
+>
+> With Velocity or BungeeCord, the proxy has its own player limit and server list display. This feature only affects the current backend server.

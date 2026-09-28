@@ -6,7 +6,7 @@ Every link below points to the Markdown version of that page. All pages combined
 
 简体中文: [llms.txt](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/llms.txt)
 
-- [Introduction](https://nanamoserver.github.io/sparrow-wiki/index.md): Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, and region highlighting.
+- [Introduction](https://nanamoserver.github.io/sparrow-wiki/index.md): Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, region highlighting, and network-wide bans.
 - [Installation](https://nanamoserver.github.io/sparrow-wiki/installation.md): Install Sparrow, assign a server ID, and connect Redis and persistent storage.
 - [Permissions & Commands Quick Reference](https://nanamoserver.github.io/sparrow-wiki/commands.md): <argument> is required; [argument] is optional. player generally means a local online player, and targets accepts player or entity selectors.
 - [Frequently Asked Questions](https://nanamoserver.github.io/sparrow-wiki/faq.md)
@@ -18,3 +18,6 @@ Every link below points to the Markdown version of that page. All pages combined
 - [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.md): Use /patrol to visit online players on the current server in rotation. Players not inspected recently are selected first; newly joined players enter at the front of the queue.
 - [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.md): Select a region and show glowing block outlines to players. Use it to explain building boundaries or inspect an area. The display is sent to selected viewers without changing real blocks.
 - [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.md): Use /head to fetch heads from player names or UUIDs. The command detects the source automatically. Player lookups support online profiles and external APIs, with memory and Redis caches to reduce repeated requests.
+- [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.md): When maintenance mode is on, online players without the bypass permission are removed from the server and new players cannot join. Players who stay see a boss bar notice.
+- [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.md): Use /max-players to change the server's player limit at runtime without a restart. Players with the bypass permission can join when the server is full.
+- [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.md): Ban accounts, IP addresses, or IP ranges on every server in your network. Banned players cannot join, and players who are already online are removed at once, whichever server they are on.

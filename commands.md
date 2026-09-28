@@ -6,6 +6,8 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/commands>
 
 These are the default entry points and permissions. Short commands also accept `/sparrow <command>`. Restart after editing `commands.yml`.
 
+Commands that belong to a feature, such as `/maintenance` or `/ban`, are hidden from players and refused with a notice while that feature is disabled. They reappear as soon as the feature is enabled again.
+
 ## ⚙️ Plugin management
 
 | Command | Purpose | Default permission |
@@ -14,6 +16,36 @@ These are the default entry points and permissions. Short commands also accept `
 | `/sparrow feature-list [page]` | List feature states by page. | `sparrow.command.admin.feature` |
 | `/sparrow feature-enable <feature>` | Enable a feature and save its switch. | `sparrow.command.admin.feature` |
 | `/sparrow feature-disable <feature>` | Disable a feature and save its switch. | `sparrow.command.admin.feature` |
+
+## 🚧 Server access
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/maintenance [true\|false]` | Turn maintenance mode on or off, or show its state. | `sparrow.command.maintenance` |
+| `/max-players [amount]` | Change the player limit at runtime, or show online players and the limit. | `sparrow.command.max-players` |
+
+## 🔨 Moderation
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/kick <player> [reason] [-s]` | Kick a player from whichever server they are on; the kick screen shows the reason and who kicked them. | `sparrow.command.kick` |
+| `/ban <player> [reason] [-t <time>] [-I] [-s]` | Ban an account network-wide; `-I` also bans its last login IP. | `sparrow.command.ban` |
+| `/ban-ip <ip> [reason] [-t <time>] [-s]` | Ban an IP address or range such as `1.2.3.*`. | `sparrow.command.ban-ip` |
+| `/unban <target> [-s]` | Lift bans by player name, UUID, IP, or punishment ID. | `sparrow.command.unban` |
+| `/ban-history [target] [options]` | Browse ban records with operator, time, and active filters. | `sparrow.command.ban-history` |
+
+`/kick` works for any player online in the network. `--silent` / `-s` hides the success message from the executor; on ban commands it also skips staff notices.
+
+## 🔎 Player records
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/ip <player>` | Show a player's last login IP and time, with a button to list players on the same IP. | `sparrow.command.ip` |
+| `/ip-history <target> [page]` | List players whose last login IP matches an IP, a range such as `1.2.3.*`, or a player's last login IP. | `sparrow.command.ip-history` |
+| `/player-uuid <player>` | Look up a player's UUID by name. | `sparrow.command.player-uuid` |
+| `/player-name <uuid>` | Look up the last name used by a UUID. | `sparrow.command.player-name` |
+
+These commands only know players who have joined your servers; nothing is looked up from Mojang. `player` here can be any such player, whether online or not, and `/ip` and `/ip-history` also accept a UUID. The last login IP is updated every time a player joins; only IPv4 addresses are recorded. `/ip-history` shows 8 players per page with their online status or last server, last login time, and IP.
 
 ## 🧍 Player and entity state
 
@@ -62,7 +94,7 @@ These are the default entry points and permissions. Short commands also accept `
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/enchant <targets> <enchantment> [level] [--slot <slot>]` | Edit an enchantment in a target entity’s equipment slot. | `sparrow.command.enchant` |
+| `/enchant <targets> <enchantment> [level] [--slot <slot>] [--check]` | Edit an enchantment in a target entity’s equipment slot; a negative level removes it. `--check` applies the vanilla `/enchant` rules. | `sparrow.command.enchant` |
 | `/item_data [--full] [--chat]` | Inspect the main-hand item’s data; players only. | `sparrow.command.item-data` |
 | `/item_name <player> [name] [options]` | Read or edit the main-hand item\_name component. | `sparrow.command.item-name` |
 | `/custom_name <player> [name] [options]` | Read or edit the main-hand custom\_name component. | `sparrow.command.custom-name` |
@@ -96,5 +128,10 @@ These are the default entry points and permissions. Short commands also accept `
 | Permission | Purpose |
 | - | - |
 | `sparrow.bypass.patrol` | Exclude the holder from patrol selection. |
+| `sparrow.bypass.maintenance` | Stay on or join the server during maintenance. |
+| `sparrow.bypass.player-limit` | Join even when the server is full. |
+| `sparrow.notify.ban` | Receive ban and unban notices from every server. Only operators have it by default. |
 
-See [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.mdx), [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx), and [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.mdx) for their complete usage.
+With `--check`, `/enchant` follows the vanilla command: the level cannot exceed the enchantment's maximum level, the item must support the enchantment, and the enchantment must not conflict with existing ones, including the same enchantment already on the item. Enchanted books are not supported items in vanilla, so they are refused as well. Removing an enchantment is never checked.
+
+See [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.mdx), [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx), [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.mdx), [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx), [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx), and [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx) for their complete usage.

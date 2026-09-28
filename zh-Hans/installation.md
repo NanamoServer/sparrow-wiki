@@ -8,7 +8,7 @@
 
 当前版本提供 Paper、Folia 和 Spigot 加载入口，插件声明的最低 API 版本为 **1.21.11**。Spigot 请使用 **26.2 或更新的适配版本**。具体服务端版本应与所用 Sparrow 构建匹配。
 
-插件以 Java 21 编译；运行时还需要满足所用 Minecraft 服务端的 Java 要求。PlaceholderAPI 是可选插件，需要解析其占位符时再安装。
+插件以 Java 21 编译；运行时还需要满足所用 Minecraft 服务端的 Java 要求。PlaceholderAPI 是可选插件，需要解析其占位符时再安装。LuckPerms 也是可选插件，安装后[维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.mdx)和[人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.mdx)会在玩家进入前按 LuckPerms 权限判断能否绕过；未安装时只有 OP 可以绕过。
 
 **Redis 和一种持久化数据库是当前版本启动所需的服务。** 数据库可选 MongoDB、MySQL、MariaDB 或 PostgreSQL。
 
@@ -78,7 +78,7 @@ database:
 
 ## 调整功能和命令
 
-`features.yml` 管理功能模块；`commands.yml` 管理命令注册。以巡查为例：
+`features.yml` 管理功能模块；`commands.yml` 管理命令的开关、入口和权限。以巡查为例：
 
 ```yaml title="features.yml · 巡查"
 patrol:
@@ -96,7 +96,7 @@ patrol:
   permission: sparrow.command.patrol
 ```
 
-注意功能配置使用 `enabled`，命令配置使用 `enable`。关闭命令入口与停用功能模块是两个独立操作。
+注意功能配置使用 `enabled`，命令配置使用 `enable`。关闭命令入口与停用功能模块是两个独立操作：在 `commands.yml` 中关闭的命令在服务器上完全不存在；停用功能模块时，它自带的命令会对玩家隐藏，执行时提示功能未启用，重新启用模块后立即恢复。
 
 | 修改内容 | 生效方式 |
 | - | - |
