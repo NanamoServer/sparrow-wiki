@@ -21,10 +21,14 @@ title: 👥 人数上限
 
 设置的上限保存在 `features.yml`，服务器重启后仍然生效；`server.properties` 不会被修改。使用 `/sparrow feature-disable player-limit` 停用此功能时，上限恢复为 `server.properties` 的值。
 
-## 满员时的绕过判断
+## 满员时进入
 
-- Paper：在玩家真正进入服务器之前判断。安装了 LuckPerms 时以 LuckPerms 的结果为准，只使用服务器级别的上下文；未安装 LuckPerms 或权限节点未设置时，只有 OP 可以绕过。
-- Spigot：在登录事件中直接按玩家权限判断。
+拥有 `sparrow.bypass.player-limit` 的玩家在服务器满员时仍可进入。
+
+- 安装了 LuckPerms 时，以 LuckPerms 中设置的权限为准。
+- 未安装 LuckPerms，或没有设置该权限时，只有 OP 可以绕过上限。
+- 只在特定世界、游戏模式等条件下授予的权限，在进入服务器时不生效。
+- 在 Spigot 服务器上，直接使用玩家的普通权限判断。
 
 原版 `ops.json` 中 `bypassesPlayerLimit` 为 `true` 的 OP 仍然可以绕过上限。
 

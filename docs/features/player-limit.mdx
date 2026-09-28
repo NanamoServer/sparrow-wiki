@@ -21,10 +21,14 @@ The full entry point is `/sparrow max-players`. Lowering the limit does not remo
 
 The limit is saved to `features.yml` and survives restarts; `server.properties` is never modified. Disabling the feature with `/sparrow feature-disable player-limit` restores the value from `server.properties`.
 
-## Bypassing a full server
+## Joining a full server
 
-- Paper: checked before the player actually joins. With LuckPerms installed, the LuckPerms result is used with server-level context only. Without LuckPerms, or when the node is not set, only operators can bypass.
-- Spigot: checked during the login event using the player's permissions directly.
+Players with `sparrow.bypass.player-limit` can join when the server is full.
+
+- With LuckPerms installed, the permission set in LuckPerms is used.
+- Without LuckPerms, or if the permission is not set, only operators can bypass the limit.
+- Permissions granted only for a specific world, game mode, or other context do not count when joining.
+- On Spigot servers, the player's regular permissions are used instead.
 
 Operators with `bypassesPlayerLimit` set to `true` in the vanilla `ops.json` can still bypass the limit.
 

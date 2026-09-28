@@ -91,7 +91,7 @@ database:
 
 ## 调整功能和命令
 
-`features.yml` 管理功能模块；`commands.yml` 管理命令注册。以巡查为例：
+`features.yml` 管理功能模块；`commands.yml` 管理命令的开关、入口和权限。以巡查为例：
 
 ~~~yaml title="features.yml · 巡查"
 patrol:
@@ -109,7 +109,7 @@ patrol:
   permission: sparrow.command.patrol
 ~~~
 
-注意功能配置使用 `enabled`，命令配置使用 `enable`。关闭命令入口与停用功能模块是两个独立操作。
+注意功能配置使用 `enabled`，命令配置使用 `enable`。关闭命令入口与停用功能模块是两个独立操作：在 `commands.yml` 中关闭的命令在服务器上完全不存在；停用功能模块时，它自带的命令会对玩家隐藏，执行时提示功能未启用，重新启用模块后立即恢复。
 
 | 修改内容 | 生效方式 |
 | --- | --- |

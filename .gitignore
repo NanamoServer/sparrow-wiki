@@ -26,6 +26,7 @@ src/fonts/unifont.woff2.manifest
 
 # 执行与接手文档，只在本地保留，不进仓库
 WIKI-PLAN.md
+AGENTS.md
 
 # Local preview logs
 .preview.*.log

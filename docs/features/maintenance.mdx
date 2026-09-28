@@ -19,17 +19,15 @@ The full entry point is `/sparrow maintenance`. The state is saved to `features.
 /maintenance false
 ~~~
 
-## When players are refused
+## Who can stay or join
 
-During maintenance, players are refused in the **login phase**, before the configuration phase starts. Join handling from other plugins, such as sending resource packs, does not run for them.
+Players with `sparrow.bypass.maintenance` can stay on the server and join during maintenance. Everyone else is removed, and anyone trying to join sees the maintenance message instead.
 
-In the login phase the player has not joined yet, so the bypass permission is read from the permission plugin's cache:
+- With LuckPerms installed, the permission set in LuckPerms is used. A player explicitly set to `false` cannot join, even as an operator.
+- Without LuckPerms, or if the permission is not set, only operators can join.
+- Permissions granted only for a specific world, game mode, or other context do not count when joining.
 
-- With LuckPerms installed, the LuckPerms result is used. Only server-level context applies; permissions granted for a specific world, game mode, or similar context do not.
-- Without LuckPerms, or when the node is not set, only operators can join.
-- A player explicitly set to `false` in LuckPerms cannot join, even as an operator.
-
-If maintenance is turned on after a player has joined, Sparrow checks the player's current permissions again and removes them if needed.
+When maintenance is turned on, players already online are checked with their current permissions.
 
 ## Configuration
 

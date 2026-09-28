@@ -91,7 +91,7 @@ Restart, check the console for connection results, and run `/sparrow feature-lis
 
 ## Features and commands
 
-`features.yml` controls modules; `commands.yml` controls command registration. For example:
+`features.yml` controls features; `commands.yml` controls which commands exist, their entry points, and their permissions. For example:
 
 ~~~yaml title="features.yml · Patrol"
 patrol:
@@ -109,7 +109,7 @@ patrol:
   permission: sparrow.command.patrol
 ~~~
 
-Features use `enabled`; commands use `enable`. Disabling an entry point and disabling its feature are separate actions.
+Features use `enabled`; commands use `enable`. Disabling an entry point and disabling its feature are separate actions. A command turned off in `commands.yml` does not exist on the server at all, while the commands of a disabled feature are hidden from players and answer with a notice until the feature is enabled again.
 
 | Setting | How to apply |
 | --- | --- |
