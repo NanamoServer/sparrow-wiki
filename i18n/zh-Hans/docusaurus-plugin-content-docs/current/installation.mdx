@@ -89,6 +89,28 @@ database:
 
 保存后重新启动服务器，检查控制台的 Redis、数据库连接结果，再执行 `/sparrow feature-list` 检查功能状态。
 
+## 代理插件 \{#proxy-plugin}
+
+如果你的服务器通过 Velocity 或 BungeeCord（包括 Waterfall）组成群组服，还需要在代理上安装 Sparrow 代理插件：
+
+| 代理 | 文件 |
+| --- | --- |
+| Velocity | `Sparrow-velocity-<版本>.jar` |
+| BungeeCord / Waterfall | `Sparrow-bungeecord-<版本>.jar` |
+
+放入代理的 `plugins/` 目录并启动一次代理，插件会生成 `config.yml`：Velocity 在 `plugins/sparrow/` 下，BungeeCord 在 `plugins/Sparrow/` 下。把它指向后端服务器使用的同一个 Redis，数据库编号也要一致：
+
+~~~yaml title="代理 config.yml · Redis"
+redis:
+  url: 'redis://localhost:6379/0'
+  username: ''
+  password: ''
+~~~
+
+修改后重启代理。连接成功时控制台会显示 `Connected to Redis`。
+
+安装代理插件后，`/kick` 和[全服封禁](./features/ban.mdx)会让玩家与整个群组服断开连接，并显示原因。不安装时，玩家只会在大约一秒后被移出当前所在的服务器，代理可能会把他送到其他服务器。其他功能不依赖代理插件。
+
 ## 调整功能和命令
 
 `features.yml` 管理功能模块；`commands.yml` 管理命令的开关、入口和权限。以巡查为例：

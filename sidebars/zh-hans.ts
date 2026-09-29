@@ -17,6 +17,7 @@ const sidebars: SidebarsConfig = {
         'features/maintenance',
         'features/player-limit',
         'features/ban',
+        'features/back',
       ],
     },
     'faq',

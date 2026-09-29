@@ -1,0 +1,64 @@
+---
+title: ↩️ Back
+---
+
+Use `/back` to return to where you were before your last teleport or death, even if that was on another server.
+
+## Commands and permissions
+
+| Command | Purpose | Default command permission |
+| --- | --- | --- |
+| `/back [player]` | Return a player to their previous location. | `sparrow.command.back` |
+
+The full entry point is `/sparrow back [player]`. Without `player`, the sender goes back; the console must name a player.
+
+~~~text title="Examples"
+/back
+/back Steve
+~~~
+
+## What counts as a previous location
+
+- Where the player stood before a teleport made by a command or another plugin. Which kinds of teleports count is configurable.
+- Where the player died, when `record-death` is on.
+- After switching servers, where the player left the previous server, until something new is recorded on the current server.
+
+Each player has only one previous location, and a new one replaces the old. `/back` is itself a teleport, so running it again takes the player back to where they just were.
+
+These are not recorded:
+
+- Moves shorter than one block within the same world, such as turning around with `/look`.
+- Teleports in the first few seconds after connecting to a server (`join-grace-seconds`). Spawn plugins often move players at that moment. If your server sends a resource pack, the time spent loading it counts toward this period.
+- Teleports cancelled by other plugins.
+
+## Returning to another server
+
+When nothing has been recorded on the current server yet, `/back` looks at where the player last left a server. If that was a different server and the player switched from it within `server-switch-window-seconds`, `/back` sends them back to that spot through the proxy. Logging out and joining again later is not a switch, so `/back` then reports that there is nowhere to go back to.
+
+If the other server is offline, or the world of that location no longer exists, the player is told so and stays where they are.
+
+## When previous locations are lost
+
+Previous locations are kept only while the player stays on the server. They are cleared when the player leaves that server, when the feature is disabled, and when the server restarts or crashes. If the previous server crashed before the player left it, `/back` cannot return there.
+
+## Configuration
+
+~~~yaml title="features.yml · back"
+back:
+  enabled: true
+  record-death: true
+  teleport-causes:
+    - COMMAND
+    - PLUGIN
+  join-grace-seconds: 3
+  server-switch-window-seconds: 30
+~~~
+
+| Setting | Meaning |
+| --- | --- |
+| `record-death` | Record the death location. |
+| `teleport-causes` | Kinds of teleports that record the previous location. Common values: `COMMAND` (commands), `PLUGIN` (plugins), `NETHER_PORTAL`, `END_PORTAL`, `END_GATEWAY`, `ENDER_PEARL`, `SPECTATE`. Portals are not included by default. An unknown value keeps the feature from starting and is reported in the console. |
+| `join-grace-seconds` | Teleports within this many seconds after connecting are not recorded. |
+| `server-switch-window-seconds` | How recently the player must have left the previous server for `/back` to return there. |
+
+Apply changes with `/sparrow reload`.

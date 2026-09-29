@@ -36,6 +36,8 @@ Commands that belong to a feature, such as `/maintenance` or `/ban`, are hidden 
 
 `/kick` works for any player online in the network. `--silent` / `-s` hides the success message from the executor; on ban commands it also skips staff notices.
 
+With Velocity or BungeeCord, install the [proxy plugin](./installation.mdx#proxy-plugin) so kicked and banned players are disconnected from the whole network. Without it, they are removed from their current server after about a second, and the proxy may move them to another server.
+
 ## 🔎 Player records
 
 | Command | Purpose | Default permission |
@@ -60,6 +62,12 @@ These commands only know players who have joined your servers; nothing is looked
 | `/burn <targets> <time>` | Set target entities on fire. | `sparrow.command.burn` |
 | `/extinguish [targets]` | Extinguish target entities. | `sparrow.command.extinguish` |
 | `/look [targets] <facing-option>` | Change the facing of target entities. | `sparrow.command.look` |
+| `/hat [player]` | Wear one of the main-hand items on the head. | `sparrow.command.hat` |
+| `/knockback <x> <y> <z> [player]` | Push a player in the given direction. | `sparrow.command.knockback` |
+
+`/hat` wears one item and leaves the rest of the stack in the hand. The previous helmet goes back to the hand if it is now empty, otherwise into the inventory, and is dropped at the player's feet when the inventory is full. A helmet with Curse of Binding cannot be replaced, except in Creative mode.
+
+`/knockback` uses blocks per tick: `/knockback 0 1 0` launches the player straight up, and `/knockback 2 0.5 0` pushes them east. Like being hit, the push replaces the player's current movement.
 
 ## 🔍 Patrol and command execution
 
@@ -76,6 +84,10 @@ These commands only know players who have joined your servers; nothing is looked
 | `/top-block [targets]` | Move targets to the highest usable position in their current block column. | `sparrow.command.top-block` |
 | `/tp-offline <player> [targets] [--silent]` | Teleport targets to the named player’s last recorded location. | `sparrow.command.tp-offline` |
 | `/server <server> [targets]` | Request a backend transfer through the proxy. | `sparrow.command.server` |
+| `/bed [player]` | Teleport a player to their respawn point, such as their bed. | `sparrow.command.bed` |
+| `/back [player]` | Return a player to their previous location, including across servers. | `sparrow.command.back` |
+
+`/bed` uses the point where the player would respawn: their bed, a charged respawn anchor, or a point set with `/spawnpoint`. If the bed was broken or is blocked, the player is told they have no bed to return to.
 
 ## 🛠️ Portable workstations and containers
 
@@ -134,4 +146,4 @@ These commands only know players who have joined your servers; nothing is looked
 
 With `--check`, `/enchant` follows the vanilla command: the level cannot exceed the enchantment's maximum level, the item must support the enchantment, and the enchantment must not conflict with existing ones, including the same enchantment already on the item. Enchanted books are not supported items in vanilla, so they are refused as well. Removing an enchantment is never checked.
 
-See [Patrol](./features/patrol.mdx), [Highlight](./features/highlight.mdx), [Heads](./features/head.mdx), [Maintenance](./features/maintenance.mdx), [Player limit](./features/player-limit.mdx), and [Bans](./features/ban.mdx) for their complete usage.
+See [Patrol](./features/patrol.mdx), [Highlight](./features/highlight.mdx), [Heads](./features/head.mdx), [Maintenance](./features/maintenance.mdx), [Player limit](./features/player-limit.mdx), [Bans](./features/ban.mdx), and [Back](./features/back.mdx) for their complete usage.

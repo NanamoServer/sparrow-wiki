@@ -59,6 +59,7 @@ Every ban gets a random ID such as `#K7Q2M9XD`. It appears in the command result
 - Banned players cannot join any server. During [Maintenance](./maintenance.mdx) they still see the ban reason rather than the maintenance message.
 - A player sees "You are banned" when their own account is banned, and "Your IP address is banned" when the address they connect from is banned.
 - If Sparrow cannot reach the database while a player is joining, the player is let in and the error is shown in the console.
+- With Velocity or BungeeCord, install the [proxy plugin](../installation.mdx#proxy-plugin). With it, banned players are disconnected from the whole network and see the ban reason; without it, the proxy may first try to send them to another server.
 
 ## Staff notices and `-s`
 
