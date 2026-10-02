@@ -76,6 +76,28 @@ database:
 
 保存后重新启动服务器，检查控制台的 Redis、数据库连接结果，再执行 `/sparrow feature-list` 检查功能状态。
 
+## 代理插件 {#proxy-plugin}
+
+如果你的服务器通过 Velocity 或 BungeeCord（包括 Waterfall）组成群组服，还需要在代理上安装 Sparrow 代理插件：
+
+| 代理 | 文件 |
+| - | - |
+| Velocity | `Sparrow-velocity-<版本>.jar` |
+| BungeeCord / Waterfall | `Sparrow-bungeecord-<版本>.jar` |
+
+放入代理的 `plugins/` 目录并启动一次代理，插件会生成 `config.yml`：Velocity 在 `plugins/sparrow/` 下，BungeeCord 在 `plugins/Sparrow/` 下。把它指向后端服务器使用的同一个 Redis，数据库编号也要一致：
+
+```yaml title="代理 config.yml · Redis"
+redis:
+  url: 'redis://localhost:6379/0'
+  username: ''
+  password: ''
+```
+
+修改后重启代理。连接成功时控制台会显示 `Connected to Redis`。
+
+安装代理插件后，`/kick` 和[全服封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.mdx)会让玩家与整个群组服断开连接，并显示原因。不安装时，玩家只会在大约一秒后被移出当前所在的服务器，代理可能会把他送到其他服务器。[公共传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.mdx)和[返回上一位置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back.mdx)的跨服传送也需要代理插件，本服传送可以正常使用。
+
 ## 调整功能和命令
 
 `features.yml` 管理功能模块；`commands.yml` 管理命令的开关、入口和权限。以巡查为例：
@@ -101,6 +123,7 @@ patrol:
 | 修改内容 | 生效方式 |
 | - | - |
 | `features.yml` 的功能设置 | `/sparrow reload` |
+| `config.yml` 的倒计时显示与音效 | `/sparrow reload` |
 | 功能模块开关 | `/sparrow feature-enable <feature>` 或 `feature-disable`，会保存到文件 |
 | `commands.yml` 的命令开关、入口、权限 | 重启服务器 |
 | Redis、数据库连接或 `server-id` | 重启服务器 |

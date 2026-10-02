@@ -2,38 +2,45 @@
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head>
 
-使用 `/head`，根据玩家名称或 UUID 获取头颅。命令会自动识别来源；玩家资料查询支持在线玩家和外部 API，并通过内存与 Redis 缓存减少重复请求。
+`/head` 可以按玩家名或 UUID 获取头颅，并指定数量和接收玩家。
 
 ## 命令与权限
 
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
-| `/head [source] [选项]` | 按玩家名称或 UUID 获取头颅；玩家省略来源时使用自己的名称。 | `sparrow.command.head` |
+| `/head [source] [amount]` | 为自己获取头颅；省略来源时使用自己的名称。 | `sparrow.command.head` |
+| `/head <source> <amount> <player> [force] [--silent]` | 为指定玩家获取头颅；`force` 为 `true` 时重新获取。 | `sparrow.command.head` + `sparrow.command.head.other` |
 
-完整入口为 `/sparrow head`，所有来源共用一个命令和权限。UUID 可以带连字符，也可以使用连续的 32 位十六进制形式。
+完整入口为 `/sparrow head`。UUID 可以带连字符，也可以使用连续的 32 位十六进制形式。参数依次为 `source`、`amount`、`player`、`force`，使用后面的参数时必须先填写前面的参数。
 
-| 选项 | 说明 |
+`source` 的 Tab 补全包含共用 Sparrow Redis 的各台服务器上的在线玩家名。也可以手动输入离线玩家名或 UUID。`player` 参数选择的是本服接收头颅的玩家。
+
+| 参数或选项 | 说明 |
 | - | - |
-| `--player <targets>` | 接收头颅的玩家名或玩家选择器，玩家执行时默认自己。 |
-| `--amount <amount>` | 数量，范围 1–6400，默认 1。 |
-| `--force` | 跳过内存和 Redis 缓存读取，重新获取；成功取得 API 结果后刷新缓存。 |
-| `--silent` / `-s` | 隐藏成功反馈；超时和失败仍会提示。 |
+| `source` | 头颅纹理来源的玩家名或 UUID，默认自己的名称，只需要基础权限。 |
+| `amount` | 数量，范围 1–6400，默认 1，基础权限即可使用。 |
+| `player` | 接收头颅的玩家名或玩家选择器，省略时默认自己。需要 `.other`，填写自己的名字或 `@s` 也一样。 |
+| `force` | 设为 `true` 时跳过缓存，重新获取。默认为 `false`，需要 `.other`。 |
+| `--silent` / `-s` | 隐藏成功反馈；超时和失败仍会提示。使用前必须填完四个位置参数，不需要重新获取时也要填写 `false`。 |
 
-控制台需要明确来源和 `--player`。头颅在接收玩家处掉落，按每组最多 64 个分组处理。
+没有 `.other` 时，只能使用 `source` 和 `amount`。`player` 和 `force` 所需的权限是 `commands.yml` 中的基础权限加上 `.other`。
+
+控制台必须指定来源、数量和接收者。头颅掉在接收玩家处，每组最多 64 个。
 
 ```text title="示例"
 /head
-/head Notch --amount 1
-/head Notch --player Alex --force
+/head Notch
+/head Notch 16
+/head Notch 1 Alex true
+/head Notch 1 @a false --silent
 /head 069a79f4-44e9-4726-a5be-fca90e38aaf5
-/head --force
 ```
 
 ## 获取来源与缓存
 
 默认优先读取本服在线玩家的纹理，找不到时再查询 API。外部资料查询默认使用 Mojang 的名称和 UUID 资料接口；主接口失败或没有返回纹理时，默认回退到 Ashcon。
 
-`--force` 仍遵循 `source-order`。如果在线玩家已有纹理，会直接使用当前在线资料；需要始终从外部接口获取时，将来源设置为 `source-order: [api]`。
+`force` 为 `true` 时，按 `source-order` 选择来源。如果在线玩家已有纹理，会直接使用当前在线资料；需要始终从外部接口获取时，将来源设置为 `source-order: [api]`。
 
 下面是 `features.yml` 中头颅配置的一部分，保留文件中的其他分组：
 
@@ -89,7 +96,7 @@ head:
 | Ashcon | `uuid`、`username` | `textures.raw.value`，以及可选的 `textures.raw.signature` |
 | Mojang | `id`、`name` | `properties` 中名为 `textures` 的属性，包含 `value` 和可选的 `signature` |
 
-主接口报错、限流、单次 HTTP 请求超时、未找到玩家或没有纹理时，会按列表顺序尝试备用接口，取得有效纹理后立即停止。成功结果沿用现有内存和 Redis 缓存；`--force` 同样会跳过已缓存的备用接口结果。
+主接口报错、限流、单次 HTTP 请求超时、未找到玩家或没有纹理时，会按列表顺序尝试备用接口，取得有效纹理后立即停止。成功结果沿用现有内存和 Redis 缓存；`force` 为 `true` 时，也会跳过备用接口的缓存。
 
 所有接口都没有找到玩家或纹理时，提示未找到头颅；如果有接口出错且最终没有成功，提示最后一次错误。尝试备用接口不会延长 `head.request-timeout` 的总时间。
 

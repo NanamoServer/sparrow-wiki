@@ -1,0 +1,88 @@
+# 公共传送点
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp>
+
+Warp 是各台 Sparrow 服务器共用的命名传送点。玩家可以通过命令前往，也可以在聊天列表中点击名称传送。前往其他服务器需要安装 [Sparrow 代理插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.mdx#proxy-plugin)。
+
+## 命令与权限
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/warp <name>` | 自己前往传送点。 | `sparrow.command.warp` |
+| `/warp <name> <player>` | 让本服在线玩家前往传送点。 | `sparrow.command.warp` + `sparrow.command.warp.other` |
+| `/set-warp <name>` | 在当前位置创建传送点，或把已有传送点移到这里，仅玩家可执行。 | `sparrow.command.set-warp` |
+| `/del-warp <name>` | 立即删除传送点。 | `sparrow.command.del-warp` |
+| `/warp-list [page]` | 查看聊天列表，每页 10 个传送点。 | `sparrow.command.warp-list` |
+| `/edit-warp <name>` | 打开传送点的信息与管理面板。 | `sparrow.command.edit-warp` |
+
+每条命令也可以使用 `/sparrow <命令>` 入口，例如 `/sparrow warp-list`。控制台执行 `/warp` 时必须指定玩家。填写自己的名字也需要 `.other`；没有该权限时，玩家参数不会出现在补全中，手动输入也无法执行。
+
+名称不区分大小写，最长 32 个字符，默认允许字母（包括中文）、数字、`_` 和 `-`，不能以 `-` 开头。`name-pattern` 可以调整允许的字符，长度限制仍然适用。名称中不要使用空格，以便在各条传送点命令中使用。
+
+```text title="示例"
+/set-warp market
+/warp market
+/warp market Alex
+/warp-list 2
+/edit-warp market
+```
+
+## 聊天列表与管理面板
+
+`/warp-list` 显示每个传送点的名称、服务器、世界和描述。点击名称可以传送，使用翻页按钮查看其他传送点。有管理面板权限的玩家还会看到编辑按钮。按钮使用 `commands.yml` 中设置的命令入口，并遵循对应开关与权限。
+
+`/edit-warp <name>` 显示位置、描述、创建信息和最后修改时间。各项操作都需要面板的基础权限，再加上各自的操作权限。
+
+| 命令 | 用途 | 额外默认权限 |
+| - | - | - |
+| `/edit-warp <name> rename <new_name>` | 修改名称。 | `sparrow.command.edit-warp.rename` |
+| `/edit-warp <name> description <text>` | 设置描述，最长 256 个字符。 | `sparrow.command.edit-warp.description` |
+| `/edit-warp <name> relocate` | 移到自己的当前位置，包括当前服务器，仅玩家可执行。 | `sparrow.command.edit-warp.relocate` |
+| `/edit-warp <name> delete` | 显示删除确认。 | `sparrow.command.edit-warp.delete` |
+
+重命名和描述按钮会把命令填入聊天输入框，补完内容后回车即可。移动按钮立即执行，删除按钮先打开确认面板。控制台会显示可直接输入的完整命令，包括确认删除的命令。
+
+改名和移动都会保留创建信息，已有其他传送点使用的名称不能重复使用。修改会同步到各台服务器。在 `commands.yml` 中修改 `edit-warp` 的基础权限后，操作权限也使用新基础权限加上 `.rename`、`.description`、`.relocate` 或 `.delete`。
+
+## 限制单个传送点
+
+默认有 `/warp` 命令权限就能使用所有传送点。开启 `permission-restrict: true` 后，执行者还需要 `sparrow.warp.<小写名称>` 才能看到和使用对应传送点。例如 `sparrow.warp.market` 允许使用 `Market`。
+
+没有对应权限的传送点不会出现在列表和补全中，手动输入名称也无法使用。管理传送点和传送其他玩家时同样检查执行者的权限。改名后，按新名称对应的权限判断。
+
+## 倒计时与冷却
+
+自己前往时默认等待 3 秒。倒计时期间移动超过半格、切换世界或受伤会取消传送。让其他玩家前往时立即执行，不检查也不产生冷却。填写自己的名字时仍然使用自己的等待与冷却。
+
+倒计时显示、音效，以及缩短或跳过等待的权限，见[传送设置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/teleport.mdx)。目标服务器不在线或找不到对应世界时，会提示原因，玩家不会被传送到那里。
+
+## 配置
+
+把下面的分组合并到 `features.yml`，保留其他功能的设置。
+
+```yaml title="features.yml · warp"
+warp:
+  enabled: true
+  permission-restrict: false
+  overwrite-existing: true
+  name-pattern: '[\p{L}\p{N}_][\p{L}\p{N}_-]*'
+  suggestion-limit: 100
+  warmup-seconds: 3
+  cooldown-seconds: 0
+  cancel-on-move: true
+  cancel-on-damage: true
+```
+
+| 配置项 | 含义 |
+| - | - |
+| `enabled` | 是否启用公共传送点功能，停用时隐藏对应命令。 |
+| `permission-restrict` | 是否按单个传送点检查权限。 |
+| `overwrite-existing` | `/set-warp` 是否可以移动已有传送点，并保留描述和创建信息。设为 `false` 时，使用已有名称会被拒绝。 |
+| `name-pattern` | 允许名称的正则表达式。表达式无效时功能无法启动，并在控制台输出错误。 |
+| `suggestion-limit` | Tab 补全最多显示的名称数量，至少为 1；继续输入字符可以缩小范围。 |
+| `warmup-seconds` | 自己前往前等待的秒数，`0` 表示立即传送。 |
+| `cooldown-seconds` | 两次 `/warp` 之间的冷却秒数，各服务器共享，`0` 表示不限制。 |
+| `cancel-on-move` | 移动超过半格或切换世界时，是否取消倒计时。 |
+| `cancel-on-damage` | 受伤时是否取消倒计时。 |
+
+修改功能设置后执行 `/sparrow reload` 生效。命令开关、入口和基础权限放在 `commands.yml`，修改后需要重启服务器。

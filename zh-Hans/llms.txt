@@ -6,7 +6,7 @@
 
 English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 
-- [简介](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/index.md): Sparrow 为 Minecraft 服务器提供日常管理和玩家便利功能。你可以用命令打开工作台、调整玩家状态、编辑物品、发送标题，也可以启用潜影盒快捷打开、玩家巡查、区域高亮和全服封禁等功能。
+- [简介](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/index.md): Sparrow 为 Minecraft 服务器提供日常管理和玩家便利功能。你可以用命令打开工作台、调整玩家状态、编辑物品、发送标题，也可以启用潜影盒快捷打开、玩家巡查、区域高亮、全服封禁和跨服返回上一位置等功能。
 - [安装插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.md): 本章将完成 Sparrow 的安装，并配置服务器 ID、Redis 和数据库。
 - [权限命令速查表](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.md): <参数> 为必填，[参数] 为可选。player 通常为本服在线玩家名，targets 为玩家或实体选择器。
 - [常见问题](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/faq.md)
@@ -17,7 +17,11 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 - [快捷潜影盒](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/quick-shulker.md): 不需要放置潜影盒，就能直接存取其中的物品。默认情况下，手持潜影盒，潜行并对着空气右键即可打开。
 - [玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.md): 使用 /patrol 轮流传送到本服在线玩家，适合管理员巡查。每次选择最久未被巡查的玩家，新加入的玩家会优先进入队列。
 - [区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.md): 选择一个区域，向玩家显示方块的发光轮廓，便于说明建筑范围或检查选区。显示只发送给指定玩家，不会改变实际方块。
-- [头颅获取](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): 使用 /head，根据玩家名称或 UUID 获取头颅。命令会自动识别来源；玩家资料查询支持在线玩家和外部 API，并通过内存与 Redis 缓存减少重复请求。
+- [头颅获取](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): /head 可以按玩家名或 UUID 获取头颅，并指定数量和接收玩家。
 - [维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.md): 开启维护模式后，没有绕过权限的在线玩家会被移出服务器，新的玩家也无法进入；留在服务器中的玩家会看到一条 BossBar 提示。
 - [人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.md): 使用 /max-players 在运行时修改服务器人数上限，无需重启。拥有绕过权限的玩家可以在服务器满员时进入。
 - [全服封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.md): 按账号、IP 或 IP 段封禁玩家，在群组内的所有服务器上生效。被封禁的玩家无法进入服务器；已经在线的玩家无论在哪台服务器上，都会被立即移出。
+- [返回上一位置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back.md): 使用 /back 回到上一次传送或死亡前所在的位置，即使那个位置在另一台服务器上。
+- [返回床边](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/bed.md): 使用 /bed 回到本服的重生点，可以是床、已充能的重生锚，或用 /spawnpoint 设置的位置。
+- [公共传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.md): Warp 是各台 Sparrow 服务器共用的命名传送点。玩家可以通过命令前往，也可以在聊天列表中点击名称传送。前往其他服务器需要安装 Sparrow 代理插件。
+- [传送设置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/teleport.md): 使用 /warp、/back 和 /bed 传送自己时，会先显示倒计时。各功能的等待时间和冷却放在 features.yml，共用的倒计时显示与音效放在 config.yml。

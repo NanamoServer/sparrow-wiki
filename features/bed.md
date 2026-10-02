@@ -1,0 +1,45 @@
+# Return to bed
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/bed>
+
+Use `/bed` to return to your respawn point on the current server. This can be a bed, a charged respawn anchor, or a location set with `/spawnpoint`.
+
+## Commands and permissions
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/bed` | Return to your own respawn point. | `sparrow.command.bed` |
+| `/bed <player>` | Send a local online player to their respawn point. | `sparrow.command.bed` + `sparrow.command.bed.other` |
+
+You can also use `/sparrow bed [player]`. The console must specify a player. Specifying your own name also requires `.other`. Without it, the player argument is hidden from completion and cannot be used manually.
+
+If the respawn point is missing or unusable, such as a broken or blocked bed, Sparrow reports that there is no bed to return to and leaves the player where they are.
+
+## Countdown and cooldown
+
+Returning yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage cancels it. Sending another player to their bed happens immediately and neither checks nor starts a cooldown. Naming yourself still uses your own countdown and cooldown.
+
+The cooldown for `/bed` is separate from `/back` and `/warp`. See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for display, sounds, and permissions that shorten or skip the wait.
+
+## Configuration
+
+Merge this section into `features.yml`, keeping the other feature settings:
+
+```yaml title="features.yml · bed"
+bed:
+  enabled: true
+  warmup-seconds: 3
+  cooldown-seconds: 0
+  cancel-on-move: true
+  cancel-on-damage: true
+```
+
+| Setting | Meaning |
+| - | - |
+| `enabled` | Enable the bed feature. When disabled, its commands are hidden. |
+| `warmup-seconds` | Seconds to wait before returning yourself; `0` teleports immediately. |
+| `cooldown-seconds` | Seconds before you can use `/bed` again, shared across servers; `0` disables the cooldown. |
+| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
+| `cancel-on-damage` | Cancel the countdown when you take damage. |
+
+Apply feature settings with `/sparrow reload`. Command switches, entry points, and base permissions are configured separately under `bed` in `commands.yml`; changing them requires a restart.

@@ -6,7 +6,7 @@
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/>
 
-Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, region highlighting, and network-wide bans.
+Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, region highlighting, network-wide bans, and returning to your previous location across servers.
 
 Start with [Installation](https://nanamoserver.github.io/sparrow-wiki/installation.mdx), or find a specific tool in [Permissions & Commands Quick Reference](https://nanamoserver.github.io/sparrow-wiki/commands.mdx).
 
@@ -88,6 +88,28 @@ Alternatively, select `MARIADB`, `POSTGRESQL`, or `MONGODB` and edit its corresp
 
 Restart, check the console for connection results, and run `/sparrow feature-list` to inspect feature state.
 
+## Proxy plugin {#proxy-plugin}
+
+If your servers run behind Velocity or BungeeCord (including Waterfall), also install the Sparrow proxy plugin on the proxy:
+
+| Proxy | File |
+| - | - |
+| Velocity | `Sparrow-velocity-<version>.jar` |
+| BungeeCord / Waterfall | `Sparrow-bungeecord-<version>.jar` |
+
+Place it in the proxy's `plugins/` folder and start the proxy once. It creates `config.yml` in `plugins/sparrow/` on Velocity or `plugins/Sparrow/` on BungeeCord. Point it at the same Redis as your backend servers, including the same database number:
+
+```yaml title="Proxy config.yml · Redis"
+redis:
+  url: 'redis://localhost:6379/0'
+  username: ''
+  password: ''
+```
+
+Restart the proxy after editing. The console shows `Connected to Redis` when the connection works.
+
+With the proxy plugin, `/kick` and [bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx) disconnect players from the whole network and show them the reason. Without it, players are removed only from the server they are on, about a second later, and the proxy may send them to another server. Cross-server travel with [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx) and [Back](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx) also requires the proxy plugin; local teleports work without it.
+
 ## Features and commands
 
 `features.yml` controls features; `commands.yml` controls which commands exist, their entry points, and their permissions. For example:
@@ -113,6 +135,7 @@ Features use `enabled`; commands use `enable`. Disabling an entry point and disa
 | Setting | How to apply |
 | - | - |
 | Feature settings in `features.yml` | `/sparrow reload` |
+| Countdown display and sounds in `config.yml` | `/sparrow reload` |
 | Feature switches | `/sparrow feature-enable <feature>` or `feature-disable`; saved to the file |
 | Command switches, entry points, and permissions | Restart |
 | Redis, database connections, or `server-id` | Restart |
@@ -157,6 +180,8 @@ Commands that belong to a feature, such as `/maintenance` or `/ban`, are hidden 
 
 `/kick` works for any player online in the network. `--silent` / `-s` hides the success message from the executor; on ban commands it also skips staff notices.
 
+With Velocity or BungeeCord, install the [proxy plugin](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin) so kicked and banned players are disconnected from the whole network. Without it, they are removed from their current server after about a second, and the proxy may move them to another server.
+
 ## 🔎 Player records
 
 | Command | Purpose | Default permission |
@@ -172,15 +197,24 @@ These commands only know players who have joined your servers; nothing is looked
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/heal [player]` | Restore player health. | `sparrow.command.heal` |
-| `/feed [player]` | Restore player hunger. | `sparrow.command.feed` |
-| `/fly [player] [enabled]` | Toggle flight permission, or set true / false explicitly. | `sparrow.command.fly` |
-| `/fly-speed <speed> [player]` | Set flight speed from -1 to 1. | `sparrow.command.fly-speed` |
-| `/walk-speed <speed> [player]` | Set walking speed from -1 to 1. | `sparrow.command.walk-speed` |
+| `/heal [player]` | Restore player health. | `sparrow.command.heal[.other]` |
+| `/feed [player]` | Restore player hunger. | `sparrow.command.feed[.other]` |
+| `/fly` | Toggle your own flight state. | `sparrow.command.fly[.other]` |
+| `/fly <player> [enabled]` | Toggle the named player's flight state, or set it with true / false. | `sparrow.command.fly[.other]` |
+| `/fly-speed <speed> [player]` | Set flight speed from -1 to 1. | `sparrow.command.fly-speed[.other]` |
+| `/walk-speed <speed> [player]` | Set walking speed from -1 to 1. | `sparrow.command.walk-speed[.other]` |
 | `/suicide` | Kill yourself; players only. | `sparrow.command.suicide` |
-| `/burn <targets> <time>` | Set target entities on fire. | `sparrow.command.burn` |
-| `/extinguish [targets]` | Extinguish target entities. | `sparrow.command.extinguish` |
-| `/look [targets] <facing-option>` | Change the facing of target entities. | `sparrow.command.look` |
+| `/burn <time> [targets]` | Set yourself or selected entities on fire; time accepts ticks or units such as `5s`. | `sparrow.command.burn[.other]` |
+| `/extinguish [targets]` | Extinguish target entities. | `sparrow.command.extinguish[.other]` |
+| `/look face <face> [targets]` | Turn yourself or selected entities toward a direction such as north or up. | `sparrow.command.look[.other]` |
+| `/look location <x> <y> <z> [targets]` | Turn yourself or selected entities toward a location. | `sparrow.command.look[.other]` |
+| `/look entity <entity> [targets]` | Turn yourself or selected entities toward another entity. | `sparrow.command.look[.other]` |
+| `/hat [player]` | Wear one of the main-hand items on the head. | `sparrow.command.hat[.other]` |
+| `/knockback <x> <y> <z> [player]` | Push a player in the given direction. | `sparrow.command.knockback[.other]` |
+
+`/hat` wears one item and leaves the rest of the stack in the hand. The previous helmet goes back to the hand if it is now empty, otherwise into the inventory, and is dropped at the player's feet when the inventory is full. A helmet with Curse of Binding cannot be replaced, except in Creative mode.
+
+`/knockback` uses blocks per tick: `/knockback 0 1 0` launches the player straight up, and `/knockback 2 0.5 0` pushes them east. Like being hit, the push replaces the player's current movement.
 
 ## 🔍 Patrol and command execution
 
@@ -193,23 +227,39 @@ These commands only know players who have joined your servers; nothing is looked
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/world [world] [targets]` | Switch to a world, or the next world when omitted. | `sparrow.command.world` |
-| `/top-block [targets]` | Move targets to the highest usable position in their current block column. | `sparrow.command.top-block` |
+| `/world [world] [targets]` | Switch to a world, or the next world when omitted. | `sparrow.command.world[.other]` |
+| `/top-block [targets]` | Move targets to the highest usable position in their current block column. | `sparrow.command.top-block[.other]` |
 | `/tp-offline <player> [targets] [--silent]` | Teleport targets to the named player’s last recorded location. | `sparrow.command.tp-offline` |
-| `/server <server> [targets]` | Request a backend transfer through the proxy. | `sparrow.command.server` |
+| `/server <server> [targets]` | Request a backend transfer through the proxy. | `sparrow.command.server[.other]` |
+| `/bed [player]` | Teleport a player to their respawn point, such as their bed. | `sparrow.command.bed[.other]` |
+| `/back [player]` | Return a player to their previous location, including across servers. | `sparrow.command.back[.other]` |
+| `/warp <name> [player]` | Teleport yourself or the named player to a warp, including across servers. | `sparrow.command.warp[.other]` |
+| `/set-warp <name>` | Create a warp at your position, or move an existing one there; players only. | `sparrow.command.set-warp` |
+| `/del-warp <name>` | Delete a warp immediately. | `sparrow.command.del-warp` |
+| `/warp-list [page]` | Show the clickable chat list of warps. | `sparrow.command.warp-list` |
+| `/edit-warp <name>` | Show a warp's information and management panel. | `sparrow.command.edit-warp` |
+| `/edit-warp <name> rename <new_name>` | Rename a warp. | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.rename` |
+| `/edit-warp <name> description <text>` | Set the description, up to 256 characters. | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.description` |
+| `/edit-warp <name> relocate` | Move a warp to your current position; players only. | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.relocate` |
+| `/edit-warp <name> delete [confirm <id>]` | Request deletion confirmation, or enter the confirmation command shown in the panel. | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.delete` |
+
+`/bed` uses the point where the player would respawn: their bed, a charged respawn anchor, or a point set with `/spawnpoint`. If the bed was broken or is blocked, the player is told they have no bed to return to.
+
+`/warp`, `/back`, and `/bed` have separate countdown and cooldown settings in `features.yml`. See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for their shared display, sounds, and bypass permissions. `/tp-offline` teleports immediately.
 
 ## 🛠️ Portable workstations and containers
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/workbench [player]` | Open a crafting table for a player. | `sparrow.command.workbench` |
-| `/anvil [player]` | Open an anvil for a player. | `sparrow.command.anvil` |
-| `/grindstone [player]` | Open a grindstone for a player. | `sparrow.command.grindstone` |
-| `/smithing-table [player]` | Open a smithing table for a player. | `sparrow.command.smithing-table` |
-| `/stonecutter [player]` | Open a stonecutter for a player. | `sparrow.command.stonecutter` |
-| `/cartography-table [player]` | Open a cartography table for a player. | `sparrow.command.cartography-table` |
-| `/enchantment-table [player]` | Open an enchanting table for a player. | `sparrow.command.enchantment-table` |
-| `/ender_chest [player] [--silent]` | Open the selected player’s own ender chest for that player. | `sparrow.command.ender-chest` |
+| `/workbench [player]` | Open a crafting table for a player. | `sparrow.command.workbench[.other]` |
+| `/anvil [player]` | Open an anvil for a player. | `sparrow.command.anvil[.other]` |
+| `/grindstone [player]` | Open a grindstone for a player. | `sparrow.command.grindstone[.other]` |
+| `/smithing-table [player]` | Open a smithing table for a player. | `sparrow.command.smithing-table[.other]` |
+| `/stonecutter [player]` | Open a stonecutter for a player. | `sparrow.command.stonecutter[.other]` |
+| `/cartography-table [player]` | Open a cartography table for a player. | `sparrow.command.cartography-table[.other]` |
+| `/enchantment-table [player]` | Open an enchanting table for a player. | `sparrow.command.enchantment-table[.other]` |
+| `/ender_chest` | Open your own ender chest. | `sparrow.command.ender-chest[.other]` |
+| `/ender_chest <player> [--silent]` | Have the named player open their own ender chest. | `sparrow.command.ender-chest[.other]` |
 
 ## 📦 Item editing and acquisition
 
@@ -220,10 +270,12 @@ These commands only know players who have joined your servers; nothing is looked
 | `/item_name <player> [name] [options]` | Read or edit the main-hand item\_name component. | `sparrow.command.item-name` |
 | `/custom_name <player> [name] [options]` | Read or edit the main-hand custom\_name component. | `sparrow.command.custom-name` |
 | `/item_lore [options]` | View or edit main-hand lore; players only. | `sparrow.command.item-lore` |
-| `/color [color] [--player <player>] [--slot <slot>] [--silent]` | Read or edit item dye color. | `sparrow.command.color` |
+| `/color <color>` | Set the dye color of your main-hand item. | `sparrow.command.color[.other]` |
+| `/color <color> <player> [--silent]` | Set the dye color of the named player's main-hand item. | `sparrow.command.color[.other]` |
 | `/custom_model_data [value]` | Read or edit the first custom model data float; players only. | `sparrow.command.custom-model-data` |
 | `/more [amount] [--player <player>] [--silent]` | Replenish or copy the main-hand item; amount 1–6400. | `sparrow.command.more` |
-| `/head [source] [options]` | Fetch a head by player name or UUID. | `sparrow.command.head` |
+| `/head [source] [amount]` | Fetch heads for yourself by player name or UUID; amount is 1–6400, default 1. | `sparrow.command.head[.other]` |
+| `/head <source> <amount> <player> [force] [--silent]` | Give heads to selected players; set `force` to `true` for a fresh lookup. | `sparrow.command.head[.other]` |
 
 ## 📐 Regions and measurement
 
@@ -252,10 +304,14 @@ These commands only know players who have joined your servers; nothing is looked
 | `sparrow.bypass.maintenance` | Stay on or join the server during maintenance. |
 | `sparrow.bypass.player-limit` | Join even when the server is full. |
 | `sparrow.notify.ban` | Receive ban and unban notices from every server. Only operators have it by default. |
+| `sparrow.warp.<lowercase-name>` | Access the named warp when `permission-restrict` is enabled. |
+| `sparrow.teleport-warmup.<seconds>` | Shorten the wait before `/warp`, `/back`, or `/bed`; the lowest permission value or feature default wins. |
+| `sparrow.bypass.teleport-warmup` | Skip the countdown before teleporting yourself. |
+| `sparrow.bypass.teleport-cooldown` | Skip teleport cooldown checks and do not start a new cooldown. |
 
 With `--check`, `/enchant` follows the vanilla command: the level cannot exceed the enchantment's maximum level, the item must support the enchantment, and the enchantment must not conflict with existing ones, including the same enchantment already on the item. Enchanted books are not supported items in vanilla, so they are refused as well. Removing an enchantment is never checked.
 
-See [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.mdx), [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx), [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.mdx), [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx), [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx), and [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx) for their complete usage.
+See [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.mdx), [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx), [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.mdx), [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx), [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx), [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx), and [Back](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx) for their complete usage.
 
 # Quick Shulker
 
@@ -385,38 +441,45 @@ Color, duration, and `solid-only` provide defaults. If `solid-only` is enabled i
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/head>
 
-Use `/head` to fetch heads from player names or UUIDs. The command detects the source automatically. Player lookups support online profiles and external APIs, with memory and Redis caches to reduce repeated requests.
+Use `/head` to get a player's head by name or UUID. You can specify the amount and recipients.
 
 ## Commands and permissions
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/head [source] [options]` | Fetch by player name or UUID; a player defaults to their own name. | `sparrow.command.head` |
+| `/head [source] [amount]` | Fetch heads for yourself; omitted source uses your own name. | `sparrow.command.head` |
+| `/head <source> <amount> <player> [force] [--silent]` | Fetch heads for selected players; set `force` to `true` for a fresh lookup. | `sparrow.command.head` + `sparrow.command.head.other` |
 
-The full entry point is `/sparrow head`. All sources share the same command and permission. UUIDs may use dashes or 32 hexadecimal digits without dashes.
+The full entry point is `/sparrow head`. UUIDs may use dashes or 32 hexadecimal digits without dashes. Arguments are positional, in the order `source`, `amount`, `player`, `force`; to supply a later argument, also supply every earlier one.
 
-| Option | Meaning |
+Tab completion for `source` suggests online player names from every server sharing Sparrow's Redis connection. You can also enter an offline player's name or UUID manually. The `player` argument selects recipients on the current server.
+
+| Argument or option | Meaning |
 | - | - |
-| `--player <targets>` | Recipient name or player selector; defaults to the sender when run by a player. |
-| `--amount <amount>` | 1–6400 heads, default 1. |
-| `--force` | Bypass memory and Redis cache reads, fetch again, and cache successful API results. |
-| `--silent` / `-s` | Suppress success feedback; timeouts and failures are still reported. |
+| `source` | Player name or UUID for the head texture; defaults to your own name. Requires only the base permission. |
+| `amount` | 1–6400 heads, default 1. Available with the base permission. |
+| `player` | Recipient name or player selector; defaults to you when omitted. Requires `.other`, even for your own name or `@s`. |
+| `force` | `true` skips cached results and fetches again. Defaults to `false`; requires `.other`. |
+| `--silent` / `-s` | Suppress success feedback; timeouts and failures are still reported. Supply all four positional arguments before this option, including `false` when a fresh lookup is not needed. |
 
-The console must specify a source and `--player`. Heads are dropped at the recipients in stacks of up to 64.
+Without `.other`, you can use only `source` and `amount`. The permission for `player` and `force` is the base permission from `commands.yml` followed by `.other`.
+
+The console must specify a source, amount, and recipient. Heads drop at each recipient in stacks of up to 64.
 
 ```text title="Examples"
 /head
-/head Notch --amount 1
-/head Notch --player Alex --force
+/head Notch
+/head Notch 16
+/head Notch 1 Alex true
+/head Notch 1 @a false --silent
 /head 069a79f4-44e9-4726-a5be-fca90e38aaf5
-/head --force
 ```
 
 ## Sources and caches
 
 By default, Sparrow reads a local online player's texture first, then falls back to an API. External profile lookup uses Mojang's name and UUID endpoints by default, with Ashcon as a fallback when the primary API fails or returns no textures.
 
-`--force` still follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
+When `force` is `true`, lookup follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
 
 This is a partial `features.yml` example; keep the remaining settings:
 
@@ -472,7 +535,7 @@ Each URL must contain `{player}`. Sparrow replaces it with the URL-encoded name 
 | Ashcon | `uuid`, `username` | `textures.raw.value` and optional `textures.raw.signature` |
 | Mojang | `id`, `name` | An entry named `textures` in `properties`, with `value` and optional `signature` |
 
-Fallback starts when the primary API reports an error, is rate limited, exceeds its individual HTTP timeout, returns no player, or provides no textures. Sparrow tries each backup in order and stops at the first valid textured profile. Successful results use the existing memory and Redis caches; `--force` also bypasses cached fallback results.
+Fallback starts when the primary API reports an error, is rate limited, exceeds its individual HTTP timeout, returns no player, or provides no textures. Sparrow tries each backup in order and stops at the first valid textured profile. Successful results use the existing memory and Redis caches; Setting `force` to `true` also skips cached fallback results.
 
 If no endpoint finds the player or a texture, Sparrow reports that the head was not found. If an endpoint fails and none succeeds, the last error is reported. Trying backup endpoints does not extend `head.request-timeout`.
 
@@ -644,6 +707,7 @@ Every ban gets a random ID such as `#K7Q2M9XD`. It appears in the command result
 - Banned players cannot join any server. During [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx) they still see the ban reason rather than the maintenance message.
 - A player sees "You are banned" when their own account is banned, and "Your IP address is banned" when the address they connect from is banned.
 - If Sparrow cannot reach the database while a player is joining, the player is let in and the error is shown in the console.
+- With Velocity or BungeeCord, install the [proxy plugin](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin). With it, banned players are disconnected from the whole network and see the ban reason; without it, the proxy may first try to send them to another server.
 
 ## Staff notices and `-s`
 
@@ -678,6 +742,270 @@ ban:
 Bans are saved in the database configured in `config.yml`. While the feature is disabled, bans are not enforced and the ban commands are hidden.
 
 Edit the kick screens and staff notices in the translation files under `ban.kick.player`, `ban.kick.ip`, `ban.notify.ban`, and `ban.notify.unban`.
+
+# Back
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/back>
+
+Use `/back` to return to where you were before your last teleport or death, even if that was on another server.
+
+## Commands and permissions
+
+| Command | Purpose | Default command permission |
+| - | - | - |
+| `/back` | Return to your own previous location. | `sparrow.command.back` |
+| `/back <player>` | Return the named player to their previous location. | `sparrow.command.back` + `sparrow.command.back.other` |
+
+You can also use `/sparrow back [player]`. Omit `player` to return to your own previous location; the console must name a player.
+
+Specifying a player requires the base permission and `.other`, even when you name yourself. Without `.other`, Sparrow hides the player argument from completion and refuses it when entered manually. The `.other` permission uses the base permission from `commands.yml` followed by `.other`.
+
+```text title="Examples"
+/back
+/back Steve
+```
+
+## What counts as a previous location
+
+- Where the player stood before a teleport made by a command or another plugin. Which kinds of teleports count is configurable.
+- Where the player died, when `record-death` is on.
+- After switching servers, where the player left the previous server, until something new is recorded on the current server.
+
+Each player has only one previous location, and a new one replaces the old. `/back` is itself a teleport, so running it again takes the player back to where they just were.
+
+These are not recorded:
+
+- Moves shorter than one block within the same world, such as turning around with `/look`.
+- Teleports in the first few seconds after connecting to a server (`join-grace-seconds`). Spawn plugins often move players at that moment. If your server sends a resource pack, the time spent loading it counts toward this period.
+- Teleports cancelled by other plugins.
+
+## Returning to another server
+
+When nothing has been recorded on the current server yet, `/back` looks at where the player last left a server. If that was a different server and the player switched from it within `server-switch-window-seconds`, `/back` sends them back to that spot through the proxy. Logging out and joining again later is not a switch, so `/back` then reports that there is nowhere to go back to.
+
+If the other server is offline, or the world of that location no longer exists, the player is told so and stays where they are.
+
+## Countdown and cooldown
+
+Returning yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage during the countdown cancels the teleport. Sending another player back happens immediately. Naming yourself still uses your own countdown and cooldown.
+
+Configure these settings under `back` in `features.yml`. See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for countdown display, sounds, and permissions that shorten or skip the wait.
+
+## When previous locations are lost
+
+Previous locations are kept only while the player stays on the server. They are cleared when the player leaves that server, when the feature is disabled, and when the server restarts or crashes. If the previous server crashed before the player left it, `/back` cannot return there.
+
+## Configuration
+
+```yaml title="features.yml · back"
+back:
+  enabled: true
+  record-death: true
+  teleport-causes:
+    - COMMAND
+    - PLUGIN
+  join-grace-seconds: 3
+  server-switch-window-seconds: 30
+  warmup-seconds: 3
+  cooldown-seconds: 0
+  cancel-on-move: true
+  cancel-on-damage: true
+```
+
+| Setting | Meaning |
+| - | - |
+| `record-death` | Record the death location. |
+| `teleport-causes` | Kinds of teleports that record the previous location. Common values: `COMMAND` (commands), `PLUGIN` (plugins), `NETHER_PORTAL`, `END_PORTAL`, `END_GATEWAY`, `ENDER_PEARL`, `SPECTATE`. Portals are not included by default. An unknown value keeps the feature from starting and is reported in the console. |
+| `join-grace-seconds` | Teleports within this many seconds after connecting are not recorded. |
+| `server-switch-window-seconds` | How recently the player must have left the previous server for `/back` to return there. |
+| `warmup-seconds` | Seconds to wait before returning yourself; `0` teleports immediately. |
+| `cooldown-seconds` | Seconds before you can use `/back` again, shared across servers; `0` disables the cooldown. |
+| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
+| `cancel-on-damage` | Cancel the countdown when you take damage. |
+
+Apply changes with `/sparrow reload`.
+
+# Return to bed
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/bed>
+
+Use `/bed` to return to your respawn point on the current server. This can be a bed, a charged respawn anchor, or a location set with `/spawnpoint`.
+
+## Commands and permissions
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/bed` | Return to your own respawn point. | `sparrow.command.bed` |
+| `/bed <player>` | Send a local online player to their respawn point. | `sparrow.command.bed` + `sparrow.command.bed.other` |
+
+You can also use `/sparrow bed [player]`. The console must specify a player. Specifying your own name also requires `.other`. Without it, the player argument is hidden from completion and cannot be used manually.
+
+If the respawn point is missing or unusable, such as a broken or blocked bed, Sparrow reports that there is no bed to return to and leaves the player where they are.
+
+## Countdown and cooldown
+
+Returning yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage cancels it. Sending another player to their bed happens immediately and neither checks nor starts a cooldown. Naming yourself still uses your own countdown and cooldown.
+
+The cooldown for `/bed` is separate from `/back` and `/warp`. See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for display, sounds, and permissions that shorten or skip the wait.
+
+## Configuration
+
+Merge this section into `features.yml`, keeping the other feature settings:
+
+```yaml title="features.yml · bed"
+bed:
+  enabled: true
+  warmup-seconds: 3
+  cooldown-seconds: 0
+  cancel-on-move: true
+  cancel-on-damage: true
+```
+
+| Setting | Meaning |
+| - | - |
+| `enabled` | Enable the bed feature. When disabled, its commands are hidden. |
+| `warmup-seconds` | Seconds to wait before returning yourself; `0` teleports immediately. |
+| `cooldown-seconds` | Seconds before you can use `/bed` again, shared across servers; `0` disables the cooldown. |
+| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
+| `cancel-on-damage` | Cancel the countdown when you take damage. |
+
+Apply feature settings with `/sparrow reload`. Command switches, entry points, and base permissions are configured separately under `bed` in `commands.yml`; changing them requires a restart.
+
+# Warps
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/warp>
+
+Warps are named destinations shared across your Sparrow servers. Players can travel to them by command or from a clickable chat list. A destination on another server requires the [Sparrow proxy plugin](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin).
+
+## Commands and permissions
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/warp <name>` | Travel to a warp yourself. | `sparrow.command.warp` |
+| `/warp <name> <player>` | Send a local online player to a warp. | `sparrow.command.warp` + `sparrow.command.warp.other` |
+| `/set-warp <name>` | Create a warp at your position, or move an existing one there. Players only. | `sparrow.command.set-warp` |
+| `/del-warp <name>` | Delete a warp immediately. | `sparrow.command.del-warp` |
+| `/warp-list [page]` | Show the chat list, 10 destinations per page. | `sparrow.command.warp-list` |
+| `/edit-warp <name>` | Open the destination's information and management panel. | `sparrow.command.edit-warp` |
+
+Each command also has a `/sparrow <command>` entry point, such as `/sparrow warp-list`. The console must specify a player when using `/warp`. Specifying your own name also requires `.other`; without it, the player argument is hidden from completion and cannot be used manually.
+
+Names are case insensitive, up to 32 characters long, and allow letters (including Chinese), digits, `_`, and `-` by default. They cannot start with `-`. `name-pattern` can change the allowed characters, but the length limit remains. Keep names without spaces so they can be used in every warp command.
+
+```text title="Examples"
+/set-warp market
+/warp market
+/warp market Alex
+/warp-list 2
+/edit-warp market
+```
+
+## Chat list and management panel
+
+`/warp-list` shows each destination's name, server, world, and description. Click its name to teleport, or use the page buttons to browse. Players with the management panel permission also see an edit button. Buttons follow the entry points, switches, and permissions in `commands.yml`.
+
+`/edit-warp <name>` shows the destination's location, description, creation details, and last update. Each operation needs the panel's base permission plus its own permission:
+
+| Command | Purpose | Extra default permission |
+| - | - | - |
+| `/edit-warp <name> rename <new_name>` | Change the name. | `sparrow.command.edit-warp.rename` |
+| `/edit-warp <name> description <text>` | Set a description, up to 256 characters. | `sparrow.command.edit-warp.description` |
+| `/edit-warp <name> relocate` | Move the destination to your current position, including the current server. Players only. | `sparrow.command.edit-warp.relocate` |
+| `/edit-warp <name> delete` | Ask for confirmation before deleting. | `sparrow.command.edit-warp.delete` |
+
+The rename and description buttons put a command in the chat input for you to finish. Relocate runs immediately; delete opens a confirmation panel. The console displays the full commands to enter, including the deletion confirmation command.
+
+Renaming or moving a destination preserves its creation details. A name already used by another warp is refused. Changes are shared across servers. If you change the base permission for `edit-warp` in `commands.yml`, the operation permissions use that new base followed by `.rename`, `.description`, `.relocate`, or `.delete`.
+
+## Restrict individual destinations
+
+By default, the `/warp` command permission allows access to all destinations. With `permission-restrict: true`, the command sender also needs `sparrow.warp.<lowercase-name>` to see or use a destination. For example, `sparrow.warp.market` grants access to `Market`.
+
+Destinations without that permission are hidden from lists and completion and cannot be used by entering the name manually. This restriction also applies when managing a destination or sending another player there. After a rename, access follows the new name's permission.
+
+## Countdown and cooldown
+
+Travelling yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage cancels it. Sending another player happens immediately and neither checks nor starts a cooldown. Naming yourself still uses your own wait and cooldown.
+
+See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for countdown display, sounds, and permissions that shorten or skip the wait. If the destination server is offline or the world cannot be found, Sparrow reports the problem and does not teleport you there.
+
+## Configuration
+
+Merge this section into `features.yml`, keeping the other feature settings:
+
+```yaml title="features.yml · warp"
+warp:
+  enabled: true
+  permission-restrict: false
+  overwrite-existing: true
+  name-pattern: '[\p{L}\p{N}_][\p{L}\p{N}_-]*'
+  suggestion-limit: 100
+  warmup-seconds: 3
+  cooldown-seconds: 0
+  cancel-on-move: true
+  cancel-on-damage: true
+```
+
+| Setting | Meaning |
+| - | - |
+| `enabled` | Enable warps. When disabled, their commands are hidden. |
+| `permission-restrict` | Require a permission for each destination. |
+| `overwrite-existing` | Let `/set-warp` move an existing destination while preserving its description and creation details. When `false`, an existing name is refused. |
+| `name-pattern` | Regular expression for allowed names. An invalid expression prevents the feature from starting and is reported in the console. |
+| `suggestion-limit` | Maximum names shown in Tab completion; at least 1. Enter more characters to narrow the list. |
+| `warmup-seconds` | Seconds to wait before travelling yourself; `0` teleports immediately. |
+| `cooldown-seconds` | Seconds before you can use `/warp` again, shared across servers; `0` disables the cooldown. |
+| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
+| `cancel-on-damage` | Cancel the countdown when you take damage. |
+
+Apply feature settings with `/sparrow reload`. Command switches, entry points, and base permissions are in `commands.yml`; changing them requires a restart.
+
+# Teleport settings
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/teleport>
+
+[`/warp`](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx), [`/back`](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx), and [`/bed`](https://nanamoserver.github.io/sparrow-wiki/features/bed.mdx) use a countdown before teleporting yourself. Each feature has its own wait and cooldown settings in `features.yml`. Countdown display and sounds are shared settings in `config.yml`.
+
+## Wait and cooldown
+
+Each feature defaults to a 3-second wait, no cooldown, and cancellation on movement or damage. Set `warmup-seconds` or `cooldown-seconds` to `0` to disable that wait or cooldown.
+
+With `cancel-on-move: true`, moving more than half a block from where the countdown started or changing worlds cancels the teleport. `cancel-on-damage: true` cancels it when you take damage. Starting another countdown replaces the first; leaving the server cancels it.
+
+Cooldowns begin only after a successful local teleport or the start of a server transfer. They carry across servers, with `/warp`, `/back`, and `/bed` counted separately. A cancelled countdown does not start a cooldown.
+
+Sending another player teleports them immediately and neither checks nor starts a cooldown. Specifying yourself still uses your own wait and cooldown, even though the explicit player argument requires `.other`. `/tp-offline` teleports immediately.
+
+## Permissions
+
+| Permission | Effect |
+| - | - |
+| `sparrow.teleport-warmup.<seconds>` | Shorten the wait. Sparrow uses the lowest value among these permissions and the feature default. |
+| `sparrow.bypass.teleport-warmup` | Skip the countdown. |
+| `sparrow.bypass.teleport-cooldown` | Skip the cooldown check and do not start a new cooldown. |
+
+For example, if the feature default is 3 seconds and a player has `sparrow.teleport-warmup.1`, they wait 1 second. A value above 3 does not extend the default wait. Grant `sparrow.teleport-warmup.0` or the countdown bypass permission for immediate teleports.
+
+## Display and sounds
+
+Merge this section into `config.yml`, keeping the other settings:
+
+```yaml title="config.yml · teleport"
+teleport:
+  warmup-display: ACTION_BAR
+  warmup-sound: 'block.note_block.banjo'
+  complete-sound: 'entity.enderman.teleport'
+  cancel-sound: 'entity.item.break'
+```
+
+| Setting | Meaning |
+| - | - |
+| `warmup-display` | `ACTION_BAR` shows the countdown above the hotbar, `TITLE` in the center of the screen, `CHAT` in chat, and `NONE` hides it. |
+| `warmup-sound` | Sound played at each countdown update. |
+| `complete-sound` | Sound played after arrival on the same server. It is not played after a cross-server transfer. |
+| `cancel-sound` | Sound played when movement or damage cancels the countdown. |
+
+Leave a sound value empty (`''`) to disable it. `NONE` hides the countdown text but does not turn off sounds. Apply changes with `/sparrow reload`.
 
 # Frequently Asked Questions
 

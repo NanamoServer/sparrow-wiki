@@ -76,6 +76,28 @@ Alternatively, select `MARIADB`, `POSTGRESQL`, or `MONGODB` and edit its corresp
 
 Restart, check the console for connection results, and run `/sparrow feature-list` to inspect feature state.
 
+## Proxy plugin {#proxy-plugin}
+
+If your servers run behind Velocity or BungeeCord (including Waterfall), also install the Sparrow proxy plugin on the proxy:
+
+| Proxy | File |
+| - | - |
+| Velocity | `Sparrow-velocity-<version>.jar` |
+| BungeeCord / Waterfall | `Sparrow-bungeecord-<version>.jar` |
+
+Place it in the proxy's `plugins/` folder and start the proxy once. It creates `config.yml` in `plugins/sparrow/` on Velocity or `plugins/Sparrow/` on BungeeCord. Point it at the same Redis as your backend servers, including the same database number:
+
+```yaml title="Proxy config.yml · Redis"
+redis:
+  url: 'redis://localhost:6379/0'
+  username: ''
+  password: ''
+```
+
+Restart the proxy after editing. The console shows `Connected to Redis` when the connection works.
+
+With the proxy plugin, `/kick` and [bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx) disconnect players from the whole network and show them the reason. Without it, players are removed only from the server they are on, about a second later, and the proxy may send them to another server. Cross-server travel with [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx) and [Back](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx) also requires the proxy plugin; local teleports work without it.
+
 ## Features and commands
 
 `features.yml` controls features; `commands.yml` controls which commands exist, their entry points, and their permissions. For example:
@@ -101,6 +123,7 @@ Features use `enabled`; commands use `enable`. Disabling an entry point and disa
 | Setting | How to apply |
 | - | - |
 | Feature settings in `features.yml` | `/sparrow reload` |
+| Countdown display and sounds in `config.yml` | `/sparrow reload` |
 | Feature switches | `/sparrow feature-enable <feature>` or `feature-disable`; saved to the file |
 | Command switches, entry points, and permissions | Restart |
 | Redis, database connections, or `server-id` | Restart |
