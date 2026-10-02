@@ -1,0 +1,46 @@
+---
+title: ⏳ 传送设置
+---
+
+使用 [`/warp`](./warp.mdx)、[`/back`](./back.mdx) 和 [`/bed`](./bed.mdx) 传送自己时，会先显示倒计时。各功能的等待时间和冷却放在 `features.yml`，共用的倒计时显示与音效放在 `config.yml`。
+
+## 等待与冷却
+
+各功能默认等待 3 秒、不设冷却，移动或受伤时取消传送。`warmup-seconds` 或 `cooldown-seconds` 设为 `0` 时，分别关闭等待或冷却。
+
+`cancel-on-move: true` 时，离开倒计时开始的位置超过半格，或切换世界，会取消传送。`cancel-on-damage: true` 时，受伤会取消传送。开始新的倒计时会替换上一次，离开服务器时也会取消。
+
+本服传送成功或开始切服后才进入冷却。冷却在各服务器间共享，`/warp`、`/back` 和 `/bed` 分别计算。倒计时被取消时不产生冷却。
+
+传送其他玩家时立即执行，不检查也不产生冷却。填写自己作为目标时，虽然目标参数需要 `.other`，但等待和冷却仍按自己传送处理。`/tp-offline` 立即传送。
+
+## 权限
+
+| 权限 | 效果 |
+| --- | --- |
+| `sparrow.teleport-warmup.<秒>` | 缩短等待时间，取这些权限中的最小值与功能默认值中较小的一个。 |
+| `sparrow.bypass.teleport-warmup` | 跳过倒计时。 |
+| `sparrow.bypass.teleport-cooldown` | 跳过冷却检查，也不产生新的冷却。 |
+
+例如功能默认等待 3 秒，玩家有 `sparrow.teleport-warmup.1` 时只需等待 1 秒。高于 3 的权限数值不会延长默认等待时间。授予 `sparrow.teleport-warmup.0` 或倒计时绕过权限，可以立即传送。
+
+## 显示与音效
+
+把下面的分组合并到 `config.yml`，保留其他设置。
+
+~~~yaml title="config.yml · teleport"
+teleport:
+  warmup-display: ACTION_BAR
+  warmup-sound: 'block.note_block.banjo'
+  complete-sound: 'entity.enderman.teleport'
+  cancel-sound: 'entity.item.break'
+~~~
+
+| 配置项 | 含义 |
+| --- | --- |
+| `warmup-display` | `ACTION_BAR` 显示在快捷栏上方，`TITLE` 显示在屏幕中央，`CHAT` 显示在聊天栏，`NONE` 不显示。 |
+| `warmup-sound` | 每次更新倒计时时播放的音效。 |
+| `complete-sound` | 在本服传送到达后播放的音效，跨服到达时不播放。 |
+| `cancel-sound` | 因移动或受伤取消倒计时时播放的音效。 |
+
+音效值留空（`''`）即可关闭对应音效。`NONE` 只隐藏倒计时文字，音效仍然播放。修改后执行 `/sparrow reload` 生效。

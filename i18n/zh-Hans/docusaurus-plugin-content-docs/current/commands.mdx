@@ -53,17 +53,20 @@ title: 🔑 权限命令速查表
 
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
-| `/heal [player]` | 恢复玩家生命值。 | `sparrow.command.heal` |
-| `/feed [player]` | 恢复玩家饥饿状态。 | `sparrow.command.feed` |
-| `/fly [player] [enabled]` | 切换飞行许可，或用 true / false 明确设置。 | `sparrow.command.fly` |
-| `/fly-speed <speed> [player]` | 设置飞行速度，范围 -1 到 1。 | `sparrow.command.fly-speed` |
-| `/walk-speed <speed> [player]` | 设置行走速度，范围 -1 到 1。 | `sparrow.command.walk-speed` |
+| `/heal [player]` | 恢复玩家生命值。 | `sparrow.command.heal[.other]` |
+| `/feed [player]` | 恢复玩家饥饿状态。 | `sparrow.command.feed[.other]` |
+| `/fly` | 切换自己的飞行状态。 | `sparrow.command.fly[.other]` |
+| `/fly <player> [enabled]` | 切换指定玩家的飞行状态，或用 true / false 明确设置。 | `sparrow.command.fly[.other]` |
+| `/fly-speed <speed> [player]` | 设置飞行速度，范围 -1 到 1。 | `sparrow.command.fly-speed[.other]` |
+| `/walk-speed <speed> [player]` | 设置行走速度，范围 -1 到 1。 | `sparrow.command.walk-speed[.other]` |
 | `/suicide` | 结束自己的生命，仅玩家可执行。 | `sparrow.command.suicide` |
-| `/burn <targets> <time>` | 使目标实体燃烧。 | `sparrow.command.burn` |
-| `/extinguish [targets]` | 熄灭目标实体身上的火。 | `sparrow.command.extinguish` |
-| `/look [targets] <朝向选项>` | 调整目标实体朝向。 | `sparrow.command.look` |
-| `/hat [player]` | 把主手的一个物品戴到头上。 | `sparrow.command.hat` |
-| `/knockback <x> <y> <z> [player]` | 把玩家朝指定方向击飞。 | `sparrow.command.knockback` |
+| `/burn <time> [targets]` | 使自己或选中的实体燃烧；时长可填写刻数或 `5s` 这样的单位形式。 | `sparrow.command.burn[.other]` |
+| `/extinguish [targets]` | 熄灭目标实体身上的火。 | `sparrow.command.extinguish[.other]` |
+| `/look face <face> [targets]` | 让自己或选中的实体朝向 north、up 等方向。 | `sparrow.command.look[.other]` |
+| `/look location <x> <y> <z> [targets]` | 让自己或选中的实体看向指定坐标。 | `sparrow.command.look[.other]` |
+| `/look entity <entity> [targets]` | 让自己或选中的实体看向另一实体。 | `sparrow.command.look[.other]` |
+| `/hat [player]` | 把主手的一个物品戴到头上。 | `sparrow.command.hat[.other]` |
+| `/knockback <x> <y> <z> [player]` | 把玩家朝指定方向击飞。 | `sparrow.command.knockback[.other]` |
 
 `/hat` 只戴一个物品，其余留在主手。原来头上的物品会放回空出来的主手，否则放进背包，背包满了就掉在玩家脚下。头上的物品带有绑定诅咒时无法替换，创造模式除外。
 
@@ -80,27 +83,39 @@ title: 🔑 权限命令速查表
 
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
-| `/world [world] [targets]` | 切换到指定世界；省略世界时选择下一个世界。 | `sparrow.command.world` |
-| `/top-block [targets]` | 将目标传送到当前坐标列的最高可站立位置。 | `sparrow.command.top-block` |
+| `/world [world] [targets]` | 切换到指定世界；省略世界时选择下一个世界。 | `sparrow.command.world[.other]` |
+| `/top-block [targets]` | 将目标传送到当前坐标列的最高可站立位置。 | `sparrow.command.top-block[.other]` |
 | `/tp-offline <player> [targets] [--silent]` | 将目标传送到指定玩家最后记录的位置。 | `sparrow.command.tp-offline` |
-| `/server <server> [targets]` | 通过代理请求切换后端服务器。 | `sparrow.command.server` |
-| `/bed [player]` | 将玩家传送到重生点，例如他的床。 | `sparrow.command.bed` |
-| `/back [player]` | 让玩家回到上一个位置，可以跨服返回。 | `sparrow.command.back` |
+| `/server <server> [targets]` | 通过代理请求切换后端服务器。 | `sparrow.command.server[.other]` |
+| `/bed [player]` | 将玩家传送到重生点，例如他的床。 | `sparrow.command.bed[.other]` |
+| `/back [player]` | 让玩家回到上一个位置，可以跨服返回。 | `sparrow.command.back[.other]` |
+| `/warp <name> [player]` | 让自己或指定玩家传送到命名传送点，支持跨服。 | `sparrow.command.warp[.other]` |
+| `/set-warp <name>` | 在当前位置创建或移动已有传送点，仅玩家可执行。 | `sparrow.command.set-warp` |
+| `/del-warp <name>` | 立即删除传送点。 | `sparrow.command.del-warp` |
+| `/warp-list [page]` | 查看可点击的聊天传送点列表。 | `sparrow.command.warp-list` |
+| `/edit-warp <name>` | 查看传送点的信息与管理面板。 | `sparrow.command.edit-warp` |
+| `/edit-warp <name> rename <new_name>` | 修改传送点名称。 | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.rename` |
+| `/edit-warp <name> description <text>` | 设置描述，最长 256 个字符。 | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.description` |
+| `/edit-warp <name> relocate` | 移到自己的当前位置，仅玩家可执行。 | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.relocate` |
+| `/edit-warp <name> delete [confirm <id>]` | 显示删除确认，或输入面板提供的确认命令。 | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.delete` |
 
 `/bed` 使用玩家死亡后会重生的位置：床、已充能的重生锚，或用 `/spawnpoint` 设置的位置。床被拆除或被挡住时，会提示没有可以返回的床。
+
+`/warp`、`/back` 和 `/bed` 的倒计时与冷却分别放在 `features.yml` 中。共用的显示、音效和绕过权限，见[传送设置](./features/teleport.mdx)。`/tp-offline` 立即传送。
 
 ## 🛠️ 便携工作站与容器
 
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
-| `/workbench [player]` | 为玩家打开工作台。 | `sparrow.command.workbench` |
-| `/anvil [player]` | 为玩家打开铁砧。 | `sparrow.command.anvil` |
-| `/grindstone [player]` | 为玩家打开砂轮。 | `sparrow.command.grindstone` |
-| `/smithing-table [player]` | 为玩家打开锻造台。 | `sparrow.command.smithing-table` |
-| `/stonecutter [player]` | 为玩家打开切石机。 | `sparrow.command.stonecutter` |
-| `/cartography-table [player]` | 为玩家打开制图台。 | `sparrow.command.cartography-table` |
-| `/enchantment-table [player]` | 为玩家打开附魔台。 | `sparrow.command.enchantment-table` |
-| `/ender_chest [player] [--silent]` | 让指定玩家打开他自己的末影箱。 | `sparrow.command.ender-chest` |
+| `/workbench [player]` | 为玩家打开工作台。 | `sparrow.command.workbench[.other]` |
+| `/anvil [player]` | 为玩家打开铁砧。 | `sparrow.command.anvil[.other]` |
+| `/grindstone [player]` | 为玩家打开砂轮。 | `sparrow.command.grindstone[.other]` |
+| `/smithing-table [player]` | 为玩家打开锻造台。 | `sparrow.command.smithing-table[.other]` |
+| `/stonecutter [player]` | 为玩家打开切石机。 | `sparrow.command.stonecutter[.other]` |
+| `/cartography-table [player]` | 为玩家打开制图台。 | `sparrow.command.cartography-table[.other]` |
+| `/enchantment-table [player]` | 为玩家打开附魔台。 | `sparrow.command.enchantment-table[.other]` |
+| `/ender_chest` | 打开自己的末影箱。 | `sparrow.command.ender-chest[.other]` |
+| `/ender_chest <player> [--silent]` | 让指定玩家打开他自己的末影箱。 | `sparrow.command.ender-chest[.other]` |
 
 ## 📦 物品编辑与获取
 
@@ -111,10 +126,12 @@ title: 🔑 权限命令速查表
 | `/item_name <player> [name] [选项]` | 查询或修改主手物品的 item_name 组件。 | `sparrow.command.item-name` |
 | `/custom_name <player> [name] [选项]` | 查询或修改主手物品的 custom_name 组件。 | `sparrow.command.custom-name` |
 | `/item_lore [选项]` | 查看或编辑主手物品 Lore，仅玩家可执行。 | `sparrow.command.item-lore` |
-| `/color [color] [--player <player>] [--slot <slot>] [--silent]` | 查询或修改物品染色。 | `sparrow.command.color` |
+| `/color <color>` | 设置自己主手物品的染色。 | `sparrow.command.color[.other]` |
+| `/color <color> <player> [--silent]` | 设置指定玩家主手物品的染色。 | `sparrow.command.color[.other]` |
 | `/custom_model_data [value]` | 查询或修改主手物品第一个模型数据 float，仅玩家可执行。 | `sparrow.command.custom-model-data` |
 | `/more [amount] [--player <player>] [--silent]` | 补充或复制主手物品，数量范围 1–6400。 | `sparrow.command.more` |
-| `/head [source] [选项]` | 按玩家名或 UUID 获取头颅。 | `sparrow.command.head` |
+| `/head [source] [amount]` | 按玩家名或 UUID 为自己获取头颅；数量范围 1–6400，默认 1。 | `sparrow.command.head[.other]` |
+| `/head <source> <amount> <player> [force] [--silent]` | 为选中的玩家获取头颅；`force` 为 `true` 时重新获取。 | `sparrow.command.head[.other]` |
 
 ## 📐 区域与测量
 
@@ -143,6 +160,10 @@ title: 🔑 权限命令速查表
 | `sparrow.bypass.maintenance` | 维护期间仍可留在服务器或进入服务器。 |
 | `sparrow.bypass.player-limit` | 服务器满员时仍可进入。 |
 | `sparrow.notify.ban` | 接收所有服务器的封禁与解封通知。默认只有 OP 拥有。 |
+| `sparrow.warp.<小写名称>` | 开启 `permission-restrict` 时，允许使用对应传送点。 |
+| `sparrow.teleport-warmup.<秒>` | 缩短 `/warp`、`/back` 或 `/bed` 的等待时间，取权限中的最小值与功能默认值中较小的一个。 |
+| `sparrow.bypass.teleport-warmup` | 自己传送时跳过倒计时。 |
+| `sparrow.bypass.teleport-cooldown` | 跳过传送冷却检查，也不产生新的冷却。 |
 
 `/enchant` 加上 `--check` 后与原版命令一致：等级不能超过附魔的最高等级，物品必须支持该附魔，且不能与已有附魔冲突，物品上已有同一附魔也算冲突。原版中附魔书不属于任何附魔的适用物品，因此同样会被拒绝。移除附魔时不做校验。
 

@@ -2,38 +2,45 @@
 title: 👤 Heads
 ---
 
-Use `/head` to fetch heads from player names or UUIDs. The command detects the source automatically. Player lookups support online profiles and external APIs, with memory and Redis caches to reduce repeated requests.
+Use `/head` to get a player's head by name or UUID. You can specify the amount and recipients.
 
 ## Commands and permissions
 
 | Command | Purpose | Default permission |
 | --- | --- | --- |
-| `/head [source] [options]` | Fetch by player name or UUID; a player defaults to their own name. | `sparrow.command.head` |
+| `/head [source] [amount]` | Fetch heads for yourself; omitted source uses your own name. | `sparrow.command.head` |
+| `/head <source> <amount> <player> [force] [--silent]` | Fetch heads for selected players; set `force` to `true` for a fresh lookup. | `sparrow.command.head` + `sparrow.command.head.other` |
 
-The full entry point is `/sparrow head`. All sources share the same command and permission. UUIDs may use dashes or 32 hexadecimal digits without dashes.
+The full entry point is `/sparrow head`. UUIDs may use dashes or 32 hexadecimal digits without dashes. Arguments are positional, in the order `source`, `amount`, `player`, `force`; to supply a later argument, also supply every earlier one.
 
-| Option | Meaning |
+Tab completion for `source` suggests online player names from every server sharing Sparrow's Redis connection. You can also enter an offline player's name or UUID manually. The `player` argument selects recipients on the current server.
+
+| Argument or option | Meaning |
 | --- | --- |
-| `--player <targets>` | Recipient name or player selector; defaults to the sender when run by a player. |
-| `--amount <amount>` | 1–6400 heads, default 1. |
-| `--force` | Bypass memory and Redis cache reads, fetch again, and cache successful API results. |
-| `--silent` / `-s` | Suppress success feedback; timeouts and failures are still reported. |
+| `source` | Player name or UUID for the head texture; defaults to your own name. Requires only the base permission. |
+| `amount` | 1–6400 heads, default 1. Available with the base permission. |
+| `player` | Recipient name or player selector; defaults to you when omitted. Requires `.other`, even for your own name or `@s`. |
+| `force` | `true` skips cached results and fetches again. Defaults to `false`; requires `.other`. |
+| `--silent` / `-s` | Suppress success feedback; timeouts and failures are still reported. Supply all four positional arguments before this option, including `false` when a fresh lookup is not needed. |
 
-The console must specify a source and `--player`. Heads are dropped at the recipients in stacks of up to 64.
+Without `.other`, you can use only `source` and `amount`. The permission for `player` and `force` is the base permission from `commands.yml` followed by `.other`.
+
+The console must specify a source, amount, and recipient. Heads drop at each recipient in stacks of up to 64.
 
 ~~~text title="Examples"
 /head
-/head Notch --amount 1
-/head Notch --player Alex --force
+/head Notch
+/head Notch 16
+/head Notch 1 Alex true
+/head Notch 1 @a false --silent
 /head 069a79f4-44e9-4726-a5be-fca90e38aaf5
-/head --force
 ~~~
 
 ## Sources and caches
 
 By default, Sparrow reads a local online player's texture first, then falls back to an API. External profile lookup uses Mojang's name and UUID endpoints by default, with Ashcon as a fallback when the primary API fails or returns no textures.
 
-`--force` still follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
+When `force` is `true`, lookup follows `source-order`. If the online player has a texture, Sparrow uses that live profile. Set `source-order: [api]` to always use the external profile service.
 
 This is a partial `features.yml` example; keep the remaining settings:
 
@@ -89,7 +96,7 @@ Each URL must contain `{player}`. Sparrow replaces it with the URL-encoded name 
 | Ashcon | `uuid`, `username` | `textures.raw.value` and optional `textures.raw.signature` |
 | Mojang | `id`, `name` | An entry named `textures` in `properties`, with `value` and optional `signature` |
 
-Fallback starts when the primary API reports an error, is rate limited, exceeds its individual HTTP timeout, returns no player, or provides no textures. Sparrow tries each backup in order and stops at the first valid textured profile. Successful results use the existing memory and Redis caches; `--force` also bypasses cached fallback results.
+Fallback starts when the primary API reports an error, is rate limited, exceeds its individual HTTP timeout, returns no player, or provides no textures. Sparrow tries each backup in order and stops at the first valid textured profile. Successful results use the existing memory and Redis caches; Setting `force` to `true` also skips cached fallback results.
 
 If no endpoint finds the player or a texture, Sparrow reports that the head was not found. If an endpoint fails and none succeeds, the last error is reported. Trying backup endpoints does not extend `head.request-timeout`.
 
