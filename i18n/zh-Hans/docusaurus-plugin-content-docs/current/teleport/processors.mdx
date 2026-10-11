@@ -1,0 +1,129 @@
+---
+title: 🧰 内置处理器
+---
+
+这一页列出 Sparrow 自带的全部处理器和它们的选项，供编写 `teleport.yml` 时对照。分组和阶段的含义见[传送分组](./overview.mdx)。
+
+## 一览
+
+| `processor-type` | 可以写在哪个阶段 | 作用 |
+| --- | --- | --- |
+| [`cooldown`](#cooldown) | `pre-processor` | 冷却期间拒绝传送，传送成功后开始冷却。 |
+| [`warmup`](#warmup) | `pre-processor` | 出发前让玩家原地等待。 |
+| [`world-blacklist`](#world-blacklist) | `target-processor` | 拒绝传送进入指定的世界。 |
+| [`sound`](#sound) | `pre-processor`、`post-processor` | 给玩家播放一个音效。 |
+
+处理器写在它不支持的阶段时会被忽略，并在控制台给出警告。
+
+每一项都以 `processor-type` 开头，后面是这个处理器自己的选项。没有写出的选项使用下表中的默认值。
+
+## cooldown
+
+冷却期间拒绝传送并提示剩余秒数。传送成功后开始冷却，冷却在各台服务器之间共享。
+
+~~~yaml
+- processor-type: cooldown
+  id: teleport
+  seconds: 30
+  bypass-permission: sparrow.bypass.teleport-cooldown
+~~~
+
+| 选项 | 默认值 | 含义 |
+| --- | --- | --- |
+| `id` | 无，必填 | 冷却 ID。ID 相同的传送共用一份冷却。没有填写时这一项会被忽略。 |
+| `seconds` | `0` | 冷却秒数，`0` 表示不限制。 |
+| `bypass-permission` | `sparrow.bypass.teleport-cooldown` | 拥有此权限的玩家不受冷却限制。留空（`''`）表示任何人都不能绕过。 |
+
+## warmup
+
+出发前让玩家原地等待并显示倒计时。倒计时走完后继续传送。
+
+~~~yaml
+- processor-type: warmup
+  seconds: 3
+  bypass-permission: sparrow.bypass.teleport-warmup
+  cancel-on-move: true
+  cancel-on-damage: true
+  display: ACTION_BAR
+  boss-bar-color: YELLOW
+  boss-bar-overlay: PROGRESS
+  warmup-sound: block.note_block.banjo
+  cancel-sound: entity.item.break
+~~~
+
+| 选项 | 默认值 | 含义 |
+| --- | --- | --- |
+| `seconds` | `3` | 等待的秒数，`0` 表示立即传送。玩家拥有 `sparrow.teleport-warmup.<秒>` 时，取其中的最小值与这里较小的一个。 |
+| `bypass-permission` | `sparrow.bypass.teleport-warmup` | 拥有此权限的玩家立即出发。留空（`''`）表示任何人都不能跳过。 |
+| `cancel-on-move` | `true` | 离开倒计时开始的位置超过半格，或切换世界时，是否取消传送。 |
+| `cancel-on-damage` | `true` | 受伤时是否取消传送。 |
+| `display` | `ACTION_BAR` | 倒计时显示的位置：`ACTION_BAR` 在快捷栏上方，`TITLE` 在屏幕中央，`BOSS_BAR` 是屏幕顶部的进度条，`CHAT` 在聊天栏，`NONE` 不显示。 |
+| `boss-bar-color` | `YELLOW` | 顶部进度条的颜色：`PINK`（粉）、`BLUE`（蓝）、`RED`（红）、`GREEN`（绿）、`YELLOW`（黄）、`PURPLE`（紫）、`WHITE`（白）。只在 `display` 为 `BOSS_BAR` 时有用。 |
+| `boss-bar-overlay` | `PROGRESS` | 顶部进度条的样式：`PROGRESS` 为连续条；`NOTCHED_6`、`NOTCHED_10`、`NOTCHED_12`、`NOTCHED_20` 显示对应数量的分段。 |
+| `warmup-sound` | `block.note_block.banjo` | 倒计时每过一秒播放的[音效](#sound-format)。 |
+| `cancel-sound` | `entity.item.break` | 因移动或受伤取消时播放的[音效](#sound-format)。 |
+
+同一名玩家开始新的倒计时会替换上一次；离开服务器时倒计时取消。`display` 设为 `NONE` 只隐藏倒计时文字，音效仍然播放。
+
+## world-blacklist
+
+落点所在的世界在名单里时拒绝传送，玩家留在原地并看到提示。
+
+~~~yaml
+- processor-type: world-blacklist
+  worlds:
+    - world_nether
+    - dungeon
+  bypass-permission: sparrow.bypass.teleport-world-blacklist
+~~~
+
+| 选项 | 默认值 | 含义 |
+| --- | --- | --- |
+| `worlds` | `[]` | 禁止传送进入的世界名称。 |
+| `bypass-permission` | `sparrow.bypass.teleport-world-blacklist` | 拥有此权限的玩家仍然可以进入。留空（`''`）表示任何人都不能进入。 |
+
+这个处理器由落点所在的服务器执行，所以名单要写在那台服务器的 `teleport.yml` 里。
+
+跨服传送时，玩家还没有进入目标服务器。此时检查 `bypass-permission` 需要目标服务器安装 LuckPerms，以 LuckPerms 中设置的权限为准。没有安装 LuckPerms 时，跨服进入黑名单世界的传送会在等待几秒后提示超时。只使用本服传送，或把 `bypass-permission` 留空，不受这一条影响。
+
+## sound
+
+给被传送的玩家播放一个音效。
+
+~~~yaml
+- processor-type: sound
+  sound: entity.enderman.teleport
+~~~
+
+| 选项 | 默认值 | 含义 |
+| --- | --- | --- |
+| `sound` | `entity.enderman.teleport` | 要播放的[音效](#sound-format)。 |
+
+写在 `post-processor` 里时，在玩家到达后播放，跨服到达也会播放。写在 `pre-processor` 里时，轮到它的那一刻播放：放在 `warmup` 之后就是出发的瞬间，放在最前面就是输入命令的瞬间。
+
+## 音效的写法 \{#sound-format}
+
+所有填写音效的选项都支持两种写法。只写名称时，音量和音调都是 `1.0`：
+
+~~~yaml
+sound: entity.enderman.teleport
+~~~
+
+需要调整音量、音调或声音类别时，写成一个小节：
+
+~~~yaml
+sound:
+  key: entity.enderman.teleport
+  volume: 0.8
+  pitch: 1.2
+  source: MASTER
+~~~
+
+| 键 | 默认值 | 含义 |
+| --- | --- | --- |
+| `key` | 必填 | 音效名称，例如 `entity.enderman.teleport`，也可以带上命名空间。 |
+| `volume` | `1.0` | 音量。 |
+| `pitch` | `1.0` | 音调。 |
+| `source` | `MASTER` | 声音类别，对应客户端声音设置里的滑块：`MASTER`、`MUSIC`、`RECORD`、`WEATHER`、`BLOCK`、`HOSTILE`、`NEUTRAL`、`PLAYER`、`AMBIENT`、`VOICE`、`UI`。 |
+
+想关闭某个音效时，把它留空（`''`）。Sparrow 第一次生成 `teleport.yml` 时，会把默认音效写成小节的形式，两种写法效果相同。

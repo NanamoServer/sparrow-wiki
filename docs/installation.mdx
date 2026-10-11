@@ -6,25 +6,27 @@ import Admonition from '@theme/Admonition';
 
 import PluginFileTree from '@site/src/components/PluginFileTree';
 
-Install Sparrow, assign a server ID, and connect Redis and persistent storage.
+Install the same Sparrow JAR on your proxy and backend servers, then configure server IDs, Redis, and persistent storage.
 
 ## Requirements
 
-The current build provides Paper, Folia, and Spigot entry points and declares **1.21.11** as its minimum API version. For Spigot, use **26.2 or a newer adapted version**. Match the server version to the Sparrow build you install.
+**Sparrow requires a proxy, even with only one backend server.** Use one Velocity or BungeeCord/Waterfall proxy per Sparrow network. Multi-proxy setups are not supported.
 
-The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders. LuckPerms is also optional; with it installed, [Maintenance](./features/maintenance.mdx) and [Player limit](./features/player-limit.mdx) use LuckPerms permissions to decide who can bypass them before joining. Without it, only operators can bypass.
+Sparrow supports Paper and Folia from **1.21.11**. For Spigot, use **26.2 or a newer adapted version**. Match the server version to the Sparrow build you install.
+
+Install the Java version required by your Minecraft server (Java 21 or later). PlaceholderAPI is optional: install it to parse external placeholders or use Sparrow's [Home placeholders](./features/home.mdx#placeholderapi). Home commands work without it. LuckPerms is also optional; with it installed, [Maintenance](./features/maintenance.mdx) and [Player limit](./features/player-limit.mdx) use LuckPerms permissions to decide who can bypass them before joining. Without it, only operators can bypass.
 
 **Redis and one persistent database are required at startup.** Choose MongoDB, MySQL, MariaDB, or PostgreSQL.
 
 <Admonition type="warning" title="Storage service versions">
 
-Redis must be newer than **7.2.4**. When using MySQL, its version must be newer than **8.0.0**.
+Redis requires **7.2.4 or newer**. MySQL requires **8.0.0 or newer**.
 
 </Admonition>
 
 ## Install
 
-Place the Sparrow `.jar` in `plugins/` and start the server. Configuration files are generated under `plugins/Sparrow/`:
+Sparrow uses one universal file, `sparrow-<version>.jar`. Put the same version in the `plugins/` folder of the proxy and every backend, then start them to generate configuration files. Each backend creates its settings under `plugins/sparrow/`:
 
 <PluginFileTree
   title="Sparrow"
@@ -48,13 +50,15 @@ Place the Sparrow `.jar` in `plugins/` and start the server. Configuration files
 
 ## Server ID
 
-Change the existing `server-id` in `plugins/Sparrow/server.yml`:
+Change the existing `server-id` in `plugins/sparrow/server.yml`:
 
 ~~~yaml title="server.yml · Server ID"
 server-id: 'lobby'
 ~~~
 
-Every server sharing Redis and storage needs a different ID, such as `lobby`, `survival-1`, or `survival-2`. With a proxy, match its configured backend name. Change this value when copying configuration to another server.
+Every server sharing Redis and storage needs a different ID, such as `lobby`, `survival-1`, or `survival-2`. The ID must match the backend name configured on the proxy. Change this value when copying configuration to another server.
+
+Sparrow refuses to start if another running server already uses that ID. If a server has just crashed, wait about 4 seconds before starting it again with the same ID.
 
 ## Redis and database
 
@@ -91,14 +95,9 @@ Restart, check the console for connection results, and run `/sparrow feature-lis
 
 ## Proxy plugin \{#proxy-plugin}
 
-If your servers run behind Velocity or BungeeCord (including Waterfall), also install the Sparrow proxy plugin on the proxy:
+Velocity, BungeeCord/Waterfall, and the backend servers all use `sparrow-<version>.jar`. When upgrading from separate platform JARs, remove those old JARs before installing the universal file.
 
-| Proxy | File |
-| --- | --- |
-| Velocity | `Sparrow-velocity-<version>.jar` |
-| BungeeCord / Waterfall | `Sparrow-bungeecord-<version>.jar` |
-
-Place it in the proxy's `plugins/` folder and start the proxy once. It creates `config.yml` in `plugins/sparrow/` on Velocity or `plugins/Sparrow/` on BungeeCord. Point it at the same Redis as your backend servers, including the same database number:
+On the proxy, Sparrow creates `plugins/sparrow/config.yml`. Point it at the same Redis as your backends, including the same database number:
 
 ~~~yaml title="Proxy config.yml · Redis"
 redis:
@@ -107,9 +106,9 @@ redis:
   password: ''
 ~~~
 
-Restart the proxy after editing. The console shows `Connected to Redis` when the connection works.
+Enable the player information forwarding mode appropriate for your proxy and backends. All players should connect through the proxy address. Restart the proxy after editing; the console shows `Connected to Redis` when the Redis connection works.
 
-With the proxy plugin, `/kick` and [bans](./features/ban.mdx) disconnect players from the whole network and show them the reason. Without it, players are removed only from the server they are on, about a second later, and the proxy may send them to another server. Cross-server travel with [Warps](./features/warp.mdx) and [Back](./features/back.mdx) also requires the proxy plugin; local teleports work without it.
+`/kick` and [bans](./features/ban.mdx) disconnect players from the whole network and show the reason. [Warps](./features/warp.mdx), [Homes](./features/home.mdx), [Spawn](./features/spawn.mdx), [Back](./features/back.mdx), and [teleport requests](./features/tpa.mdx) can send players between the connected backends.
 
 ## Features and commands
 
@@ -136,7 +135,7 @@ Features use `enabled`; commands use `enable`. Disabling an entry point and disa
 | Setting | How to apply |
 | --- | --- |
 | Feature settings in `features.yml` | `/sparrow reload` |
-| Countdown display and sounds in `config.yml` | `/sparrow reload` |
+| Teleport groups in `teleport.yml` | `/sparrow reload` |
 | Feature switches | `/sparrow feature-enable <feature>` or `feature-disable`; saved to the file |
 | Command switches, entry points, and permissions | Restart |
 | Redis, database connections, or `server-id` | Restart |

@@ -8,13 +8,13 @@ Ban accounts, IP addresses, or IP ranges on every server in your network. Banned
 
 | Command or permission | Purpose | Default command permission |
 | --- | --- | --- |
-| `/ban <player> [reason] [-t <time>] [-I] [-s]` | Ban an account by player name or UUID. `-I` also bans the player's last login IP. | `sparrow.command.ban` |
-| `/ban-ip <ip> [reason] [-t <time>] [-s]` | Ban an IP address or IP range. | `sparrow.command.ban-ip` |
+| `/ban <player> [reason] [-t <time>] [-I] [--force] [-s]` | Ban an account by player name or UUID. `-I` also bans the player's last login IP. | `sparrow.command.ban` |
+| `/ban-ip <ip> [reason] [-t <time>] [--force] [-s]` | Ban an IP address or IP range. | `sparrow.command.ban-ip` |
 | `/unban <target> [-s]` | Lift active bans by player name, UUID, IP, or punishment ID. | `sparrow.command.unban` |
 | `/ban-history [target] [options]` | Browse ban records page by page. | `sparrow.command.ban-history` |
 | `sparrow.notify.ban` | Receive ban and unban notices from every server. | — |
 
-Each command also has a `/sparrow <command>` entry point.
+Each command also has a `/sparrow <command>` entry point. `/ban` and `/unban` do not accept selectors such as `@s` or `@a`.
 
 ~~~text title="Examples"
 /ban Steve Griefing at spawn -t 7d
@@ -47,8 +47,8 @@ Every ban gets a random ID such as `#K7Q2M9XD`. It appears in the command result
 
 ## Replacing and lifting bans
 
-- Banning a player who already has an active ban replaces the old one. The old record stays in the history as revoked.
-- An IP-only ban replaces an active IP-only ban on exactly the same address or range.
+- If an account already has an active ban, a new ban is refused. Add `--force` to replace it, for example `/ban Steve grief -t 7d --force`. The old record stays in history as revoked.
+- `/ban-ip` also requires `--force` to replace an active IP-only ban on exactly the same address or range.
 - `/unban <player>` lifts every active ban on that account, including account-and-IP bans.
 - `/unban <ip>` lifts only IP-only bans on exactly the same address or range. Use the player or the punishment ID to lift an account-and-IP ban.
 - `/unban #ID` lifts that one record.
@@ -59,7 +59,7 @@ Every ban gets a random ID such as `#K7Q2M9XD`. It appears in the command result
 - Banned players cannot join any server. During [Maintenance](./maintenance.mdx) they still see the ban reason rather than the maintenance message.
 - A player sees "You are banned" when their own account is banned, and "Your IP address is banned" when the address they connect from is banned.
 - If Sparrow cannot reach the database while a player is joining, the player is let in and the error is shown in the console.
-- With Velocity or BungeeCord, install the [proxy plugin](../installation.mdx#proxy-plugin). With it, banned players are disconnected from the whole network and see the ban reason; without it, the proxy may first try to send them to another server.
+- Banned players are disconnected from the whole network and see the ban reason. Follow the [proxy setup](../installation.mdx#proxy-plugin) on the proxy and backends.
 
 ## Staff notices and `-s`
 
@@ -89,7 +89,14 @@ Each row shows the status (active, expired, or revoked), punishment ID, time, ta
 ~~~yaml title="features.yml · ban"
 ban:
   enabled: true
+  reason-presets:
+    cheating: Cheating
+    grief: Griefing
 ~~~
+
+`reason-presets` provides short names for common reasons. For example, `/ban Steve grief` uses the text configured for `grief`. Tab completion offers these names; other input remains a custom reason. Set it to `{}` to turn presets off.
+
+`notify-ban-sound` and `notify-unban-sound` control staff notification sounds. Use a sound name such as `entity.experience_orb.pickup`, or `''` to turn one off. `-s` also suppresses these sounds.
 
 Bans are saved in the database configured in `config.yml`. While the feature is disabled, bans are not enforced and the ban commands are hidden.
 
