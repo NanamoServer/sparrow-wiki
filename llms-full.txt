@@ -14,23 +14,25 @@ Start with [Installation](https://nanamoserver.github.io/sparrow-wiki/installati
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/installation>
 
-Install Sparrow, assign a server ID, and connect Redis and persistent storage.
+Install the same Sparrow JAR on your proxy and backend servers, then configure server IDs, Redis, and persistent storage.
 
 ## Requirements
 
-The current build provides Paper, Folia, and Spigot entry points and declares **1.21.11** as its minimum API version. For Spigot, use **26.2 or a newer adapted version**. Match the server version to the Sparrow build you install.
+**Sparrow requires a proxy, even with only one backend server.** Use one Velocity or BungeeCord/Waterfall proxy per Sparrow network. Multi-proxy setups are not supported.
 
-The plugin is compiled for Java 21; your runtime must also meet your Minecraft server's Java requirements. PlaceholderAPI is optional and is needed only for its placeholders. LuckPerms is also optional; with it installed, [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx) and [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx) use LuckPerms permissions to decide who can bypass them before joining. Without it, only operators can bypass.
+Sparrow supports Paper and Folia from **1.21.11**. For Spigot, use **26.2 or a newer adapted version**. Match the server version to the Sparrow build you install.
+
+Install the Java version required by your Minecraft server (Java 21 or later). PlaceholderAPI is optional: install it to parse external placeholders or use Sparrow's [Home placeholders](https://nanamoserver.github.io/sparrow-wiki/features/home.mdx#placeholderapi). Home commands work without it. LuckPerms is also optional; with it installed, [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx) and [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx) use LuckPerms permissions to decide who can bypass them before joining. Without it, only operators can bypass.
 
 **Redis and one persistent database are required at startup.** Choose MongoDB, MySQL, MariaDB, or PostgreSQL.
 
 > **Storage service versions**
 >
-> Redis must be newer than **7.2.4**. When using MySQL, its version must be newer than **8.0.0**.
+> Redis requires **7.2.4 or newer**. MySQL requires **8.0.0 or newer**.
 
 ## Install
 
-Place the Sparrow `.jar` in `plugins/` and start the server. Configuration files are generated under `plugins/Sparrow/`:
+Sparrow uses one universal file, `sparrow-<version>.jar`. Put the same version in the `plugins/` folder of the proxy and every backend, then start them to generate configuration files. Each backend creates its settings under `plugins/sparrow/`:
 
 **Sparrow**
 
@@ -47,13 +49,15 @@ Place the Sparrow `.jar` in `plugins/` and start the server. Configuration files
 
 ## Server ID
 
-Change the existing `server-id` in `plugins/Sparrow/server.yml`:
+Change the existing `server-id` in `plugins/sparrow/server.yml`:
 
 ```yaml title="server.yml · Server ID"
 server-id: 'lobby'
 ```
 
-Every server sharing Redis and storage needs a different ID, such as `lobby`, `survival-1`, or `survival-2`. With a proxy, match its configured backend name. Change this value when copying configuration to another server.
+Every server sharing Redis and storage needs a different ID, such as `lobby`, `survival-1`, or `survival-2`. The ID must match the backend name configured on the proxy. Change this value when copying configuration to another server.
+
+Sparrow refuses to start if another running server already uses that ID. If a server has just crashed, wait about 4 seconds before starting it again with the same ID.
 
 ## Redis and database
 
@@ -90,14 +94,9 @@ Restart, check the console for connection results, and run `/sparrow feature-lis
 
 ## Proxy plugin {#proxy-plugin}
 
-If your servers run behind Velocity or BungeeCord (including Waterfall), also install the Sparrow proxy plugin on the proxy:
+Velocity, BungeeCord/Waterfall, and the backend servers all use `sparrow-<version>.jar`. When upgrading from separate platform JARs, remove those old JARs before installing the universal file.
 
-| Proxy | File |
-| - | - |
-| Velocity | `Sparrow-velocity-<version>.jar` |
-| BungeeCord / Waterfall | `Sparrow-bungeecord-<version>.jar` |
-
-Place it in the proxy's `plugins/` folder and start the proxy once. It creates `config.yml` in `plugins/sparrow/` on Velocity or `plugins/Sparrow/` on BungeeCord. Point it at the same Redis as your backend servers, including the same database number:
+On the proxy, Sparrow creates `plugins/sparrow/config.yml`. Point it at the same Redis as your backends, including the same database number:
 
 ```yaml title="Proxy config.yml · Redis"
 redis:
@@ -106,9 +105,9 @@ redis:
   password: ''
 ```
 
-Restart the proxy after editing. The console shows `Connected to Redis` when the connection works.
+Enable the player information forwarding mode appropriate for your proxy and backends. All players should connect through the proxy address. Restart the proxy after editing; the console shows `Connected to Redis` when the Redis connection works.
 
-With the proxy plugin, `/kick` and [bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx) disconnect players from the whole network and show them the reason. Without it, players are removed only from the server they are on, about a second later, and the proxy may send them to another server. Cross-server travel with [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx) and [Back](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx) also requires the proxy plugin; local teleports work without it.
+`/kick` and [bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx) disconnect players from the whole network and show the reason. [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx), [Homes](https://nanamoserver.github.io/sparrow-wiki/features/home.mdx), [Spawn](https://nanamoserver.github.io/sparrow-wiki/features/spawn.mdx), [Back](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx), and [teleport requests](https://nanamoserver.github.io/sparrow-wiki/features/tpa.mdx) can send players between the connected backends.
 
 ## Features and commands
 
@@ -135,7 +134,7 @@ Features use `enabled`; commands use `enable`. Disabling an entry point and disa
 | Setting | How to apply |
 | - | - |
 | Feature settings in `features.yml` | `/sparrow reload` |
-| Countdown display and sounds in `config.yml` | `/sparrow reload` |
+| Teleport groups in `teleport.yml` | `/sparrow reload` |
 | Feature switches | `/sparrow feature-enable <feature>` or `feature-disable`; saved to the file |
 | Command switches, entry points, and permissions | Restart |
 | Redis, database connections, or `server-id` | Restart |
@@ -151,6 +150,22 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/commands>
 These are the default entry points and permissions. Short commands also accept `/sparrow <command>`. Restart after editing `commands.yml`.
 
 Commands that belong to a feature, such as `/maintenance` or `/ban`, are hidden from players and refused with a notice while that feature is disabled. They reappear as soon as the feature is enabled again.
+
+## Player names and selectors {#player-targets}
+
+Commands that support cross-server players offer online names across the proxy network in Tab completion. Players remain listed while switching backends. You can still type a known offline name where the command supports it. Commands for local actions, such as healing or opening an inventory, continue to target local players.
+
+Selectors such as `@s` (yourself), `@p` (nearest player), `@r` (random player), and `@a` (all players) **only select players on the server where you run the command**.
+
+| Argument | Selectors |
+| - | - |
+| `/kick <player>` | Accepts multiple local players, such as `/kick @a Server restarting`. Type a name to kick someone on another server. |
+| `/ip`, `/ip-history`, `/player-uuid`, `/player-info`, and the destination player in `/tp-offline` | One player only: use `@s`, `@p`, `@r`, or `@a[limit=1]`. |
+| Owner in `/del-home <name> [player]`, `/home-list other <player>`, or `/del-all-home --player <player>` | One local player. The combined `<player>.<home>` form still requires a name. |
+| `/ban-history --operator <player>` | One local player. The history target itself uses a name, UUID, IP, or punishment ID. |
+| `/ban`, `/mute`, `/unmute`, `/unban` | No selectors. Enter a player name or another target type accepted by that command. |
+
+`@s` requires a player executor; it cannot select a player from the console. A single-player argument rejects `@a` without a limit, even if only one player is online.
 
 ## ⚙️ Plugin management
 
@@ -173,19 +188,22 @@ Commands that belong to a feature, such as `/maintenance` or `/ban`, are hidden 
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/kick <player> [reason] [-s]` | Kick a player from whichever server they are on; the kick screen shows the reason and who kicked them. | `sparrow.command.kick` |
-| `/ban <player> [reason] [-t <time>] [-I] [-s]` | Ban an account network-wide; `-I` also bans its last login IP. | `sparrow.command.ban` |
-| `/ban-ip <ip> [reason] [-t <time>] [-s]` | Ban an IP address or range such as `1.2.3.*`. | `sparrow.command.ban-ip` |
+| `/ban <player> [reason] [-t <time>] [-I] [--force] [-s]` | Ban an account network-wide; `-I` also bans its last login IP. | `sparrow.command.ban` |
+| `/ban-ip <ip> [reason] [-t <time>] [--force] [-s]` | Ban an IP address or range such as `1.2.3.*`. | `sparrow.command.ban-ip` |
+| `/mute <player> <time> [reason]` | Temporarily mute a player across the network. See [Mutes](https://nanamoserver.github.io/sparrow-wiki/features/mute.mdx). | `sparrow.command.mute` |
+| `/unmute <player>` | Lift a player’s active mute. | `sparrow.command.unmute` |
 | `/unban <target> [-s]` | Lift bans by player name, UUID, IP, or punishment ID. | `sparrow.command.unban` |
 | `/ban-history [target] [options]` | Browse ban records with operator, time, and active filters. | `sparrow.command.ban-history` |
 
 `/kick` works for any player online in the network. `--silent` / `-s` hides the success message from the executor; on ban commands it also skips staff notices.
 
-With Velocity or BungeeCord, install the [proxy plugin](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin) so kicked and banned players are disconnected from the whole network. Without it, they are removed from their current server after about a second, and the proxy may move them to another server.
+`/kick` disconnects the player from the proxy, including while they are switching backends. The kick screen uses the translation files on the server where the command was run, in the target player's language. Success is reported after the proxy performs the kick; if the player has already left, the command reports them offline. See [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin).
 
 ## 🔎 Player records
 
 | Command | Purpose | Default permission |
 | - | - | - |
+| `/player-info <player>` | Show player records and punishment status; also available as `/whois`. | `sparrow.command.player-info` |
 | `/ip <player>` | Show a player's last login IP and time, with a button to list players on the same IP. | `sparrow.command.ip` |
 | `/ip-history <target> [page]` | List players whose last login IP matches an IP, a range such as `1.2.3.*`, or a player's last login IP. | `sparrow.command.ip-history` |
 | `/player-uuid <player>` | Look up a player's UUID by name. | `sparrow.command.player-uuid` |
@@ -203,6 +221,7 @@ These commands only know players who have joined your servers; nothing is looked
 | `/fly <player> [enabled]` | Toggle the named player's flight state, or set it with true / false. | `sparrow.command.fly[.other]` |
 | `/fly-speed <speed> [player]` | Set flight speed from -1 to 1. | `sparrow.command.fly-speed[.other]` |
 | `/walk-speed <speed> [player]` | Set walking speed from -1 to 1. | `sparrow.command.walk-speed[.other]` |
+| `/smite <targets> [--effect]` | Strike selected local entities with lightning; `--effect` shows only the visual effect. | `sparrow.command.smite` |
 | `/suicide` | Kill yourself; players only. | `sparrow.command.suicide` |
 | `/burn <time> [targets]` | Set yourself or selected entities on fire; time accepts ticks or units such as `5s`. | `sparrow.command.burn[.other]` |
 | `/extinguish [targets]` | Extinguish target entities. | `sparrow.command.extinguish[.other]` |
@@ -221,6 +240,7 @@ These commands only know players who have joined your servers; nothing is looked
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/patrol [targets]` | Patrol local online players in rotation; players only. | `sparrow.command.patrol` |
+| `/force-say <targets> <text>` | Make selected local players send a chat message. | `sparrow.command.force-say` |
 | `/sudo <targets> <command>` | Make selected players execute a command. | `sparrow.command.sudo` |
 
 ## 🧭 Teleportation
@@ -231,7 +251,11 @@ These commands only know players who have joined your servers; nothing is looked
 | `/top-block [targets]` | Move targets to the highest usable position in their current block column. | `sparrow.command.top-block[.other]` |
 | `/tp-offline <player> [targets] [--silent]` | Teleport targets to the named player’s last recorded location. | `sparrow.command.tp-offline` |
 | `/server <server> [targets]` | Request a backend transfer through the proxy. | `sparrow.command.server[.other]` |
+| `/spawn` | Travel to the shared spawn; players only. See [Network spawn](https://nanamoserver.github.io/sparrow-wiki/features/spawn.mdx). | `sparrow.command.spawn` |
+| `/set-spawn` | Set or replace the shared spawn at your position; players only. | `sparrow.command.set-spawn` |
+| `/del-spawn` | Delete the shared spawn immediately; players and console. | `sparrow.command.del-spawn` |
 | `/bed [player]` | Teleport a player to their respawn point, such as their bed. | `sparrow.command.bed[.other]` |
+| `/death-back [player]` | Return to the last death location, including across servers. | `sparrow.command.death-back[.other]` |
 | `/back [player]` | Return a player to their previous location, including across servers. | `sparrow.command.back[.other]` |
 | `/warp <name> [player]` | Teleport yourself or the named player to a warp, including across servers. | `sparrow.command.warp[.other]` |
 | `/set-warp <name>` | Create a warp at your position, or move an existing one there; players only. | `sparrow.command.set-warp` |
@@ -245,7 +269,57 @@ These commands only know players who have joined your servers; nothing is looked
 
 `/bed` uses the point where the player would respawn: their bed, a charged respawn anchor, or a point set with `/spawnpoint`. If the bed was broken or is blocked, the player is told they have no bed to return to.
 
-`/warp`, `/back`, and `/bed` have separate countdown and cooldown settings in `features.yml`. See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for their shared display, sounds, and bypass permissions. `/tp-offline` teleports immediately.
+Bare `/warp` reports a missing name; use `/warp-list` to browse destinations. See [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx) for per-destination permissions and management.
+
+Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`, and each feature picks its group with `teleport-group` in `features.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx). `/tp-offline` teleports immediately.
+
+### Server name completion
+
+`/server` suggests online Sparrow servers, excluding the current server. It also respects `server.allowed-servers` in `features.yml`. Suggestions update automatically as servers start or stop, usually within a few seconds, and work from the console even when this server has no players.
+
+You can type a server name that is not suggested. It must be allowed by the configuration and exist on the proxy; the proxy decides whether the connection succeeds.
+
+```yaml title="features.yml · server"
+server:
+  enabled: true
+  allowed-servers: []
+```
+
+An empty list allows any destination. To restrict transfers, use a list such as `allowed-servers: [lobby, survival]`. Apply changes with `/sparrow reload`. See [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin).
+
+## 🏠 Homes
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/set-home [name]` | Create your home at your current position, defaulting to `home`; players only, no overwrite. | `sparrow.command.set-home` |
+| `/home [name]` | Travel to your named, default, or only home; players only. | `sparrow.command.home` |
+| `/home <player>.<name>` | Travel yourself to another player's home. | `sparrow.command.home` + `sparrow.command.home.other` |
+| `/del-home <name> [player]` | Delete your home, or the specified owner's home with `.other`, immediately. | `sparrow.command.del-home[.other]` |
+| `/home-list [page]` | List your homes, 10 per page. | `sparrow.command.home-list` |
+| `/home-list other <player> [page]` | List another player's homes. | `sparrow.command.home-list` + `sparrow.command.home-list.other` |
+| `/edit-home <home>` | Show a home's information and management panel. | `sparrow.command.edit-home[.other]` |
+| `/edit-home <home> rename <new_name>` | Rename a home. | `sparrow.command.edit-home` + `sparrow.command.edit-home.rename` |
+| `/edit-home <home> relocate` | Move a home to your current position and server; players only. | `sparrow.command.edit-home` + `sparrow.command.edit-home.relocate` |
+| `/edit-home <home> delete` | Delete a home immediately, without confirmation. | `sparrow.command.edit-home` + `sparrow.command.edit-home.delete` |
+| `/del-all-home [--player <player>] [--server <server>] [--world <world>]` | Delete homes matching all filters; console only, at least one filter, no confirmation. | `sparrow.command.del-all-home` |
+
+For Home commands, `player` means the owner, including a known offline player. `<home>` accepts your home's name or `<player>.<name>`; editing another player's home requires `.other` in addition to each operation's permission. The console must specify an owner. `/home` has no argument for sending another player.
+
+Aliases: `/sethome`, `/delhome`, `/homelist`, and `/edithome`. Bare `/home` prefers the configured default home, then your only home; otherwise it asks for a name or shows how to create one. It never opens the list automatically.
+
+All Home list and panel buttons fill in a command for you to execute with Enter. See [Homes](https://nanamoserver.github.io/sparrow-wiki/features/home.mdx) for limits, configuration, bulk filters, and PlaceholderAPI placeholders.
+
+## 🤝 Teleport requests
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/tpa <player>` | Ask to teleport to the other player. | `sparrow.command.tpa` |
+| `/tpa-here <player>` | Ask the other player to teleport to you. | `sparrow.command.tpa-here` |
+| `/tpa-accept [player]` | Accept a request you received; without a player, the most recent one. | `sparrow.command.tpa-accept` |
+| `/tpa-deny [player]` | Deny a request you received; without a player, the most recent one. | `sparrow.command.tpa-deny` |
+| `/tpa-cancel [player]` | Cancel your request to a player; without a player, every request you sent. | `sparrow.command.tpa-cancel` |
+
+These commands are for players only, and the target can be on another backend. Aliases: `/tpahere`, `/tpaccept`, `/tpdeny`, and `/tpacancel`. See [Teleport requests](https://nanamoserver.github.io/sparrow-wiki/features/tpa.mdx) for expiry, cooldowns, and configuration.
 
 ## 🛠️ Portable workstations and containers
 
@@ -258,6 +332,8 @@ These commands only know players who have joined your servers; nothing is looked
 | `/stonecutter [player]` | Open a stonecutter for a player. | `sparrow.command.stonecutter[.other]` |
 | `/cartography-table [player]` | Open a cartography table for a player. | `sparrow.command.cartography-table[.other]` |
 | `/enchantment-table [player]` | Open an enchanting table for a player. | `sparrow.command.enchantment-table[.other]` |
+| `/clear-inv <player>` | Clear a local player’s inventory, equipment, cursor, and crafting items. | `sparrow.command.clear-inv` |
+| `/clear-ender <player>` | Clear a local player’s ender chest. | `sparrow.command.clear-ender` |
 | `/ender_chest` | Open your own ender chest. | `sparrow.command.ender-chest[.other]` |
 | `/ender_chest <player> [--silent]` | Have the named player open their own ender chest. | `sparrow.command.ender-chest[.other]` |
 
@@ -265,6 +341,9 @@ These commands only know players who have joined your servers; nothing is looked
 
 | Command | Purpose | Default permission |
 | - | - | - |
+| `/repair <player> [--slot <slot>] [--value <amount>]` | Repair the main-hand item, or the selected equipment slot. Omit `--value` for a full repair. | `sparrow.command.repair` |
+| `/repair-all <player>` | Fully repair items in a local player’s inventory and equipment. | `sparrow.command.repair-all` |
+| `/item-damage <player> <value>` | Set main-hand damage, not remaining durability; reaching the maximum breaks the item. | `sparrow.command.item-damage` |
 | `/enchant <targets> <enchantment> [level] [--slot <slot>] [--check]` | Edit an enchantment in a target entity’s equipment slot; a negative level removes it. `--check` applies the vanilla `/enchant` rules. | `sparrow.command.enchant` |
 | `/item_data [--full] [--chat]` | Inspect the main-hand item’s data; players only. | `sparrow.command.item-data` |
 | `/item_name <player> [name] [options]` | Read or edit the main-hand item\_name component. | `sparrow.command.item-name` |
@@ -288,13 +367,27 @@ These commands only know players who have joined your servers; nothing is looked
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/broadcast <targets> <message> [options]` | Send a chat message to selected players. | `sparrow.command.broadcast` |
+| `/clear-chat [player]` | Scroll chat out of view for a local player, or everyone on this server when omitted. | `sparrow.command.clear-chat` |
+| `/broadcast <message> [options]` | Broadcast a chat message to online players on every server, including the current server. | `sparrow.command.broadcast` |
 | `/actionbar <targets> <message> [options]` | Send an action bar to selected players. | `sparrow.command.actionbar` |
 | `/title <targets> <fadeIn> <stay> <fadeOut> <message> [options]` | Send a title with an optional subtitle. | `sparrow.command.title` |
 | `/toast <targets> <type> <item> <message> [options]` | Send an advancement toast with an item icon. | `sparrow.command.toast` |
 | `/totem-animation <targets> <item> [--silent]` | Play a totem animation with the specified item icon. | `sparrow.command.totem-animation` |
 | `/demo [player]` | Display the demo prompt. | `sparrow.command.demo` |
 | `/credits [player]` | Display the credits screen. | `sparrow.command.credits` |
+
+Players and the console can use `/broadcast`. The message is required, may contain spaces, and goes to all online players on Sparrow servers sharing the same Redis connection and database number, including the current server. Broadcasting works even when the server where you run the command has no players online.
+
+Messages support MiniMessage formatting, for example `/broadcast <gold>The market is now open!</gold>`. Add options after the message:
+
+| Broadcast option | Effect |
+| - | - |
+| `--silent` / `-s` | Hide the executor's single confirmation; players still receive the broadcast. |
+| `--legacy-color` / `-l` | Enable legacy color codes such as `&a`. |
+
+Use `<papi:placeholder>` in Sparrow messages, for example `/broadcast <gold>Hello, <papi:player_name>!</gold>`. Each recipient sees their own name. To provide default text, use `<papi:player_name:Player>`. Receiving servers need PlaceholderAPI and the relevant expansions; no parsing switch is required.
+
+Legacy colors are off by default. Set `text-options.parse-legacy-color: true` in the sending server's `config.yml`, or add `-l` to an individual command.
 
 ## 🔑 Additional permissions
 
@@ -304,10 +397,15 @@ These commands only know players who have joined your servers; nothing is looked
 | `sparrow.bypass.maintenance` | Stay on or join the server during maintenance. |
 | `sparrow.bypass.player-limit` | Join even when the server is full. |
 | `sparrow.notify.ban` | Receive ban and unban notices from every server. Only operators have it by default. |
+| `sparrow.notify.mute` | Receive mute and unmute notices from every server. |
 | `sparrow.warp.<lowercase-name>` | Access the named warp when `permission-restrict` is enabled. |
-| `sparrow.teleport-warmup.<seconds>` | Shorten the wait before `/warp`, `/back`, or `/bed`; the lowest permission value or feature default wins. |
+| `sparrow.max-homes.<number>` | Set the Home limit; the highest granted number replaces the configured default. |
+| `sparrow.max-homes.unlimited` | Remove the Home limit. |
+| `sparrow.teleport-warmup.<seconds>` | Shorten the countdown before `/warp`, `/home`, `/back`, `/death-back`, `/bed`, `/spawn`, or an accepted teleport request; the lowest permission value or group setting wins. |
 | `sparrow.bypass.teleport-warmup` | Skip the countdown before teleporting yourself. |
-| `sparrow.bypass.teleport-cooldown` | Skip teleport cooldown checks and do not start a new cooldown. |
+| `sparrow.bypass.teleport-cooldown` | Not held by teleport cooldowns. |
+| `sparrow.bypass.teleport-world-blacklist` | May teleport into worlds on the world blacklist. |
+| `sparrow.bypass.tpa-cooldown` | Send teleport requests without the request cooldown or the deny cooldown. |
 
 With `--check`, `/enchant` follows the vanilla command: the level cannot exceed the enchantment's maximum level, the item must support the enchantment, and the enchantment must not conflict with existing ones, including the same enchantment already on the item. Enchanted books are not supported items in vanilla, so they are refused as well. Removing an enchantment is never checked.
 
@@ -644,7 +742,7 @@ When `max-players` is `-1`, the `max-players` value from `server.properties` is 
 
 > **Note**
 >
-> With Velocity or BungeeCord, the proxy has its own player limit and server list display. This feature only affects the current backend server.
+> The proxy has its own player limit and server list display. This feature only affects the current backend server.
 
 # Bans
 
@@ -656,13 +754,13 @@ Ban accounts, IP addresses, or IP ranges on every server in your network. Banned
 
 | Command or permission | Purpose | Default command permission |
 | - | - | - |
-| `/ban <player> [reason] [-t <time>] [-I] [-s]` | Ban an account by player name or UUID. `-I` also bans the player's last login IP. | `sparrow.command.ban` |
-| `/ban-ip <ip> [reason] [-t <time>] [-s]` | Ban an IP address or IP range. | `sparrow.command.ban-ip` |
+| `/ban <player> [reason] [-t <time>] [-I] [--force] [-s]` | Ban an account by player name or UUID. `-I` also bans the player's last login IP. | `sparrow.command.ban` |
+| `/ban-ip <ip> [reason] [-t <time>] [--force] [-s]` | Ban an IP address or IP range. | `sparrow.command.ban-ip` |
 | `/unban <target> [-s]` | Lift active bans by player name, UUID, IP, or punishment ID. | `sparrow.command.unban` |
 | `/ban-history [target] [options]` | Browse ban records page by page. | `sparrow.command.ban-history` |
 | `sparrow.notify.ban` | Receive ban and unban notices from every server. | — |
 
-Each command also has a `/sparrow <command>` entry point.
+Each command also has a `/sparrow <command>` entry point. `/ban` and `/unban` do not accept selectors such as `@s` or `@a`.
 
 ```text title="Examples"
 /ban Steve Griefing at spawn -t 7d
@@ -695,8 +793,8 @@ Every ban gets a random ID such as `#K7Q2M9XD`. It appears in the command result
 
 ## Replacing and lifting bans
 
-- Banning a player who already has an active ban replaces the old one. The old record stays in the history as revoked.
-- An IP-only ban replaces an active IP-only ban on exactly the same address or range.
+- If an account already has an active ban, a new ban is refused. Add `--force` to replace it, for example `/ban Steve grief -t 7d --force`. The old record stays in history as revoked.
+- `/ban-ip` also requires `--force` to replace an active IP-only ban on exactly the same address or range.
 - `/unban <player>` lifts every active ban on that account, including account-and-IP bans.
 - `/unban <ip>` lifts only IP-only bans on exactly the same address or range. Use the player or the punishment ID to lift an account-and-IP ban.
 - `/unban #ID` lifts that one record.
@@ -707,7 +805,7 @@ Every ban gets a random ID such as `#K7Q2M9XD`. It appears in the command result
 - Banned players cannot join any server. During [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx) they still see the ban reason rather than the maintenance message.
 - A player sees "You are banned" when their own account is banned, and "Your IP address is banned" when the address they connect from is banned.
 - If Sparrow cannot reach the database while a player is joining, the player is let in and the error is shown in the console.
-- With Velocity or BungeeCord, install the [proxy plugin](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin). With it, banned players are disconnected from the whole network and see the ban reason; without it, the proxy may first try to send them to another server.
+- Banned players are disconnected from the whole network and see the ban reason. Follow the [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin) on the proxy and backends.
 
 ## Staff notices and `-s`
 
@@ -737,17 +835,67 @@ Each row shows the status (active, expired, or revoked), punishment ID, time, ta
 ```yaml title="features.yml · ban"
 ban:
   enabled: true
+  reason-presets:
+    cheating: Cheating
+    grief: Griefing
 ```
+
+`reason-presets` provides short names for common reasons. For example, `/ban Steve grief` uses the text configured for `grief`. Tab completion offers these names; other input remains a custom reason. Set it to `{}` to turn presets off.
+
+`notify-ban-sound` and `notify-unban-sound` control staff notification sounds. Use a sound name such as `entity.experience_orb.pickup`, or `''` to turn one off. `-s` also suppresses these sounds.
 
 Bans are saved in the database configured in `config.yml`. While the feature is disabled, bans are not enforced and the ban commands are hidden.
 
 Edit the kick screens and staff notices in the translation files under `ban.kick.player`, `ban.kick.ip`, `ban.notify.ban`, and `ban.notify.unban`.
 
+# Mutes
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/mute>
+
+Temporarily stop a player from sending ordinary chat messages across your Sparrow servers. The player can stay online, and the mute expires automatically.
+
+## Commands and permissions
+
+| Command or permission | Purpose | Default command permission |
+| - | - | - |
+| `/mute <player> <time> [reason]` | Mute a player for the specified time. | `sparrow.command.mute` |
+| `/unmute <player>` | End an active mute early. | `sparrow.command.unmute` |
+| `sparrow.notify.mute` | Receive mute and unmute notices from all servers. | — |
+
+Both commands also accept `/sparrow <command>`. Enter a player name or UUID; selectors such as `@s` and `@a` are not supported. Names must belong to players who have joined your servers; they do not need to be online. Tab completion offers online names across the network.
+
+```text title="Examples"
+/mute Steve 30m Repeated spam
+/mute Alex 1d12h Abusive chat
+/unmute Steve
+```
+
+Time is required and must be positive. Units are `y` (365 days), `mo` (30 days), `w` (weeks), `d` (days), `h` (hours), `m` (minutes), and `s` (seconds). Combine them as in `1d12h`, or use decimals such as `1.5h`. The optional reason can contain up to 256 characters.
+
+Muting someone who is already muted does not replace or extend the existing mute. To change it, use `/unmute` first, then issue the new mute.
+
+## What players see
+
+An online player receives a notice when muted or unmuted. Trying to chat while muted shows the reason and remaining time. Switching servers or reconnecting does not lift the mute; time continues to pass while the player is offline.
+
+This feature blocks ordinary chat. It does not block commands, including private-message commands supplied by other plugins. Use those plugins' own settings if you also need to restrict private messages.
+
+Staff with `sparrow.notify.mute` receive notices across the network. Use `/player-info <player>` (or `/whois <player>`) to check the current mute.
+
+## Configuration
+
+```yaml title="features.yml · mute"
+mute:
+  enabled: true
+```
+
+Apply changes with `/sparrow reload`. While Mute is disabled, its commands are hidden and chat is not restricted. Re-enabling it restores any mutes that have not expired.
+
 # Back
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/back>
 
-Use `/back` to return to where you were before your last teleport or death, even if that was on another server.
+Use `/back` to return to where you were before your last teleport. Use `/death-back` to return to your last death location. Both support cross-server travel.
 
 ## Commands and permissions
 
@@ -755,8 +903,10 @@ Use `/back` to return to where you were before your last teleport or death, even
 | - | - | - |
 | `/back` | Return to your own previous location. | `sparrow.command.back` |
 | `/back <player>` | Return the named player to their previous location. | `sparrow.command.back` + `sparrow.command.back.other` |
+| `/death-back` | Return to your last death location. | `sparrow.command.death-back` |
+| `/death-back <player>` | Return the named player to their last death location. | `sparrow.command.death-back` + `sparrow.command.death-back.other` |
 
-You can also use `/sparrow back [player]`. Omit `player` to return to your own previous location; the console must name a player.
+You can also use `/sparrow back [player]` and `/sparrow death-back [player]`. Omit `player` to return to your own previous location; the console must name a player.
 
 Specifying a player requires the base permission and `.other`, even when you name yourself. Without `.other`, Sparrow hides the player argument from completion and refuses it when entered manually. The `.other` permission uses the base permission from `commands.yml` followed by `.other`.
 
@@ -768,7 +918,6 @@ Specifying a player requires the base permission and `.other`, even when you nam
 ## What counts as a previous location
 
 - Where the player stood before a teleport made by a command or another plugin. Which kinds of teleports count is configurable.
-- Where the player died, when `record-death` is on.
 - After switching servers, where the player left the previous server, until something new is recorded on the current server.
 
 Each player has only one previous location, and a new one replaces the old. `/back` is itself a teleport, so running it again takes the player back to where they just were.
@@ -778,6 +927,12 @@ These are not recorded:
 - Moves shorter than one block within the same world, such as turning around with `/look`.
 - Teleports in the first few seconds after connecting to a server (`join-grace-seconds`). Spawn plugins often move players at that moment. If your server sends a resource pack, the time spent loading it counts toward this period.
 - Teleports cancelled by other plugins.
+
+## Returning to a death location
+
+`/death-back` uses the last recorded death location. It is saved across logouts and server restarts; each new death replaces it without overwriting your `/back` location. If no death is recorded, the command tells you so.
+
+Set `back.record-death: false` to stop recording new deaths. Existing death records are kept. Disabling the Back feature hides both commands.
 
 ## Returning to another server
 
@@ -789,7 +944,7 @@ If the other server is offline, or the world of that location no longer exists, 
 
 Returning yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage during the countdown cancels the teleport. Sending another player back happens immediately. Naming yourself still uses your own countdown and cooldown.
 
-Configure these settings under `back` in `features.yml`. See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for countdown display, sounds, and permissions that shorten or skip the wait.
+`/back` and `/death-back` use the same group, set with `back.teleport-group`, and share its cooldown. Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
 
 ## When previous locations are lost
 
@@ -806,22 +961,16 @@ back:
     - PLUGIN
   join-grace-seconds: 3
   server-switch-window-seconds: 30
-  warmup-seconds: 3
-  cooldown-seconds: 0
-  cancel-on-move: true
-  cancel-on-damage: true
+  teleport-group: default
 ```
 
 | Setting | Meaning |
 | - | - |
-| `record-death` | Record the death location. |
+| `record-death` | Save the last death location for `/death-back`. |
 | `teleport-causes` | Kinds of teleports that record the previous location. Common values: `COMMAND` (commands), `PLUGIN` (plugins), `NETHER_PORTAL`, `END_PORTAL`, `END_GATEWAY`, `ENDER_PEARL`, `SPECTATE`. Portals are not included by default. An unknown value keeps the feature from starting and is reported in the console. |
 | `join-grace-seconds` | Teleports within this many seconds after connecting are not recorded. |
 | `server-switch-window-seconds` | How recently the player must have left the previous server for `/back` to return there. |
-| `warmup-seconds` | Seconds to wait before returning yourself; `0` teleports immediately. |
-| `cooldown-seconds` | Seconds before you can use `/back` again, shared across servers; `0` disables the cooldown. |
-| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
-| `cancel-on-damage` | Cancel the countdown when you take damage. |
+| `teleport-group` | Which [teleport group](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) in `teleport.yml` to use. Leave it empty or use `default` for the default group. |
 
 Apply changes with `/sparrow reload`.
 
@@ -846,7 +995,7 @@ If the respawn point is missing or unusable, such as a broken or blocked bed, Sp
 
 Returning yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage cancels it. Sending another player to their bed happens immediately and neither checks nor starts a cooldown. Naming yourself still uses your own countdown and cooldown.
 
-The cooldown for `/bed` is separate from `/back` and `/warp`. See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for display, sounds, and permissions that shorten or skip the wait.
+Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
 
 ## Configuration
 
@@ -855,27 +1004,51 @@ Merge this section into `features.yml`, keeping the other feature settings:
 ```yaml title="features.yml · bed"
 bed:
   enabled: true
-  warmup-seconds: 3
-  cooldown-seconds: 0
-  cancel-on-move: true
-  cancel-on-damage: true
+  teleport-group: default
 ```
 
 | Setting | Meaning |
 | - | - |
 | `enabled` | Enable the bed feature. When disabled, its commands are hidden. |
-| `warmup-seconds` | Seconds to wait before returning yourself; `0` teleports immediately. |
-| `cooldown-seconds` | Seconds before you can use `/bed` again, shared across servers; `0` disables the cooldown. |
-| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
-| `cancel-on-damage` | Cancel the countdown when you take damage. |
+| `teleport-group` | Which [teleport group](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) in `teleport.yml` to use. Leave it empty or use `default` for the default group. |
 
 Apply feature settings with `/sparrow reload`. Command switches, entry points, and base permissions are configured separately under `bed` in `commands.yml`; changing them requires a restart.
+
+# Network spawn
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/spawn>
+
+Set one shared destination for `/spawn` across your Sparrow servers. Players can return to it from another backend. This destination is used by the command; it does not change where players join or respawn after death.
+
+## Commands and permissions
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/spawn` | Travel to the shared spawn; players only. | `sparrow.command.spawn` |
+| `/set-spawn` | Set or replace the destination at your current position; players only. | `sparrow.command.set-spawn` |
+| `/del-spawn` | Delete the shared destination immediately; players and console. | `sparrow.command.del-spawn` |
+
+Each command also accepts `/sparrow <command>`. Stand where you want players to arrive and run `/set-spawn`. The destination is shared across servers and kept after a restart.
+
+Until a destination is set, `/spawn` is hidden from the player's command list. Deleting the destination hides it again. If the destination server is offline or its world cannot be found, Sparrow reports the problem.
+
+## Configuration
+
+```yaml title="features.yml · spawn"
+spawn:
+  enabled: true
+  teleport-group: default
+```
+
+By default, players wait 3 seconds, with no cooldown. Moving more than half a block, changing worlds, or taking damage cancels the countdown.
+
+Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx). Apply configuration changes with `/sparrow reload`. Disabling the feature hides its commands but keeps the saved destination for when you enable it again.
 
 # Warps
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/warp>
 
-Warps are named destinations shared across your Sparrow servers. Players can travel to them by command or from a clickable chat list. A destination on another server requires the [Sparrow proxy plugin](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin).
+Warps are named destinations shared across your Sparrow servers. Players can travel to them by command or from a clickable chat list. Complete the [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin) before using cross-server destinations.
 
 ## Commands and permissions
 
@@ -889,6 +1062,8 @@ Warps are named destinations shared across your Sparrow servers. Players can tra
 | `/edit-warp <name>` | Open the destination's information and management panel. | `sparrow.command.edit-warp` |
 
 Each command also has a `/sparrow <command>` entry point, such as `/sparrow warp-list`. The console must specify a player when using `/warp`. Specifying your own name also requires `.other`; without it, the player argument is hidden from completion and cannot be used manually.
+
+Bare `/warp` reports a missing name and does not open a list. Browse destinations with `/warp-list`. There is no separate list setting; use that command's regular switch in `commands.yml` if needed.
 
 Names are case insensitive, up to 32 characters long, and allow letters (including Chinese), digits, `_`, and `-` by default. They cannot start with `-`. `name-pattern` can change the allowed characters, but the length limit remains. Keep names without spaces so they can be used in every warp command.
 
@@ -927,7 +1102,7 @@ Destinations without that permission are hidden from lists and completion and ca
 
 Travelling yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage cancels it. Sending another player happens immediately and neither checks nor starts a cooldown. Naming yourself still uses your own wait and cooldown.
 
-See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for countdown display, sounds, and permissions that shorten or skip the wait. If the destination server is offline or the world cannot be found, Sparrow reports the problem and does not teleport you there.
+Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx). If the destination server is offline or the world cannot be found, Sparrow reports the problem and does not teleport you there.
 
 ## Configuration
 
@@ -940,10 +1115,7 @@ warp:
   overwrite-existing: true
   name-pattern: '[\p{L}\p{N}_][\p{L}\p{N}_-]*'
   suggestion-limit: 100
-  warmup-seconds: 3
-  cooldown-seconds: 0
-  cancel-on-move: true
-  cancel-on-damage: true
+  teleport-group: default
 ```
 
 | Setting | Meaning |
@@ -953,59 +1125,501 @@ warp:
 | `overwrite-existing` | Let `/set-warp` move an existing destination while preserving its description and creation details. When `false`, an existing name is refused. |
 | `name-pattern` | Regular expression for allowed names. An invalid expression prevents the feature from starting and is reported in the console. |
 | `suggestion-limit` | Maximum names shown in Tab completion; at least 1. Enter more characters to narrow the list. |
-| `warmup-seconds` | Seconds to wait before travelling yourself; `0` teleports immediately. |
-| `cooldown-seconds` | Seconds before you can use `/warp` again, shared across servers; `0` disables the cooldown. |
-| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
-| `cancel-on-damage` | Cancel the countdown when you take damage. |
+| `teleport-group` | Which [teleport group](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) in `teleport.yml` to use. Leave it empty or use `default` for the default group. |
 
 Apply feature settings with `/sparrow reload`. Command switches, entry points, and base permissions are in `commands.yml`; changing them requires a restart.
 
-# Teleport settings
+# Homes
 
-Source: <https://nanamoserver.github.io/sparrow-wiki/features/teleport>
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/home>
 
-[`/warp`](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx), [`/back`](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx), and [`/bed`](https://nanamoserver.github.io/sparrow-wiki/features/bed.mdx) use a countdown before teleporting yourself. Each feature has its own wait and cooldown settings in `features.yml`. Countdown display and sounds are shared settings in `config.yml`.
+Homes are personal destinations shared across your Sparrow servers. Players can save their current position and return to it, including on another server. Follow the [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin); the servers must share Redis and persistent storage.
 
-## Wait and cooldown
+A home belongs to one player. Other players need the relevant administrative permissions to visit or manage it. Homes cannot be made public; use [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx) for shared destinations.
 
-Each feature defaults to a 3-second wait, no cooldown, and cancellation on movement or damage. Set `warmup-seconds` or `cooldown-seconds` to `0` to disable that wait or cooldown.
+## Commands and permissions
 
-With `cancel-on-move: true`, moving more than half a block from where the countdown started or changing worlds cancels the teleport. `cancel-on-damage: true` cancels it when you take damage. Starting another countdown replaces the first; leaving the server cancels it.
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/set-home [name]` | Create a home at your position; players only. The default name is `home`. | `sparrow.command.set-home` |
+| `/home [name]` | Travel to one of your homes; players only. | `sparrow.command.home` |
+| `/home <player>.<name>` | Travel yourself to another player's home. | `sparrow.command.home` + `sparrow.command.home.other` |
+| `/del-home <name> [player]` | Delete your home, or another player's home with `.other`. | `sparrow.command.del-home[.other]` |
+| `/home-list [page]` | List your homes, 10 per page. | `sparrow.command.home-list` |
+| `/home-list other <player> [page]` | List another player's homes. | `sparrow.command.home-list` + `sparrow.command.home-list.other` |
+| `/edit-home <name>` | Open your home's information and management panel. | `sparrow.command.edit-home` |
+| `/edit-home <player>.<name>` | Open another player's home panel. | `sparrow.command.edit-home` + `sparrow.command.edit-home.other` |
+| `/del-all-home [--player <player>] [--server <server>] [--world <world>]` | Delete homes matching all supplied filters; console only, with at least one filter. | `sparrow.command.del-all-home` |
 
-Cooldowns begin only after a successful local teleport or the start of a server transfer. They carry across servers, with `/warp`, `/back`, and `/bed` counted separately. A cancelled countdown does not start a cooldown.
+Each command also has a `/sparrow <command>` entry point. The default aliases are `/sethome`, `/delhome`, `/homelist`, and `/edithome`.
 
-Sending another player teleports them immediately and neither checks nor starts a cooldown. Specifying yourself still uses your own wait and cooldown, even though the explicit player argument requires `.other`. `/tp-offline` teleports immediately.
+`player` is the home owner, who may be online on any server or offline, but must have joined your Sparrow servers before. `/home Alex.mine` takes **you** to Alex's home; there is no argument for sending someone else. For deletion, put the owner in a separate argument: `/del-home mine Alex`.
+
+The console can list, inspect, rename, and delete homes, but must specify the owner. Creating homes, travelling, and moving a home to the executor's position require a player.
+
+```text title="Examples"
+/set-home
+/set-home mine
+/home mine
+/home-list
+/home Alex.mine
+/home-list other Alex 2
+/edit-home Alex.mine
+/del-home mine Alex
+```
+
+## Default home and names
+
+Without a name, `/set-home` creates the home named by `default-name`, which defaults to `home`. It never overwrites an existing home: delete that home first, or use the management command to move it if you have permission.
+
+Bare `/home` chooses a destination as follows:
+
+| Your homes | Result |
+| - | - |
+| A home matches `default-name` | Travel to that home. |
+| No default home, but exactly one home | Travel to the only home. |
+| No default home, and several homes | Ask you to specify a name. |
+| No homes | Show how to create one. |
+
+`/home` never opens the list automatically. Use `/home-list` to browse. Changing `default-name` does not rename existing homes.
+
+Names are case insensitive and unique to their owner; different players may use the same name. Names are at most 32 characters. By default they allow letters (including Chinese), digits, `_`, and `-`. Whitespace, dots, and a leading `-` are always forbidden, even with a custom `name-pattern`.
+
+## Home limit
+
+Players can have **3 homes** by default, counting their homes across the shared servers. Configure the default with `max-homes` or grant:
+
+| Permission | Effect |
+| - | - |
+| `sparrow.max-homes.<number>` | Replace the default limit with the highest granted number. |
+| `sparrow.max-homes.unlimited` | Allow unlimited homes. |
+
+For example, `sparrow.max-homes.5` allows five homes. A number below the configured default can also reduce the limit. A limit of `0` prevents new homes; it does not mean unlimited. Lowering the limit does not delete existing homes, and renaming or moving them does not use another slot.
+
+## Chat list and management panel
+
+`/home-list` shows names, servers, and worlds. Your own list also shows your limit; another player's list displays their limit as unknown. `/edit-home <name>` shows the owner, position, server, and creation and update times.
+
+**Every Home list and panel button fills the chat input with a command. Press Enter yourself to execute it.** This includes travel, editing, moving, deletion, page navigation, refresh, and returning to the list. Buttons follow command entry points, switches, and permissions; the console displays commands to copy.
+
+| Command | Purpose | Extra default permission |
+| - | - | - |
+| `/edit-home <name> rename <new_name>` | Rename a home. | `sparrow.command.edit-home.rename` |
+| `/edit-home <name> relocate` | Move a home to your current position and server; players only. | `sparrow.command.edit-home.relocate` |
+| `/edit-home <name> delete` | Delete a home immediately. | `sparrow.command.edit-home.delete` |
+
+Each operation also needs `sparrow.command.edit-home`. To edit someone else's home, use `<player>.<name>` and additionally grant `sparrow.command.edit-home.other`; that permission does not replace the individual operation permissions. Renaming and moving preserve ownership and creation time. Homes have no description or public setting.
+
+Changing a command's base permission in `commands.yml` changes its `.other` and operation permissions to use the new base.
+
+## Delete homes by filter
+
+`/del-home` and `/edit-home ... delete` delete a single home immediately, without confirmation. `all` is an ordinary name in `/del-home all`.
+
+For bulk deletion, use `/del-all-home` from the console. **It deletes immediately and has no second confirmation.** Supply at least one filter:
+
+| Filter | Matches |
+| - | - |
+| `--player <player>` | Homes belonging to that player. |
+| `--server <server>` | Homes on that `server-id`. |
+| `--world <world>` | Homes in that world name. Without `--server`, it matches that world name on every server. |
+
+Multiple filters must all match. An unknown player aborts the command; the player filter is never ignored. Quote a server or world name that contains spaces.
+
+```text title="Console examples"
+/del-all-home --player Alex
+/del-all-home --server survival --world old_world
+/del-all-home --player Alex --server survival --world "Old World"
+```
+
+## Countdown and cooldown
+
+Home travel defaults to a 3-second countdown. Moving more than half a block, changing worlds, or taking damage cancels it. Visiting another player's home still uses your own countdown and cooldown.
+
+The destination is chosen when you start the command; moving or deleting the home during the countdown does not change that trip. Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
+
+## PlaceholderAPI
+
+Install PlaceholderAPI on each backend where you want to use these placeholders and enable Home. Sparrow supplies them directly; no separate expansion download is needed. The placeholders are available after startup without an extra `/sparrow reload`.
+
+| Placeholder | Value |
+| - | - |
+| `%sparrow-homes-count_value%` | The player's home count, for example `3`. |
+| `%sparrow-max-homes_value%` | The player's current limit; `-1` means unlimited. |
+| `%sparrow-homes-list_value%` | Names sorted without regard to case, preserving their spelling and joined with `, `, for example `home, mine`. |
+
+They work only with an online player as the context. Offline players, no player context, or a disabled Home feature leave them unresolved. You cannot append another player's name to query their homes.
+
+After a home changes on any server, the placeholders update automatically. They keep showing the previous values while the update is in progress; you do not need to run `/home-list`. When Home is re-enabled, placeholders may briefly be unavailable while it loads.
+
+In Sparrow messages, use `<papi:sparrow-homes-count_value>` or `<papi:sparrow-homes-list_value>`. Use the `%...%` forms above in other plugins that support PlaceholderAPI.
+
+## Configuration
+
+Merge this section into `features.yml`, keeping the other feature settings:
+
+```yaml title="features.yml · home"
+home:
+  enabled: true
+  default-name: home
+  max-homes: 3
+  name-pattern: '[\p{L}\p{N}_][\p{L}\p{N}_-]*'
+  suggestion-limit: 100
+  teleport-group: default
+```
+
+| Setting | Meaning |
+| - | - |
+| `enabled` | Enable Home commands and its placeholders. |
+| `default-name` | The name created by bare `/set-home` and preferred by bare `/home`; must satisfy the name rules. |
+| `max-homes` | Default limit, a nonnegative integer; `0` prevents new homes unless permissions override it. |
+| `name-pattern` | Regular expression for allowed names, in addition to the fixed length and character restrictions. |
+| `suggestion-limit` | Maximum Home names shown in Tab completion; at least 1. |
+| `teleport-group` | Which [teleport group](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) in `teleport.yml` to use. Leave it empty or use `default` for the default group. |
+
+Apply feature settings with `/sparrow reload`. Command switches, aliases, and base permissions are in `commands.yml` and require a restart. Lists use the regular `home-list` command switch; there is no separate list setting.
+
+# Teleport requests
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/tpa>
+
+A player asks another online player for a teleport, and nothing happens until the other player agrees. The two players can be on different backends: requests, answers, and the teleport itself all cross servers.
+
+## Commands and permissions
+
+| Command | Purpose | Default permission |
+| - | - | - |
+| `/tpa <player>` | Ask to teleport to the other player. | `sparrow.command.tpa` |
+| `/tpa-here <player>` | Ask the other player to teleport to you. | `sparrow.command.tpa-here` |
+| `/tpa-accept [player]` | Accept a request you received; without a player, the most recent one. | `sparrow.command.tpa-accept` |
+| `/tpa-deny [player]` | Deny a request you received; without a player, the most recent one. | `sparrow.command.tpa-deny` |
+| `/tpa-cancel [player]` | Cancel your request to a player; without a player, every request you sent. | `sparrow.command.tpa-cancel` |
+
+These commands are for players only and also accept `/sparrow <command>`. Aliases: `/tpahere`, `/tpaccept`, `/tpdeny`, and `/tpacancel`.
+
+## How a request is handled
+
+The target must be online somewhere on the network. The player who receives a request sees a message with **\[Accept]** and **\[Deny]** buttons. Clicking a button runs the matching command.
+
+A player can have requests out to several people at once, but cannot send a second request to the same person until the first one is answered, cancelled, or expired. Requests are valid for 60 seconds by default, and both players are told when one expires.
+
+After a request is accepted, the player being moved goes through the cooldown and countdown of the teleport group, then lands where the other player is standing at that moment:
+
+- `/tpa` moves the player who sent the request.
+- `/tpa-here` moves the player who accepted it.
+
+The destination server is decided when the request is accepted. If the other player changes servers or logs out during the countdown, the teleport is cancelled and the player being moved is told.
+
+Player name completion for `/tpa-accept`, `/tpa-deny`, and `/tpa-cancel` works on Paper and its forks. On Spigot, type the name by hand.
+
+## Cooldowns
+
+There are two cooldowns, and both only limit sending requests:
+
+| Cooldown | Default | Details |
+| - | - | - |
+| Request cooldown | 10 seconds | The gap between two requests. `/tpa` and `/tpa-here` share it, and it applies across backends. A request that was not sent does not count. |
+| Deny cooldown | 120 seconds | After a player denies you, you cannot send that player another request for this long. A request that expires or that you cancel does not start it. |
+
+Players with `sparrow.bypass.tpa-cooldown` skip both cooldowns.
+
+## Configuration
+
+```yaml title="features.yml · tpa"
+tpa:
+  enabled: true
+  expire-seconds: 60
+  request-cooldown-seconds: 10
+  deny-cooldown-seconds: 120
+  teleport-group: default
+```
+
+| Option | Details |
+| - | - |
+| `expire-seconds` | Seconds before an unanswered request expires. Must be at least 1. |
+| `request-cooldown-seconds` | Length of the request cooldown. Set `0` to turn it off. |
+| `deny-cooldown-seconds` | Length of the deny cooldown. Set `0` to turn it off. |
+| `teleport-group` | Teleport group used after a request is accepted. Both directions share it. |
+
+With the default group, the player being moved waits 3 seconds. Moving more than half a block, changing worlds, or taking damage cancels the countdown. Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
+
+Apply configuration changes with `/sparrow reload`. Keep the `tpa` settings the same on every backend. Disabling the feature hides its commands.
+
+> **Note**
+>
+> The server a request was sent from is responsible for expiring it. If that server stops or restarts before the request expires, the request still becomes invalid, but neither player gets an expiry message.
+
+# Teleport groups
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/teleport/overview>
+
+Cooldowns, countdowns, world restrictions, and sounds for [`/warp`](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx), [`/home`](https://nanamoserver.github.io/sparrow-wiki/features/home.mdx), [`/back` and `/death-back`](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx), [`/bed`](https://nanamoserver.github.io/sparrow-wiki/features/bed.mdx), [`/spawn`](https://nanamoserver.github.io/sparrow-wiki/features/spawn.mdx), and [teleport requests](https://nanamoserver.github.io/sparrow-wiki/features/tpa.mdx) are configured in `teleport.yml`. The file is made of groups, and each feature picks its group with `teleport-group` in `features.yml`.
+
+See [Built-in processors](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.mdx) for every option of each processor.
+
+## The stages of a teleport
+
+A group splits a teleport into three stages. Each stage is a list of processors that run from top to bottom.
+
+| Stage | When it runs | Which server runs it | What it can do |
+| - | - | - | - |
+| `pre-processor` | Before departure | The server the player is on | Allow or reject the teleport, such as cooldowns and countdowns. |
+| `target-processor` | When the landing spot is settled | The server the landing spot is on | Allow or reject the teleport, such as the world blacklist. |
+| `post-processor` | After the player arrives | The server the landing spot is on | Effects on arrival, such as a sound. |
+
+If any processor in the first two stages rejects the teleport, it stops there. The player stays where they are and sees the reason.
+
+For a cross-server teleport, the departure stage uses the `teleport.yml` of the server the player leaves, and the other two stages use the `teleport.yml` of the destination server. Keep this in mind when the files differ between servers.
+
+## The default group
+
+`teleport.yml` is created on first start, and its `default` group is equivalent to the following. Every feature that does not name another group uses it.
+
+```yaml title="teleport.yml"
+default:
+  pre-processor:
+    - processor-type: cooldown
+      id: teleport
+      seconds: 0
+      bypass-permission: sparrow.bypass.teleport-cooldown
+    - processor-type: warmup
+      seconds: 3
+      bypass-permission: sparrow.bypass.teleport-warmup
+      cancel-on-move: true
+      cancel-on-damage: true
+      display: ACTION_BAR
+      boss-bar-color: YELLOW
+      boss-bar-overlay: PROGRESS
+      warmup-sound: block.note_block.banjo
+      cancel-sound: entity.item.break
+  target-processor:
+    - processor-type: world-blacklist
+      worlds: []
+      bypass-permission: sparrow.bypass.teleport-world-blacklist
+  post-processor:
+    - processor-type: sound
+      sound: entity.enderman.teleport
+
+groups: {}
+```
+
+By default there is no cooldown, the player waits 3 seconds in place before leaving, movement or damage cancels the wait, no world is blocked, and the enderman teleport sound plays on arrival.
+
+A group only runs the processors written in its lists:
+
+- Remove an entry to turn that processor off.
+- Reorder entries to change what runs first. For example, a `sound` placed after `warmup` plays at the moment of leaving.
+- An option left out of an entry uses that processor's default.
+
+Apply changes with `/sparrow reload`.
+
+## Picking a group for a feature
+
+Set `teleport-group` under the feature in `features.yml`. Leave it empty or use `default` for the default group.
+
+```yaml title="features.yml"
+home:
+  teleport-group: default
+warp:
+  teleport-group: warp
+```
+
+`/back` and `/death-back` share `back.teleport-group`. If the name does not match any group, the plugin reports an error on startup or reload and names the missing group in the console.
+
+## Custom groups
+
+Add groups under `groups`, written the same way as `default`. A stage left out of a group runs nothing. It does not fall back to what `default` contains.
+
+This example gives `/warp` its own 60-second cooldown and a 5-second countdown, and adds a group that teleports at once and keeps only the arrival sound:
+
+```yaml title="teleport.yml"
+groups:
+  warp:
+    pre-processor:
+      - processor-type: cooldown
+        id: warp
+        seconds: 60
+      - processor-type: warmup
+        seconds: 5
+    post-processor:
+      - processor-type: sound
+  instant:
+    post-processor:
+      - processor-type: sound
+```
+
+## Shared and separate cooldowns
+
+Cooldowns are tracked by the `id` of the `cooldown` processor. Teleports with the same `id` share one cooldown, and it carries across servers.
+
+The default group uses the `id` `teleport`, so every command on the default group shares one cooldown. With a 30-second cooldown on the default group, a player who just used `/home` cannot use `/warp` for 30 seconds either. To count a command separately, give it a group with a different `id`, as in the example above.
+
+A cooldown starts only after a successful teleport. A rejected teleport or a cancelled countdown does not start one.
+
+## Teleporting other players
+
+Sending another player with commands such as `/warp <name> <player>` or `/back <player>` happens at once. It skips the cooldown, the countdown, and the world blacklist, and does not start a cooldown. The arrival sound still plays.
+
+Naming yourself as the target still counts as teleporting yourself. `/home <player>.<name>` takes you to someone else's home, so it also counts as teleporting yourself. `/tp-offline` does not use any group and teleports at once.
 
 ## Permissions
 
 | Permission | Effect |
 | - | - |
-| `sparrow.teleport-warmup.<seconds>` | Shorten the wait. Sparrow uses the lowest value among these permissions and the feature default. |
+| `sparrow.teleport-warmup.<seconds>` | Shorten the countdown. Sparrow uses the lowest value among these permissions and the group setting. |
 | `sparrow.bypass.teleport-warmup` | Skip the countdown. |
-| `sparrow.bypass.teleport-cooldown` | Skip the cooldown check and do not start a new cooldown. |
+| `sparrow.bypass.teleport-cooldown` | Not held by the cooldown. |
+| `sparrow.bypass.teleport-world-blacklist` | May teleport into blacklisted worlds. |
 
-For example, if the feature default is 3 seconds and a player has `sparrow.teleport-warmup.1`, they wait 1 second. A value above 3 does not extend the default wait. Grant `sparrow.teleport-warmup.0` or the countdown bypass permission for immediate teleports.
+The last three are the default values of each processor's `bypass-permission`. You can change them per group, so different groups can use different bypass permissions. Leave it empty to let nobody bypass.
 
-## Display and sounds
+For example, if the group's countdown is 3 seconds and a player has `sparrow.teleport-warmup.1`, they wait 1 second. A value above the group setting does not extend the wait.
 
-Merge this section into `config.yml`, keeping the other settings:
+## When an entry is wrong
 
-```yaml title="config.yml · teleport"
-teleport:
-  warmup-display: ACTION_BAR
-  warmup-sound: 'block.note_block.banjo'
-  complete-sound: 'entity.enderman.teleport'
-  cancel-sound: 'entity.item.break'
+If an entry is written wrong, such as an unknown type, a processor placed in the wrong stage, or an invalid option value, that entry is ignored. The other entries still apply, and the console prints a warning with the reason.
+
+When a player runs `/sparrow reload` and some entries were ignored, they also see "The configuration has N error(s). Check the console log".
+
+## Processors from other plugins
+
+Other plugins can register their own processors with Sparrow. They are used the same way as the built-in ones. Set `processor-type` to the type that plugin gives, in the form `plugin:type`, and follow that plugin's documentation for its options. If the plugin is not installed, the entry is ignored as an unknown type.
+
+## Upgrading from the old configuration
+
+Earlier versions kept these settings under each feature's `teleport` section in `features.yml`. After upgrading, move the values into a group in `teleport.yml` and set `teleport-group` under the feature. The old `teleport` sections in `features.yml` no longer apply and can be removed.
+
+All servers that teleport across servers with Sparrow must be upgraded to the same version together. Cross-server teleports fail while old and new versions are mixed.
+
+# Built-in processors
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/teleport/processors>
+
+This page lists every processor that ships with Sparrow and its options, as a reference while editing `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) for what groups and stages mean.
+
+## At a glance
+
+| `processor-type` | Stages it can be written in | What it does |
+| - | - | - |
+| [`cooldown`](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md#cooldown) | `pre-processor` | Rejects the teleport while the cooldown is running, and starts the cooldown after a successful teleport. |
+| [`warmup`](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md#warmup) | `pre-processor` | Makes the player wait in place before leaving. |
+| [`world-blacklist`](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md#world-blacklist) | `target-processor` | Rejects teleports into the listed worlds. |
+| [`sound`](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md#sound) | `pre-processor`, `post-processor` | Plays a sound to the player. |
+
+A processor written in a stage it does not support is ignored, with a warning in the console.
+
+Every entry starts with `processor-type`, followed by that processor's own options. An option left out uses the default shown in the tables below.
+
+## cooldown
+
+Rejects the teleport while the cooldown is running and tells the player how many seconds remain. The cooldown starts after a successful teleport and carries across servers.
+
+```yaml
+- processor-type: cooldown
+  id: teleport
+  seconds: 30
+  bypass-permission: sparrow.bypass.teleport-cooldown
 ```
 
-| Setting | Meaning |
-| - | - |
-| `warmup-display` | `ACTION_BAR` shows the countdown above the hotbar, `TITLE` in the center of the screen, `CHAT` in chat, and `NONE` hides it. |
-| `warmup-sound` | Sound played at each countdown update. |
-| `complete-sound` | Sound played after arrival on the same server. It is not played after a cross-server transfer. |
-| `cancel-sound` | Sound played when movement or damage cancels the countdown. |
+| Option | Default | Meaning |
+| - | - | - |
+| `id` | None, required | Cooldown ID. Teleports with the same ID share one cooldown. The entry is ignored when it is missing. |
+| `seconds` | `0` | Cooldown in seconds. `0` means no limit. |
+| `bypass-permission` | `sparrow.bypass.teleport-cooldown` | Players with this permission are not held by the cooldown. Leave it empty (`''`) to let nobody bypass. |
 
-Leave a sound value empty (`''`) to disable it. `NONE` hides the countdown text but does not turn off sounds. Apply changes with `/sparrow reload`.
+## warmup
+
+Makes the player wait in place and shows a countdown before leaving. The teleport continues when the countdown ends.
+
+```yaml
+- processor-type: warmup
+  seconds: 3
+  bypass-permission: sparrow.bypass.teleport-warmup
+  cancel-on-move: true
+  cancel-on-damage: true
+  display: ACTION_BAR
+  boss-bar-color: YELLOW
+  boss-bar-overlay: PROGRESS
+  warmup-sound: block.note_block.banjo
+  cancel-sound: entity.item.break
+```
+
+| Option | Default | Meaning |
+| - | - | - |
+| `seconds` | `3` | Seconds to wait. `0` teleports at once. If the player has `sparrow.teleport-warmup.<seconds>`, the lowest of those values and this one is used. |
+| `bypass-permission` | `sparrow.bypass.teleport-warmup` | Players with this permission leave at once. Leave it empty (`''`) to let nobody skip. |
+| `cancel-on-move` | `true` | Whether moving more than half a block from where the countdown started, or changing worlds, cancels the teleport. |
+| `cancel-on-damage` | `true` | Whether taking damage cancels the teleport. |
+| `display` | `ACTION_BAR` | Where the countdown is shown: `ACTION_BAR` above the hotbar, `TITLE` in the center of the screen, `BOSS_BAR` as a bar at the top, `CHAT` in chat, `NONE` hides it. |
+| `boss-bar-color` | `YELLOW` | Color of the top bar: `PINK`, `BLUE`, `RED`, `GREEN`, `YELLOW`, `PURPLE`, or `WHITE`. Only used when `display` is `BOSS_BAR`. |
+| `boss-bar-overlay` | `PROGRESS` | Style of the top bar: `PROGRESS` for a continuous bar, or `NOTCHED_6`, `NOTCHED_10`, `NOTCHED_12`, `NOTCHED_20` for that many segments. |
+| `warmup-sound` | `block.note_block.banjo` | [Sound](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md#sound-format) played every second of the countdown. |
+| `cancel-sound` | `entity.item.break` | [Sound](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md#sound-format) played when movement or damage cancels the countdown. |
+
+Starting another countdown for the same player replaces the previous one, and leaving the server cancels it. `NONE` hides the countdown text only. Sounds still play.
+
+## world-blacklist
+
+Rejects the teleport when the landing spot is in a listed world. The player stays where they are and sees a message.
+
+```yaml
+- processor-type: world-blacklist
+  worlds:
+    - world_nether
+    - dungeon
+  bypass-permission: sparrow.bypass.teleport-world-blacklist
+```
+
+| Option | Default | Meaning |
+| - | - | - |
+| `worlds` | `[]` | Names of the worlds that players cannot teleport into. |
+| `bypass-permission` | `sparrow.bypass.teleport-world-blacklist` | Players with this permission may enter anyway. Leave it empty (`''`) to let nobody in. |
+
+The server the landing spot is on runs this processor, so the list belongs in that server's `teleport.yml`.
+
+During a cross-server teleport the player has not joined the destination server yet. Checking `bypass-permission` at that point requires LuckPerms on the destination server, and the permissions set in LuckPerms apply. Without LuckPerms, a cross-server teleport into a blacklisted world ends with a timeout message after a few seconds. Same-server teleports, or an empty `bypass-permission`, are not affected.
+
+## sound
+
+Plays a sound to the player being teleported.
+
+```yaml
+- processor-type: sound
+  sound: entity.enderman.teleport
+```
+
+| Option | Default | Meaning |
+| - | - | - |
+| `sound` | `entity.enderman.teleport` | The [sound](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md#sound-format) to play. |
+
+In `post-processor` it plays after the player arrives, including after a cross-server teleport. In `pre-processor` it plays when its turn comes: placed after `warmup`, that is the moment of leaving, and placed first, that is the moment the command is entered.
+
+## Writing a sound {#sound-format}
+
+Every option that takes a sound accepts two forms. With only a name, volume and pitch are both `1.0`:
+
+```yaml
+sound: entity.enderman.teleport
+```
+
+To change the volume, pitch, or sound category, write a section:
+
+```yaml
+sound:
+  key: entity.enderman.teleport
+  volume: 0.8
+  pitch: 1.2
+  source: MASTER
+```
+
+| Key | Default | Meaning |
+| - | - | - |
+| `key` | Required | Sound name, such as `entity.enderman.teleport`. A namespace may be included. |
+| `volume` | `1.0` | Volume. |
+| `pitch` | `1.0` | Pitch. |
+| `source` | `MASTER` | Sound category, matching the sliders in the client's sound settings: `MASTER`, `MUSIC`, `RECORD`, `WEATHER`, `BLOCK`, `HOSTILE`, `NEUTRAL`, `PLAYER`, `AMBIENT`, `VOICE`, `UI`. |
+
+To turn a sound off, leave it empty (`''`). When Sparrow first creates `teleport.yml`, it writes the default sounds in the section form. Both forms behave the same.
 
 # Frequently Asked Questions
 
@@ -1014,3 +1628,84 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/faq>
 # Developer API
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/developer-api>
+
+This page is for plugin developers. Sparrow does not have a separate API module yet. Everything below uses classes from the plugin itself, and they may change between Sparrow versions.
+
+## Registering a teleport processor
+
+Other plugins can register their own teleport processors, which server owners can then use in the lists of `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) for what groups and stages mean.
+
+### Writing a processor
+
+A processor is a plain class. It implements the interface of each stage it takes part in, and its options are fields.
+
+| Interface | List it belongs to | Methods to implement |
+| - | - | - |
+| `TeleportProcessor.Pre` | `pre-processor` | `before(player, teleport)`, optionally `finished(teleport, result)` |
+| `TeleportProcessor.Target` | `target-processor` | `destination(player, teleport)` |
+| `TeleportProcessor.Post` | `post-processor` | `arrived(player, teleport)` |
+
+A class may implement several of these interfaces so that it can be written in several lists. Each entry is only called for the stage it is listed under.
+
+```java
+@Configuration(naming = Configuration.Naming.KEBAB_CASE)
+public final class BlackScreenProcessor implements TeleportProcessor.Pre {
+    public static final SparrowKey TYPE = new SparrowKey("myplugin", "black-screen");
+
+    private int fadeTicks = 10;
+
+    @Override
+    public void validate() {
+        if (this.fadeTicks < 0) throw new IllegalArgumentException("fade-ticks must not be negative");
+    }
+
+    @NotNull
+    @Override
+    public CompletableFuture<Component> before(@NotNull BukkitSparrowPlayer player, @NotNull Teleport teleport) {
+        player.sendTitle(Component.text("⬛"), Component.empty(), this.fadeTicks, 40, 0);
+        return PASS;
+    }
+}
+```
+
+A processor follows these conventions:
+
+- **Options are fields.** A field maps to the kebab-case key in the configuration, so `fadeTicks` becomes `fade-ticks`. The field's initial value is the option's default. The class needs a no-argument constructor.
+- **The result of `before` and `destination` decides whether the teleport continues.** A `null` result lets it continue, and returning `PASS` does that. A text result rejects the teleport and is shown to the player being teleported. An empty component rejects it without a message.
+- **`validate()` checks the options.** Throw `IllegalArgumentException` when an option is invalid. The entry is ignored and the exception message appears in the console warning.
+- **Keep only options in the instance.** Sparrow creates a new instance for every entry each time the configuration is read. State that must survive across teleports belongs in your own plugin.
+- **Methods may be called from any thread.** Schedule work yourself when it has to run on the player's thread.
+- **The player in `destination` may be on another server.** During a cross-server teleport the player has not arrived yet, so you get a `SparrowPlayer`, and `checkPermission` works on it. Call `teleport.location(...)` to move the landing spot.
+- **`teleport.self()` tells whether the player started the teleport themselves.** The built-in cooldown, warmup, and world blacklist let teleports started for another player through. Whether yours does the same is up to you.
+
+### Registering it
+
+Register in your plugin's `onLoad`:
+
+```java
+@Override
+public void onLoad() {
+    SparrowPlugin.instance().teleportService().registerProcessor(BlackScreenProcessor.TYPE, BlackScreenProcessor.class);
+}
+```
+
+- **Timing.** Sparrow reads `teleport.yml` when it enables, so registration has to happen in `onLoad`. A type registered later is treated as unknown at startup and only takes effect after the next `/sparrow reload`.
+- **Type name.** It is a `SparrowKey`. Use your plugin's name as the namespace. `sparrow` is the namespace of the built-in processors.
+- **Duplicates.** Registering a type that already exists throws `IllegalArgumentException`.
+- **No unregistering.** Types can only be added. Removing one at runtime is not supported.
+
+Your plugin has to declare Sparrow as a dependency in `plugin.yml` or `paper-plugin.yml` to access these classes.
+
+### How server owners use it
+
+Once registered, the type and its options go into `teleport.yml`:
+
+```yaml title="teleport.yml"
+default:
+  pre-processor:
+    - processor-type: warmup
+    - processor-type: myplugin:black-screen
+      fade-ticks: 20
+```
+
+An entry placed in the wrong stage, given an invalid option value, or failing `validate()` is handled the same way as a built-in processor: the entry is ignored and the console prints a warning.

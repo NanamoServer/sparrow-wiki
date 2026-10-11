@@ -2,7 +2,7 @@
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back>
 
-使用 `/back` 回到上一次传送或死亡前所在的位置，即使那个位置在另一台服务器上。
+使用 `/back` 回到上一次传送前的位置，使用 `/death-back` 回到最后一次死亡的位置。两条命令都支持跨服返回。
 
 ## 命令与权限
 
@@ -10,8 +10,10 @@
 | - | - | - |
 | `/back` | 回到自己的上一个位置。 | `sparrow.command.back` |
 | `/back <player>` | 让指定玩家回到上一个位置。 | `sparrow.command.back` + `sparrow.command.back.other` |
+| `/death-back` | 回到自己最后一次死亡的位置。 | `sparrow.command.death-back` |
+| `/death-back <player>` | 让指定玩家回到最后一次死亡的位置。 | `sparrow.command.death-back` + `sparrow.command.death-back.other` |
 
-也可以使用 `/sparrow back [player]`。省略 `player` 时回到自己的上一个位置；控制台必须指定玩家。
+也可以使用 `/sparrow back [player]` 和 `/sparrow death-back [player]`。省略 `player` 时回到自己的上一个位置；控制台必须指定玩家。
 
 填写玩家时需要基础权限和 `.other`，填写自己的名字也一样。没有 `.other` 时，补全不会显示玩家参数，手动输入也无法执行。`.other` 权限由 `commands.yml` 中的基础权限加上 `.other` 组成。
 
@@ -23,7 +25,6 @@
 ## 哪些位置会被记下
 
 - 命令或其他插件传送玩家之前所在的位置。哪些类型的传送会被记录可以配置。
-- 玩家死亡的位置，需要开启 `record-death`。
 - 切换服务器后，玩家离开上一台服务器时的位置，直到在当前服务器上记下新的位置为止。
 
 每名玩家只保留一个上一位置，新的会替换旧的。`/back` 本身也是一次传送，所以再执行一次就会回到刚才的位置。
@@ -33,6 +34,12 @@
 - 同一世界内不到一格的移动，例如用 `/look` 转身。
 - 连上服务器后几秒内的传送（`join-grace-seconds`）。出生点插件通常会在这时移动玩家。如果服务器会发送资源包，加载资源包的时间也算在内。
 - 被其他插件取消的传送。
+
+## 返回死亡位置
+
+`/death-back` 使用最后一次记录的死亡位置，下线或重启服务器后仍然保留。下一次死亡会替换它，但不会覆盖 `/back` 的位置。没有死亡记录时，命令会给出提示。
+
+将 `back.record-death` 设为 `false` 后，不再记录新的死亡位置，已有记录仍然保留。停用 Back 功能会同时隐藏两条命令。
 
 ## 返回其他服务器
 
@@ -44,7 +51,7 @@
 
 自己返回时默认等待 3 秒。倒计时期间移动超过半格、切换世界或受伤会取消传送。让其他玩家返回时立即执行；填写自己的名字时仍然使用自己的倒计时与冷却。
 
-这些设置放在 `features.yml` 的 `back` 分组中。倒计时显示、音效，以及缩短或跳过等待的权限，见[传送设置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/teleport.mdx)。
+`/back` 和 `/death-back` 使用 `back.teleport-group` 指定的同一个分组，冷却也共用。冷却、倒计时、世界限制和音效在 `teleport.yml` 的分组里配置，见[传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。
 
 ## 上一位置什么时候会丢失
 
@@ -61,21 +68,15 @@ back:
     - PLUGIN
   join-grace-seconds: 3
   server-switch-window-seconds: 30
-  warmup-seconds: 3
-  cooldown-seconds: 0
-  cancel-on-move: true
-  cancel-on-damage: true
+  teleport-group: default
 ```
 
 | 配置项 | 含义 |
 | - | - |
-| `record-death` | 是否记录死亡位置。 |
+| `record-death` | 是否保存最后一次死亡位置，供 `/death-back` 返回。 |
 | `teleport-causes` | 哪些类型的传送会记录传送前的位置。常用值：`COMMAND`（命令）、`PLUGIN`（插件）、`NETHER_PORTAL`（下界传送门）、`END_PORTAL`（末地传送门）、`END_GATEWAY`（末地折跃门）、`ENDER_PEARL`（末影珍珠）、`SPECTATE`（旁观传送）。默认不包含传送门。填写了不存在的值时功能无法启动，并在控制台输出错误。 |
 | `join-grace-seconds` | 连上服务器后多少秒内的传送不记录。 |
 | `server-switch-window-seconds` | 玩家离开上一台服务器多久以内，`/back` 才会回到那里，单位为秒。 |
-| `warmup-seconds` | 自己返回前等待的秒数，`0` 表示立即传送。 |
-| `cooldown-seconds` | 两次 `/back` 之间的冷却秒数，各服务器共享，`0` 表示不限制。 |
-| `cancel-on-move` | 移动超过半格或切换世界时，是否取消倒计时。 |
-| `cancel-on-damage` | 受伤时是否取消倒计时。 |
+| `teleport-group` | 使用 `teleport.yml` 中的哪个[传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)，留空或填 `default` 时使用默认分组。 |
 
 修改后执行 `/sparrow reload` 生效。

@@ -1,0 +1,149 @@
+# 家
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home>
+
+Home 是各台 Sparrow 服务器共用的个人传送点。玩家可以保存当前位置，之后返回，包括前往其他服务器上的家。请先完成[代理部署](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.mdx#proxy-plugin)，各服务器需共用 Redis 和持久化存储。
+
+每个家属于一位玩家，其他玩家需要对应的管理权限才能前往或管理。家不能设为公开；共享目的地请使用[公共传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.mdx)。
+
+## 命令与权限
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/set-home [name]` | 在当前位置新建家，仅玩家可执行，默认名称为 `home`。 | `sparrow.command.set-home` |
+| `/home [name]` | 前往自己的家，仅玩家可执行。 | `sparrow.command.home` |
+| `/home <player>.<name>` | 自己前往另一位玩家的家。 | `sparrow.command.home` + `sparrow.command.home.other` |
+| `/del-home <name> [player]` | 删除自己的家；有 `.other` 时可删除指定玩家的家。 | `sparrow.command.del-home[.other]` |
+| `/home-list [page]` | 查看自己的家，每页 10 条。 | `sparrow.command.home-list` |
+| `/home-list other <player> [page]` | 查看另一位玩家的家列表。 | `sparrow.command.home-list` + `sparrow.command.home-list.other` |
+| `/edit-home <name>` | 打开自己的家的信息与管理面板。 | `sparrow.command.edit-home` |
+| `/edit-home <player>.<name>` | 打开另一位玩家的家面板。 | `sparrow.command.edit-home` + `sparrow.command.edit-home.other` |
+| `/del-all-home [--player <player>] [--server <server>] [--world <world>]` | 删除同时符合所有过滤条件的家；仅控制台可执行，至少提供一个条件。 | `sparrow.command.del-all-home` |
+
+每条命令都有 `/sparrow <命令>` 入口。默认别名包括 `/sethome`、`/delhome`、`/homelist` 和 `/edithome`。
+
+这里的 `player` 是家的所有者，可以在任意服务器在线，也可以离线，但必须曾经进入过你的 Sparrow 服务器。`/home Alex.mine` 是让**自己**前往 Alex 的家，不提供传送其他玩家的参数。删除时，所有者放在单独的参数中：`/del-home mine Alex`。
+
+控制台可以查看列表、查看信息、改名和删除，但必须指定所有者。创建家、传送，以及将家移动到执行者当前位置，都需要玩家执行。
+
+```text title="示例"
+/set-home
+/set-home mine
+/home mine
+/home-list
+/home Alex.mine
+/home-list other Alex 2
+/edit-home Alex.mine
+/del-home mine Alex
+```
+
+## 默认家与命名
+
+省略名称的 `/set-home` 使用 `default-name`，默认是 `home`。它不会覆盖已有的家：同名时必须先删除，或者在具备权限时用管理命令移动原来的家。
+
+裸 `/home` 按以下顺序选择目的地：
+
+| 自己的家 | 结果 |
+| - | - |
+| 有名称符合 `default-name` 的家 | 前往这个家。 |
+| 没有默认家，但仅有一个家 | 前往唯一的家。 |
+| 没有默认家，且有多个家 | 提示指定名称。 |
+| 没有家 | 提示创建方法。 |
+
+`/home` 不会自动打开列表，查看列表请使用 `/home-list`。修改 `default-name` 不会给已有的家改名。
+
+名称不区分大小写，同一位玩家不能重复使用同一个名称，不同玩家可以有同名的家。名称最长 32 个字符，默认允许字母（包括中文）、数字、`_` 和 `-`。即使修改 `name-pattern`，也始终禁止空白、点号和以 `-` 开头。
+
+## 数量上限
+
+默认每位玩家最多有 **3 个家**，计算范围包括共用数据的所有服务器。可用 `max-homes` 修改默认值，或授予以下权限：
+
+| 权限 | 效果 |
+| - | - |
+| `sparrow.max-homes.<数字>` | 以持有的最大数值覆盖默认上限。 |
+| `sparrow.max-homes.unlimited` | 不限制数量。 |
+
+例如 `sparrow.max-homes.5` 允许保存 5 个家。低于配置默认值的数字权限也可以降低上限。上限 `0` 表示禁止新建，不代表无限。降低上限不会删除已有的家，改名和移动也不额外占用名额。
+
+## 聊天列表与管理面板
+
+`/home-list` 显示名称、服务器和世界。查看自己的列表时还会显示数量上限，查看他人列表时上限显示为未知。`/edit-home <name>` 显示所有者、位置、服务器、创建时间和修改时间。
+
+**Home 列表和面板的全部按钮都只把命令填入聊天输入框，由你按回车执行。** 这包括传送、编辑、移动、删除、翻页、刷新和返回列表。按钮遵循命令入口、开关和权限；控制台显示可复制的命令。
+
+| 命令 | 用途 | 额外默认权限 |
+| - | - | - |
+| `/edit-home <name> rename <new_name>` | 修改名称。 | `sparrow.command.edit-home.rename` |
+| `/edit-home <name> relocate` | 移到自己的当前位置和服务器，仅玩家可执行。 | `sparrow.command.edit-home.relocate` |
+| `/edit-home <name> delete` | 立即删除。 | `sparrow.command.edit-home.delete` |
+
+每项操作还需要 `sparrow.command.edit-home`。管理他人的家时使用 `<player>.<name>`，并额外需要 `sparrow.command.edit-home.other`；该权限不能替代各项操作权限。改名和移动保留所有者与创建时间，家没有描述或公开设置。
+
+在 `commands.yml` 中修改命令的基础权限后，其 `.other` 和操作权限也改为使用新基础权限。
+
+## 按条件删除
+
+`/del-home` 和 `/edit-home ... delete` 都立即删除单个家，不二次确认。`/del-home all` 中的 `all` 只是普通名称。
+
+批量删除使用控制台命令 `/del-all-home`。**该命令直接删除，没有二次确认。** 至少提供一个过滤条件：
+
+| 条件 | 匹配范围 |
+| - | - |
+| `--player <player>` | 属于这位玩家的家。 |
+| `--server <server>` | 位于这个 `server-id` 的家。 |
+| `--world <world>` | 位于这个世界名称的家。不提供 `--server` 时，匹配所有服务器上的同名世界。 |
+
+提供多个条件时必须同时满足。玩家不存在时整条命令终止，不会忽略玩家条件后继续删除。服务器或世界名称包含空格时使用引号。
+
+```text title="控制台示例"
+/del-all-home --player Alex
+/del-all-home --server survival --world old_world
+/del-all-home --player Alex --server survival --world "Old World"
+```
+
+## 倒计时与冷却
+
+回家默认等待 3 秒。倒计时期间移动超过半格、切换世界或受伤会取消传送。前往其他玩家的家仍然使用自己的倒计时和冷却。
+
+目的地在发起命令时确定，倒计时期间移动或删除这个家不会改变本次传送。冷却、倒计时、世界限制和音效在 `teleport.yml` 的分组里配置，见[传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。
+
+## PlaceholderAPI
+
+在需要使用占位符的后端服务器安装 PlaceholderAPI，并启用 Home。占位符由 Sparrow 直接提供，不需要另行下载扩展。服务器启动完成后即可使用，不需要额外执行 `/sparrow reload`。
+
+| 占位符 | 内容 |
+| - | - |
+| `%sparrow-homes-count_value%` | 玩家的家数量，例如 `3`。 |
+| `%sparrow-max-homes_value%` | 玩家当前的数量上限，`-1` 表示无限。 |
+| `%sparrow-homes-list_value%` | 名称按不区分大小写的顺序排序，保留原写法，用 `, ` 连接，例如 `home, mine`。 |
+
+只支持以在线玩家为对象解析。玩家离线、没有玩家上下文或 Home 已停用时，不解析这些占位符。不能在占位符后追加其他玩家的名字查询他的家。
+
+在任意服务器修改家后，占位符都会自动更新。更新期间保留之前的显示，不需要执行 `/home-list`。重新启用 Home 时，占位符可能在加载完成前暂时不可用。
+
+在 Sparrow 的消息中，使用 `<papi:sparrow-homes-count_value>`、`<papi:sparrow-homes-list_value>`。在其他支持 PlaceholderAPI 的插件中，使用上表的 `%...%` 写法。
+
+## 配置
+
+把下面的分组合并到 `features.yml`，保留其他功能的设置。
+
+```yaml title="features.yml · home"
+home:
+  enabled: true
+  default-name: home
+  max-homes: 3
+  name-pattern: '[\p{L}\p{N}_][\p{L}\p{N}_-]*'
+  suggestion-limit: 100
+  teleport-group: default
+```
+
+| 配置项 | 含义 |
+| - | - |
+| `enabled` | 启用 Home 命令及其占位符。 |
+| `default-name` | 裸 `/set-home` 创建的名称，也是裸 `/home` 优先选择的名称，必须符合命名规则。 |
+| `max-homes` | 默认数量上限，非负整数；`0` 表示禁止新建，权限可以覆盖。 |
+| `name-pattern` | 允许名称的正则表达式，还需满足固定的长度和字符限制。 |
+| `suggestion-limit` | Tab 补全最多显示的 Home 名称数量，至少为 1。 |
+| `teleport-group` | 使用 `teleport.yml` 中的哪个[传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)，留空或填 `default` 时使用默认分组。 |
+
+修改功能设置后执行 `/sparrow reload` 生效。命令开关、别名和基础权限放在 `commands.yml`，修改后需要重启服务器。列表使用普通的 `home-list` 命令开关，没有独立的列表配置项。

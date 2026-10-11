@@ -2,23 +2,25 @@
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation>
 
-本章将完成 Sparrow 的安装，并配置服务器 ID、Redis 和数据库。
+在代理和各子服安装同一个 Sparrow JAR，然后设置服务器 ID，并连接 Redis 和数据库。
 
 ## 运行环境
 
-当前版本提供 Paper、Folia 和 Spigot 加载入口，插件声明的最低 API 版本为 **1.21.11**。Spigot 请使用 **26.2 或更新的适配版本**。具体服务端版本应与所用 Sparrow 构建匹配。
+**Sparrow 必须通过代理使用，即使只有一个子服也一样。** 每个 Sparrow 群组服使用一个 Velocity 或 BungeeCord/Waterfall 代理，不支持多代理部署。
 
-插件以 Java 21 编译；运行时还需要满足所用 Minecraft 服务端的 Java 要求。PlaceholderAPI 是可选插件，需要解析其占位符时再安装。LuckPerms 也是可选插件，安装后[维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.mdx)和[人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.mdx)会在玩家进入前按 LuckPerms 权限判断能否绕过；未安装时只有 OP 可以绕过。
+Paper、Folia 最低支持 **1.21.11**。Spigot 请使用 **26.2 或更新的适配版本**。具体服务端版本应与所用 Sparrow 构建匹配。
+
+请按 Minecraft 服务端的要求安装 Java，最低为 Java 21。PlaceholderAPI 是可选插件，需要解析外部占位符或使用 Sparrow 提供的 [Home 占位符](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home.mdx#placeholderapi)时安装，Home 命令本身不依赖它。LuckPerms 也是可选插件，安装后[维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.mdx)和[人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.mdx)会在玩家进入前按 LuckPerms 权限判断能否绕过；未安装时只有 OP 可以绕过。
 
 **Redis 和一种持久化数据库是当前版本启动所需的服务。** 数据库可选 MongoDB、MySQL、MariaDB 或 PostgreSQL。
 
 > **存储服务版本**
 >
-> Redis 版本必须大于 **7.2.4**；使用 MySQL 时，MySQL 版本必须大于 **8.0.0**。
+> Redis 需要 **7.2.4 或更新版本**；MySQL 需要 **8.0.0 或更新版本**。
 
 ## 安装
 
-将 Sparrow 的 `.jar` 文件放入服务器的 `plugins/` 文件夹，然后启动服务器。配置文件生成在 `plugins/Sparrow/` 中：
+Sparrow 使用同一个通用文件 `sparrow-<版本>.jar`。将相同版本放入代理和每个子服的 `plugins/` 文件夹，分别启动以生成配置。子服配置位于 `plugins/sparrow/`：
 
 **Sparrow**
 
@@ -35,13 +37,15 @@
 
 ## 设置服务器 ID
 
-修改 `plugins/Sparrow/server.yml` 中已有的 `server-id`：
+修改 `plugins/sparrow/server.yml` 中已有的 `server-id`：
 
 ```yaml title="server.yml · 服务器 ID"
 server-id: 'lobby'
 ```
 
-共用 Redis 和数据库的服务器必须使用不同的 ID，例如 `lobby`、`survival-1`、`survival-2`。使用代理时，ID 应与代理配置中的后端服务器名称一致。复制配置到另一台服务器后，需要单独修改此项。
+共用 Redis 和数据库的服务器必须使用不同的 ID，例如 `lobby`、`survival-1`、`survival-2`。ID 必须与代理配置中的后端服务器名称一致。复制配置到另一台服务器后，需要单独修改此项。
+
+启动时如果发现已有运行中的服务器使用相同 ID，Sparrow 会拒绝启动。服务器刚崩溃时，请等待约 4 秒再用原 ID 启动。
 
 ## 配置 Redis 和数据库
 
@@ -78,14 +82,9 @@ database:
 
 ## 代理插件 {#proxy-plugin}
 
-如果你的服务器通过 Velocity 或 BungeeCord（包括 Waterfall）组成群组服，还需要在代理上安装 Sparrow 代理插件：
+Velocity、BungeeCord/Waterfall 和各子服都使用 `sparrow-<版本>.jar`。从旧的分平台版本升级时，先移除旧 JAR，再放入通用文件。
 
-| 代理 | 文件 |
-| - | - |
-| Velocity | `Sparrow-velocity-<版本>.jar` |
-| BungeeCord / Waterfall | `Sparrow-bungeecord-<版本>.jar` |
-
-放入代理的 `plugins/` 目录并启动一次代理，插件会生成 `config.yml`：Velocity 在 `plugins/sparrow/` 下，BungeeCord 在 `plugins/Sparrow/` 下。把它指向后端服务器使用的同一个 Redis，数据库编号也要一致：
+代理端会生成 `plugins/sparrow/config.yml`。把它指向子服使用的同一个 Redis，数据库编号也要一致：
 
 ```yaml title="代理 config.yml · Redis"
 redis:
@@ -94,9 +93,9 @@ redis:
   password: ''
 ```
 
-修改后重启代理。连接成功时控制台会显示 `Connected to Redis`。
+请按代理和子服的要求配置玩家信息转发，玩家统一通过代理地址进入。修改后重启代理；Redis 连接成功时控制台会显示 `Connected to Redis`。
 
-安装代理插件后，`/kick` 和[全服封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.mdx)会让玩家与整个群组服断开连接，并显示原因。不安装时，玩家只会在大约一秒后被移出当前所在的服务器，代理可能会把他送到其他服务器。[公共传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.mdx)和[返回上一位置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back.mdx)的跨服传送也需要代理插件，本服传送可以正常使用。
+`/kick` 和[全服封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.mdx)会让玩家与整个群组服断开连接，并显示原因。[公共传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.mdx)、[家](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home.mdx)、[全服出生点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/spawn.mdx)、[返回上一位置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back.mdx)和[传送请求](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/tpa.mdx)支持在已连接的子服之间传送。
 
 ## 调整功能和命令
 
@@ -123,7 +122,7 @@ patrol:
 | 修改内容 | 生效方式 |
 | - | - |
 | `features.yml` 的功能设置 | `/sparrow reload` |
-| `config.yml` 的倒计时显示与音效 | `/sparrow reload` |
+| `teleport.yml` 的传送分组 | `/sparrow reload` |
 | 功能模块开关 | `/sparrow feature-enable <feature>` 或 `feature-disable`，会保存到文件 |
 | `commands.yml` 的命令开关、入口、权限 | 重启服务器 |
 | Redis、数据库连接或 `server-id` | 重启服务器 |

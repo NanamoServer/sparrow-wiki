@@ -19,7 +19,7 @@
 
 自己返回时默认等待 3 秒。倒计时期间移动超过半格、切换世界或受伤会取消传送。让其他玩家返回床边时立即执行，不检查也不产生冷却。填写自己的名字时仍然使用自己的倒计时与冷却。
 
-`/bed` 的冷却与 `/back`、`/warp` 分别计算。倒计时显示、音效，以及缩短或跳过等待的权限，见[传送设置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/teleport.mdx)。
+冷却、倒计时、世界限制和音效在 `teleport.yml` 的分组里配置，见[传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。
 
 ## 配置
 
@@ -28,18 +28,12 @@
 ```yaml title="features.yml · bed"
 bed:
   enabled: true
-  warmup-seconds: 3
-  cooldown-seconds: 0
-  cancel-on-move: true
-  cancel-on-damage: true
+  teleport-group: default
 ```
 
 | 配置项 | 含义 |
 | - | - |
 | `enabled` | 是否启用返回床边功能，停用时隐藏对应命令。 |
-| `warmup-seconds` | 自己返回前等待的秒数，`0` 表示立即传送。 |
-| `cooldown-seconds` | 两次 `/bed` 之间的冷却秒数，各服务器共享，`0` 表示不限制。 |
-| `cancel-on-move` | 移动超过半格或切换世界时，是否取消倒计时。 |
-| `cancel-on-damage` | 受伤时是否取消倒计时。 |
+| `teleport-group` | 使用 `teleport.yml` 中的哪个[传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)，留空或填 `default` 时使用默认分组。 |
 
 修改功能设置后执行 `/sparrow reload` 生效。命令开关、入口和基础权限放在 `commands.yml` 的 `bed` 分组中，修改后需要重启服务器。

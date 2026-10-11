@@ -19,7 +19,7 @@ If the respawn point is missing or unusable, such as a broken or blocked bed, Sp
 
 Returning yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage cancels it. Sending another player to their bed happens immediately and neither checks nor starts a cooldown. Naming yourself still uses your own countdown and cooldown.
 
-The cooldown for `/bed` is separate from `/back` and `/warp`. See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for display, sounds, and permissions that shorten or skip the wait.
+Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
 
 ## Configuration
 
@@ -28,18 +28,12 @@ Merge this section into `features.yml`, keeping the other feature settings:
 ```yaml title="features.yml · bed"
 bed:
   enabled: true
-  warmup-seconds: 3
-  cooldown-seconds: 0
-  cancel-on-move: true
-  cancel-on-damage: true
+  teleport-group: default
 ```
 
 | Setting | Meaning |
 | - | - |
 | `enabled` | Enable the bed feature. When disabled, its commands are hidden. |
-| `warmup-seconds` | Seconds to wait before returning yourself; `0` teleports immediately. |
-| `cooldown-seconds` | Seconds before you can use `/bed` again, shared across servers; `0` disables the cooldown. |
-| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
-| `cancel-on-damage` | Cancel the countdown when you take damage. |
+| `teleport-group` | Which [teleport group](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) in `teleport.yml` to use. Leave it empty or use `default` for the default group. |
 
 Apply feature settings with `/sparrow reload`. Command switches, entry points, and base permissions are configured separately under `bed` in `commands.yml`; changing them requires a restart.

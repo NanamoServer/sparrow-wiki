@@ -2,7 +2,7 @@
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/warp>
 
-Warps are named destinations shared across your Sparrow servers. Players can travel to them by command or from a clickable chat list. A destination on another server requires the [Sparrow proxy plugin](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin).
+Warps are named destinations shared across your Sparrow servers. Players can travel to them by command or from a clickable chat list. Complete the [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin) before using cross-server destinations.
 
 ## Commands and permissions
 
@@ -16,6 +16,8 @@ Warps are named destinations shared across your Sparrow servers. Players can tra
 | `/edit-warp <name>` | Open the destination's information and management panel. | `sparrow.command.edit-warp` |
 
 Each command also has a `/sparrow <command>` entry point, such as `/sparrow warp-list`. The console must specify a player when using `/warp`. Specifying your own name also requires `.other`; without it, the player argument is hidden from completion and cannot be used manually.
+
+Bare `/warp` reports a missing name and does not open a list. Browse destinations with `/warp-list`. There is no separate list setting; use that command's regular switch in `commands.yml` if needed.
 
 Names are case insensitive, up to 32 characters long, and allow letters (including Chinese), digits, `_`, and `-` by default. They cannot start with `-`. `name-pattern` can change the allowed characters, but the length limit remains. Keep names without spaces so they can be used in every warp command.
 
@@ -54,7 +56,7 @@ Destinations without that permission are hidden from lists and completion and ca
 
 Travelling yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage cancels it. Sending another player happens immediately and neither checks nor starts a cooldown. Naming yourself still uses your own wait and cooldown.
 
-See [Teleport settings](https://nanamoserver.github.io/sparrow-wiki/features/teleport.mdx) for countdown display, sounds, and permissions that shorten or skip the wait. If the destination server is offline or the world cannot be found, Sparrow reports the problem and does not teleport you there.
+Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx). If the destination server is offline or the world cannot be found, Sparrow reports the problem and does not teleport you there.
 
 ## Configuration
 
@@ -67,10 +69,7 @@ warp:
   overwrite-existing: true
   name-pattern: '[\p{L}\p{N}_][\p{L}\p{N}_-]*'
   suggestion-limit: 100
-  warmup-seconds: 3
-  cooldown-seconds: 0
-  cancel-on-move: true
-  cancel-on-damage: true
+  teleport-group: default
 ```
 
 | Setting | Meaning |
@@ -80,9 +79,6 @@ warp:
 | `overwrite-existing` | Let `/set-warp` move an existing destination while preserving its description and creation details. When `false`, an existing name is refused. |
 | `name-pattern` | Regular expression for allowed names. An invalid expression prevents the feature from starting and is reported in the console. |
 | `suggestion-limit` | Maximum names shown in Tab completion; at least 1. Enter more characters to narrow the list. |
-| `warmup-seconds` | Seconds to wait before travelling yourself; `0` teleports immediately. |
-| `cooldown-seconds` | Seconds before you can use `/warp` again, shared across servers; `0` disables the cooldown. |
-| `cancel-on-move` | Cancel the countdown when you move more than half a block or change worlds. |
-| `cancel-on-damage` | Cancel the countdown when you take damage. |
+| `teleport-group` | Which [teleport group](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) in `teleport.yml` to use. Leave it empty or use `default` for the default group. |
 
 Apply feature settings with `/sparrow reload`. Command switches, entry points, and base permissions are in `commands.yml`; changing them requires a restart.

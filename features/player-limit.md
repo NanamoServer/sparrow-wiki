@@ -44,4 +44,4 @@ When `max-players` is `-1`, the `max-players` value from `server.properties` is 
 
 > **Note**
 >
-> With Velocity or BungeeCord, the proxy has its own player limit and server list display. This feature only affects the current backend server.
+> The proxy has its own player limit and server list display. This feature only affects the current backend server.

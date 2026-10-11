@@ -8,6 +8,22 @@
 
 属于某个功能的命令（例如 `/maintenance`、`/ban`）在该功能停用期间会对玩家隐藏，执行时提示功能未启用；重新启用后立即恢复。
 
+## 玩家名与选择器 {#player-targets}
+
+支持跨服玩家的命令会补全代理群组内的在线玩家名，玩家切换子服期间仍保留在名单中。允许查询离线玩家的命令仍可手动输入已知玩家名。治疗、打开背包等本服操作仍然只作用于本服玩家。
+
+`@s`（自己）、`@p`（最近的玩家）、`@r`（随机玩家）、`@a`（全部玩家）等选择器，**只选择执行命令所在服务器的玩家**。
+
+| 参数 | 选择器用法 |
+| - | - |
+| `/kick <player>` | 支持批量选择本服玩家，例如 `/kick @a 服务器即将重启`。踢出其他服务器上的玩家时填写名字。 |
+| `/ip`、`/ip-history`、`/player-uuid`、`/player-info`，以及 `/tp-offline` 的目的地玩家 | 只能选一人，可用 `@s`、`@p`、`@r`、`@a[limit=1]`。 |
+| `/del-home <name> [player]`、`/home-list other <player>`、`/del-all-home --player <player>` 中的所有者 | 只能选本服一人。`<player>.<home>` 这种连写形式仍需填写玩家名。 |
+| `/ban-history --operator <player>` | 只能选本服一人。查询对象本身仍填写玩家名、UUID、IP 或处罚 ID。 |
+| `/ban`、`/mute`、`/unmute`、`/unban` | 不支持选择器，请输入玩家名或该命令接受的其他对象。 |
+
+`@s` 只能由玩家使用，控制台不能用它选人。只接受一名玩家的参数不能直接填写 `@a`，即使本服只有一名在线玩家也需要限制数量。
+
 ## ⚙️ 插件管理
 
 | 命令 | 用途 | 默认权限 |
@@ -29,19 +45,22 @@
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/kick <player> [reason] [-s]` | 把玩家从其所在的服务器踢出，踢出界面会显示原因和执行人。 | `sparrow.command.kick` |
-| `/ban <player> [reason] [-t <时长>] [-I] [-s]` | 全服封禁账号；加上 `-I` 会同时封禁其最近一次登录的 IP。 | `sparrow.command.ban` |
-| `/ban-ip <ip> [reason] [-t <时长>] [-s]` | 封禁一个 IP 或 `1.2.3.*` 这样的 IP 段。 | `sparrow.command.ban-ip` |
+| `/ban <player> [reason] [-t <时长>] [-I] [--force] [-s]` | 全服封禁账号；加上 `-I` 会同时封禁其最近一次登录的 IP。 | `sparrow.command.ban` |
+| `/ban-ip <ip> [reason] [-t <时长>] [--force] [-s]` | 封禁一个 IP 或 `1.2.3.*` 这样的 IP 段。 | `sparrow.command.ban-ip` |
+| `/mute <player> <time> [reason]` | 限时禁止玩家在所有服务器的普通聊天中发言，详见[禁言](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/mute.mdx)。 | `sparrow.command.mute` |
+| `/unmute <player>` | 解除玩家当前的禁言。 | `sparrow.command.unmute` |
 | `/unban <对象> [-s]` | 按玩家名、UUID、IP 或处罚 ID 解除封禁。 | `sparrow.command.unban` |
 | `/ban-history [对象] [选项]` | 查看封禁记录，可按执行人、时间范围和是否生效筛选。 | `sparrow.command.ban-history` |
 
 `/kick` 可以踢出集群内任意服务器上的在线玩家。`--silent` / `-s` 会隐藏给执行人的成功提示；用在封禁相关命令上时，也不会通知管理员。
 
-使用 Velocity 或 BungeeCord 时，请在代理上安装[代理插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.mdx#proxy-plugin)，被踢出或封禁的玩家才会与整个群组服断开连接。不安装时，玩家会在大约一秒后被移出当前服务器，代理可能会把他送到其他服务器。
+`/kick` 会让玩家与代理断开连接，切服期间也可以踢出。踢出界面使用执行命令所在子服的语言文件，按目标玩家的客户端语言显示。代理执行踢出后才提示成功；玩家已经离线时会提示不在线。部署要求见[代理插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.mdx#proxy-plugin)。
 
 ## 🔎 玩家记录查询
 
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
+| `/player-info <player>` | 查看玩家资料与处罚状态，也可用 `/whois`。 | `sparrow.command.player-info` |
 | `/ip <player>` | 查看玩家最近一次登录的 IP 与时间，并提供查询同 IP 玩家的按钮。 | `sparrow.command.ip` |
 | `/ip-history <对象> [page]` | 列出最近一次登录 IP 与指定 IP、`1.2.3.*` 这样的 IP 段，或某名玩家最近登录 IP 相同的玩家。 | `sparrow.command.ip-history` |
 | `/player-uuid <player>` | 按玩家名查询 UUID。 | `sparrow.command.player-uuid` |
@@ -59,6 +78,7 @@
 | `/fly <player> [enabled]` | 切换指定玩家的飞行状态，或用 true / false 明确设置。 | `sparrow.command.fly[.other]` |
 | `/fly-speed <speed> [player]` | 设置飞行速度，范围 -1 到 1。 | `sparrow.command.fly-speed[.other]` |
 | `/walk-speed <speed> [player]` | 设置行走速度，范围 -1 到 1。 | `sparrow.command.walk-speed[.other]` |
+| `/smite <targets> [--effect]` | 用雷电击中选中的本服实体；`--effect` 只显示效果。 | `sparrow.command.smite` |
 | `/suicide` | 结束自己的生命，仅玩家可执行。 | `sparrow.command.suicide` |
 | `/burn <time> [targets]` | 使自己或选中的实体燃烧；时长可填写刻数或 `5s` 这样的单位形式。 | `sparrow.command.burn[.other]` |
 | `/extinguish [targets]` | 熄灭目标实体身上的火。 | `sparrow.command.extinguish[.other]` |
@@ -77,6 +97,7 @@
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/patrol [targets]` | 轮流巡查本服在线玩家，仅玩家可执行。 | `sparrow.command.patrol` |
+| `/force-say <targets> <text>` | 让选中的本服玩家发送聊天消息。 | `sparrow.command.force-say` |
 | `/sudo <targets> <command>` | 让指定玩家执行命令。 | `sparrow.command.sudo` |
 
 ## 🧭 传送
@@ -87,7 +108,11 @@
 | `/top-block [targets]` | 将目标传送到当前坐标列的最高可站立位置。 | `sparrow.command.top-block[.other]` |
 | `/tp-offline <player> [targets] [--silent]` | 将目标传送到指定玩家最后记录的位置。 | `sparrow.command.tp-offline` |
 | `/server <server> [targets]` | 通过代理请求切换后端服务器。 | `sparrow.command.server[.other]` |
+| `/spawn` | 前往全服出生点，仅玩家可用，详见[全服出生点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/spawn.mdx)。 | `sparrow.command.spawn` |
+| `/set-spawn` | 将当前位置设为全服出生点，覆盖已有设置，仅玩家可用。 | `sparrow.command.set-spawn` |
+| `/del-spawn` | 立即删除全服出生点，玩家和控制台均可用。 | `sparrow.command.del-spawn` |
 | `/bed [player]` | 将玩家传送到重生点，例如他的床。 | `sparrow.command.bed[.other]` |
+| `/death-back [player]` | 返回最后一次死亡的位置，支持跨服。 | `sparrow.command.death-back[.other]` |
 | `/back [player]` | 让玩家回到上一个位置，可以跨服返回。 | `sparrow.command.back[.other]` |
 | `/warp <name> [player]` | 让自己或指定玩家传送到命名传送点，支持跨服。 | `sparrow.command.warp[.other]` |
 | `/set-warp <name>` | 在当前位置创建或移动已有传送点，仅玩家可执行。 | `sparrow.command.set-warp` |
@@ -101,7 +126,57 @@
 
 `/bed` 使用玩家死亡后会重生的位置：床、已充能的重生锚，或用 `/spawnpoint` 设置的位置。床被拆除或被挡住时，会提示没有可以返回的床。
 
-`/warp`、`/back` 和 `/bed` 的倒计时与冷却分别放在 `features.yml` 中。共用的显示、音效和绕过权限，见[传送设置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/teleport.mdx)。`/tp-offline` 立即传送。
+裸 `/warp` 会提示缺少名称，查看列表请使用 `/warp-list`。单个传送点的权限与管理用法见[公共传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.mdx)。
+
+冷却、倒计时、世界限制和音效在 `teleport.yml` 的分组里配置，各功能用 `features.yml` 中的 `teleport-group` 选择分组，见[传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。`/tp-offline` 立即传送。
+
+### 服务器名补全
+
+`/server` 补全会列出在线的 Sparrow 服务器，排除本服，并按 `features.yml` 的 `server.allowed-servers` 过滤。服务器开关服后，补全通常会在几秒内自动更新。本服没有在线玩家时，控制台也可以看到补全。
+
+未出现在补全中的服务器名仍可手动输入，但必须符合允许列表，并在代理中配置。能否连接由代理决定。
+
+```yaml title="features.yml · server"
+server:
+  enabled: true
+  allowed-servers: []
+```
+
+空列表表示不限制目的地。需要限制时，可以填写 `allowed-servers: [lobby, survival]`。修改后执行 `/sparrow reload`。代理安装步骤见[代理插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.mdx#proxy-plugin)。
+
+## 🏠 家
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/set-home [name]` | 在当前位置创建自己的家，默认名称为 `home`；仅玩家可执行，不覆盖已有记录。 | `sparrow.command.set-home` |
+| `/home [name]` | 前往指定名称、默认或唯一的家，仅玩家可执行。 | `sparrow.command.home` |
+| `/home <player>.<name>` | 自己前往另一位玩家的家。 | `sparrow.command.home` + `sparrow.command.home.other` |
+| `/del-home <name> [player]` | 立即删除自己的家，有 `.other` 时可指定其他所有者。 | `sparrow.command.del-home[.other]` |
+| `/home-list [page]` | 查看自己的家，每页 10 条。 | `sparrow.command.home-list` |
+| `/home-list other <player> [page]` | 查看另一位玩家的家列表。 | `sparrow.command.home-list` + `sparrow.command.home-list.other` |
+| `/edit-home <home>` | 查看家的信息与管理面板。 | `sparrow.command.edit-home[.other]` |
+| `/edit-home <home> rename <new_name>` | 修改家的名称。 | `sparrow.command.edit-home` + `sparrow.command.edit-home.rename` |
+| `/edit-home <home> relocate` | 移到自己的当前位置和服务器，仅玩家可执行。 | `sparrow.command.edit-home` + `sparrow.command.edit-home.relocate` |
+| `/edit-home <home> delete` | 立即删除，不二次确认。 | `sparrow.command.edit-home` + `sparrow.command.edit-home.delete` |
+| `/del-all-home [--player <player>] [--server <server>] [--world <world>]` | 删除同时符合全部条件的家；仅控制台，至少一个条件，不二次确认。 | `sparrow.command.del-all-home` |
+
+Home 命令中的 `player` 表示所有者，可以是已知的离线玩家。`<home>` 可以填自己的家名称，或 `<player>.<name>`；管理他人的家时，除了各项操作权限还需要 `.other`。控制台必须指定所有者。`/home` 没有传送其他玩家的参数。
+
+别名包括 `/sethome`、`/delhome`、`/homelist` 和 `/edithome`。裸 `/home` 优先前往配置中的默认家，其次选择唯一的家；其余情况提示指定名称或创建，不自动打开列表。
+
+Home 列表和面板的全部按钮都只填入命令，由你按回车执行。数量上限、配置、批量过滤条件和 PlaceholderAPI 占位符见[家](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home.mdx)。
+
+## 🤝 传送请求
+
+| 命令 | 用途 | 默认权限 |
+| - | - | - |
+| `/tpa <player>` | 请求传送到对方身边。 | `sparrow.command.tpa` |
+| `/tpa-here <player>` | 请求对方传送到自己身边。 | `sparrow.command.tpa-here` |
+| `/tpa-accept [player]` | 接受收到的请求，不填玩家时接受最近收到的那条。 | `sparrow.command.tpa-accept` |
+| `/tpa-deny [player]` | 拒绝收到的请求，不填玩家时拒绝最近收到的那条。 | `sparrow.command.tpa-deny` |
+| `/tpa-cancel [player]` | 取消发给某位玩家的请求，不填玩家时取消自己发出的全部请求。 | `sparrow.command.tpa-cancel` |
+
+这些命令仅玩家可用，目标可以在其他子服。别名包括 `/tpahere`、`/tpaccept`、`/tpdeny` 和 `/tpacancel`。有效期、冷却和配置见[传送请求](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/tpa.mdx)。
 
 ## 🛠️ 便携工作站与容器
 
@@ -114,6 +189,8 @@
 | `/stonecutter [player]` | 为玩家打开切石机。 | `sparrow.command.stonecutter[.other]` |
 | `/cartography-table [player]` | 为玩家打开制图台。 | `sparrow.command.cartography-table[.other]` |
 | `/enchantment-table [player]` | 为玩家打开附魔台。 | `sparrow.command.enchantment-table[.other]` |
+| `/clear-inv <player>` | 清空本服玩家的背包、装备、鼠标物品和合成材料。 | `sparrow.command.clear-inv` |
+| `/clear-ender <player>` | 清空本服玩家的末影箱。 | `sparrow.command.clear-ender` |
 | `/ender_chest` | 打开自己的末影箱。 | `sparrow.command.ender-chest[.other]` |
 | `/ender_chest <player> [--silent]` | 让指定玩家打开他自己的末影箱。 | `sparrow.command.ender-chest[.other]` |
 
@@ -121,6 +198,9 @@
 
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
+| `/repair <player> [--slot <slot>] [--value <amount>]` | 修复主手或指定装备槽的物品；不填 `--value` 时完全修复，填写时恢复指定耐久。 | `sparrow.command.repair` |
+| `/repair-all <player>` | 完全修复本服玩家背包与装备中的物品。 | `sparrow.command.repair-all` |
+| `/item-damage <player> <value>` | 设置主手物品已损失的耐久，达到最大耐久时物品损坏消失。 | `sparrow.command.item-damage` |
 | `/enchant <targets> <enchantment> [level] [--slot <slot>] [--check]` | 修改目标实体指定装备槽的附魔，等级为负数时移除；`--check` 按原版 `/enchant` 规则校验。 | `sparrow.command.enchant` |
 | `/item_data [--full] [--chat]` | 查看主手物品数据，仅玩家可执行。 | `sparrow.command.item-data` |
 | `/item_name <player> [name] [选项]` | 查询或修改主手物品的 item\_name 组件。 | `sparrow.command.item-name` |
@@ -144,13 +224,27 @@
 
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
-| `/broadcast <targets> <message> [选项]` | 向指定玩家发送聊天消息。 | `sparrow.command.broadcast` |
+| `/clear-chat [player]` | 用空行刷走本服玩家的聊天内容，省略玩家时对本服全员生效。 | `sparrow.command.clear-chat` |
+| `/broadcast <message> [选项]` | 向全部服务器的在线玩家广播聊天消息，包含本服。 | `sparrow.command.broadcast` |
 | `/actionbar <targets> <message> [选项]` | 向指定玩家发送 ActionBar。 | `sparrow.command.actionbar` |
 | `/title <targets> <fadeIn> <stay> <fadeOut> <message> [选项]` | 发送标题与可选副标题。 | `sparrow.command.title` |
 | `/toast <targets> <type> <item> <message> [选项]` | 发送带物品图标的进度提示。 | `sparrow.command.toast` |
 | `/totem-animation <targets> <item> [--silent]` | 播放使用指定物品图标的图腾动画。 | `sparrow.command.totem-animation` |
 | `/demo [player]` | 显示试玩提示。 | `sparrow.command.demo` |
 | `/credits [player]` | 显示终末之诗画面。 | `sparrow.command.credits` |
+
+玩家和控制台均可使用 `/broadcast`。消息必填，可以包含空格，会发送给连接同一个 Redis、使用相同数据库编号的所有 Sparrow 服务器的在线玩家，包含本服。即使执行命令的服务器没有在线玩家，也可以广播。
+
+消息支持 MiniMessage 格式，例如 `/broadcast <gold>交易市场现已开放！</gold>`。选项放在消息后面：
+
+| 广播选项 | 作用 |
+| - | - |
+| `--silent` / `-s` | 隐藏执行者的一次成功提示，玩家仍会收到广播。 |
+| `--legacy-color` / `-l` | 启用 `&a` 等传统颜色代码。 |
+
+Sparrow 的消息使用 `<papi:占位符>`，例如 `/broadcast <gold>你好，<papi:player_name>！</gold>`。每名玩家看到的是自己的名字。需要默认文本时可以写 `<papi:player_name:玩家>`。接收服务器需安装 PlaceholderAPI 和对应扩展，不需要额外的解析开关。
+
+传统颜色代码默认关闭，可在发送服 `config.yml` 设置 `text-options.parse-legacy-color: true`，或在单次命令后加 `-l`。
 
 ## 🔑 额外权限
 
@@ -160,10 +254,15 @@
 | `sparrow.bypass.maintenance` | 维护期间仍可留在服务器或进入服务器。 |
 | `sparrow.bypass.player-limit` | 服务器满员时仍可进入。 |
 | `sparrow.notify.ban` | 接收所有服务器的封禁与解封通知。默认只有 OP 拥有。 |
+| `sparrow.notify.mute` | 接收所有服务器的禁言与解除禁言通知。 |
 | `sparrow.warp.<小写名称>` | 开启 `permission-restrict` 时，允许使用对应传送点。 |
-| `sparrow.teleport-warmup.<秒>` | 缩短 `/warp`、`/back` 或 `/bed` 的等待时间，取权限中的最小值与功能默认值中较小的一个。 |
+| `sparrow.max-homes.<数字>` | 设置家的数量上限，以持有的最大数值覆盖配置默认值。 |
+| `sparrow.max-homes.unlimited` | 不限制家的数量。 |
+| `sparrow.teleport-warmup.<秒>` | 缩短 `/warp`、`/home`、`/back`、`/death-back`、`/bed`、`/spawn` 或传送请求被接受后的倒计时，取权限中的最小值与分组设置中较小的一个。 |
 | `sparrow.bypass.teleport-warmup` | 自己传送时跳过倒计时。 |
-| `sparrow.bypass.teleport-cooldown` | 跳过传送冷却检查，也不产生新的冷却。 |
+| `sparrow.bypass.teleport-cooldown` | 不受传送冷却限制。 |
+| `sparrow.bypass.teleport-world-blacklist` | 可以传送进世界黑名单中的世界。 |
+| `sparrow.bypass.tpa-cooldown` | 发起传送请求时不受发起冷却和拒绝冷却限制。 |
 
 `/enchant` 加上 `--check` 后与原版命令一致：等级不能超过附魔的最高等级，物品必须支持该附魔，且不能与已有附魔冲突，物品上已有同一附魔也算冲突。原版中附魔书不属于任何附魔的适用物品，因此同样会被拒绝。移除附魔时不做校验。
 

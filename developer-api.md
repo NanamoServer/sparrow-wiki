@@ -1,3 +1,84 @@
 # Developer API
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/developer-api>
+
+This page is for plugin developers. Sparrow does not have a separate API module yet. Everything below uses classes from the plugin itself, and they may change between Sparrow versions.
+
+## Registering a teleport processor
+
+Other plugins can register their own teleport processors, which server owners can then use in the lists of `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) for what groups and stages mean.
+
+### Writing a processor
+
+A processor is a plain class. It implements the interface of each stage it takes part in, and its options are fields.
+
+| Interface | List it belongs to | Methods to implement |
+| - | - | - |
+| `TeleportProcessor.Pre` | `pre-processor` | `before(player, teleport)`, optionally `finished(teleport, result)` |
+| `TeleportProcessor.Target` | `target-processor` | `destination(player, teleport)` |
+| `TeleportProcessor.Post` | `post-processor` | `arrived(player, teleport)` |
+
+A class may implement several of these interfaces so that it can be written in several lists. Each entry is only called for the stage it is listed under.
+
+```java
+@Configuration(naming = Configuration.Naming.KEBAB_CASE)
+public final class BlackScreenProcessor implements TeleportProcessor.Pre {
+    public static final SparrowKey TYPE = new SparrowKey("myplugin", "black-screen");
+
+    private int fadeTicks = 10;
+
+    @Override
+    public void validate() {
+        if (this.fadeTicks < 0) throw new IllegalArgumentException("fade-ticks must not be negative");
+    }
+
+    @NotNull
+    @Override
+    public CompletableFuture<Component> before(@NotNull BukkitSparrowPlayer player, @NotNull Teleport teleport) {
+        player.sendTitle(Component.text("⬛"), Component.empty(), this.fadeTicks, 40, 0);
+        return PASS;
+    }
+}
+```
+
+A processor follows these conventions:
+
+- **Options are fields.** A field maps to the kebab-case key in the configuration, so `fadeTicks` becomes `fade-ticks`. The field's initial value is the option's default. The class needs a no-argument constructor.
+- **The result of `before` and `destination` decides whether the teleport continues.** A `null` result lets it continue, and returning `PASS` does that. A text result rejects the teleport and is shown to the player being teleported. An empty component rejects it without a message.
+- **`validate()` checks the options.** Throw `IllegalArgumentException` when an option is invalid. The entry is ignored and the exception message appears in the console warning.
+- **Keep only options in the instance.** Sparrow creates a new instance for every entry each time the configuration is read. State that must survive across teleports belongs in your own plugin.
+- **Methods may be called from any thread.** Schedule work yourself when it has to run on the player's thread.
+- **The player in `destination` may be on another server.** During a cross-server teleport the player has not arrived yet, so you get a `SparrowPlayer`, and `checkPermission` works on it. Call `teleport.location(...)` to move the landing spot.
+- **`teleport.self()` tells whether the player started the teleport themselves.** The built-in cooldown, warmup, and world blacklist let teleports started for another player through. Whether yours does the same is up to you.
+
+### Registering it
+
+Register in your plugin's `onLoad`:
+
+```java
+@Override
+public void onLoad() {
+    SparrowPlugin.instance().teleportService().registerProcessor(BlackScreenProcessor.TYPE, BlackScreenProcessor.class);
+}
+```
+
+- **Timing.** Sparrow reads `teleport.yml` when it enables, so registration has to happen in `onLoad`. A type registered later is treated as unknown at startup and only takes effect after the next `/sparrow reload`.
+- **Type name.** It is a `SparrowKey`. Use your plugin's name as the namespace. `sparrow` is the namespace of the built-in processors.
+- **Duplicates.** Registering a type that already exists throws `IllegalArgumentException`.
+- **No unregistering.** Types can only be added. Removing one at runtime is not supported.
+
+Your plugin has to declare Sparrow as a dependency in `plugin.yml` or `paper-plugin.yml` to access these classes.
+
+### How server owners use it
+
+Once registered, the type and its options go into `teleport.yml`:
+
+```yaml title="teleport.yml"
+default:
+  pre-processor:
+    - processor-type: warmup
+    - processor-type: myplugin:black-screen
+      fade-ticks: 20
+```
+
+An entry placed in the wrong stage, given an invalid option value, or failing `validate()` is handled the same way as a built-in processor: the entry is ignored and the console prints a warning.
