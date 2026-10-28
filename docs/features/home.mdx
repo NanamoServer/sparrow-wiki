@@ -2,148 +2,30 @@
 title: 🏠 Homes
 ---
 
-Homes are personal destinations shared across your Sparrow servers. Players can save their current position and return to it, including on another server. Follow the [proxy setup](../installation.mdx#proxy-plugin); the servers must share Redis and persistent storage.
+Module `home` · Configuration `features/home.yml`
 
-A home belongs to one player. Other players need the relevant administrative permissions to visit or manage it. Homes cannot be made public; use [Warps](./warp.mdx) for shared destinations.
-
-## Commands and permissions
+Save personal destinations and return to them across servers.
 
 | Command | Purpose | Default permission |
 | --- | --- | --- |
-| `/set-home [name]` | Create a home at your position; players only. The default name is `home`. | `sparrow.command.set-home` |
-| `/home [name]` | Travel to one of your homes; players only. | `sparrow.command.home` |
-| `/home <player>.<name>` | Travel yourself to another player's home. | `sparrow.command.home` + `sparrow.command.home.other` |
-| `/del-home <name> [player]` | Delete your home, or another player's home with `.other`. | `sparrow.command.del-home[.other]` |
-| `/home-list [page]` | List your homes, 10 per page. | `sparrow.command.home-list` |
-| `/home-list other <player> [page]` | List another player's homes. | `sparrow.command.home-list` + `sparrow.command.home-list.other` |
-| `/edit-home <name>` | Open your home's information and management panel. | `sparrow.command.edit-home` |
-| `/edit-home <player>.<name>` | Open another player's home panel. | `sparrow.command.edit-home` + `sparrow.command.edit-home.other` |
-| `/del-all-home [--player <player>] [--server <server>] [--world <world>]` | Delete homes matching all supplied filters; console only, with at least one filter. | `sparrow.command.del-all-home` |
+| `/home [name]` | Travel to your home; player.name selects another owner's home. | `sparrow.command.home[.other]` |
+| `/set_home [name]` | Create a home at your position; the default name is home. | `sparrow.command.set_home` |
+| `/del_home <name>` | Delete a home; accepts player.name. | `sparrow.command.del_home[.other]` |
+| `/home_list [owner\|page] [page]` | List your homes or another owner's homes. | `sparrow.command.home_list[.other]` |
+| `/edit_home <name> [rename <new_name>\|relocate]` | View, rename or relocate a home; accepts player.name. | `sparrow.command.edit_home[.other]` |
+| `/sparrow del_all_homes [--player <player>] [--server <server>] [--world <world>]` | Bulk delete from console; at least one filter, no confirmation. | `sparrow.command.del_all_homes` |
 
-Each command also has a `/sparrow <command>` entry point. The default aliases are `/sethome`, `/delhome`, `/homelist`, and `/edithome`.
-
-`player` is the home owner, who may be online on any server or offline, but must have joined your Sparrow servers before. `/home Alex.mine` takes **you** to Alex's home; there is no argument for sending someone else. For deletion, put the owner in a separate argument: `/del-home mine Alex`.
-
-The console can list, inspect, rename, and delete homes, but must specify the owner. Creating homes, travelling, and moving a home to the executor's position require a player.
-
-~~~text title="Examples"
-/set-home
-/set-home mine
+```text
+/set_home mine
 /home mine
-/home-list
-/home Alex.mine
-/home-list other Alex 2
-/edit-home Alex.mine
-/del-home mine Alex
-~~~
+/home Steve.mine
+/home_list Steve 2
+```
 
-## Default home and names
+Without a name, `/home` prefers `default-name`, then your only home. `/set_home` does not overwrite an existing name. Use `player.name` to visit, delete or edit another owner's home, with the corresponding `.other` permission. `home_list` takes the owner's name directly.
 
-Without a name, `/set-home` creates the home named by `default-name`, which defaults to `home`. It never overwrites an existing home: delete that home first, or use the management command to move it if you have permission.
+The rename and relocate branches of `edit_home` also need `.rename` and `.relocate`. `del_all_homes` is console-only and deletes immediately using the intersection of all supplied filters.
 
-Bare `/home` chooses a destination as follows:
+The default limit is 3 homes. `sparrow.home.limit.<amount>` overrides `max-homes`; `sparrow.home.limit.unlimited` removes the limit. See [Teleport options](../teleport/overview.mdx) for teleport behavior.
 
-| Your homes | Result |
-| --- | --- |
-| A home matches `default-name` | Travel to that home. |
-| No default home, but exactly one home | Travel to the only home. |
-| No default home, and several homes | Ask you to specify a name. |
-| No homes | Show how to create one. |
-
-`/home` never opens the list automatically. Use `/home-list` to browse. Changing `default-name` does not rename existing homes.
-
-Names are case insensitive and unique to their owner; different players may use the same name. Names are at most 32 characters. By default they allow letters (including Chinese), digits, `_`, and `-`. Whitespace, dots, and a leading `-` are always forbidden, even with a custom `name-pattern`.
-
-## Home limit
-
-Players can have **3 homes** by default, counting their homes across the shared servers. Configure the default with `max-homes` or grant:
-
-| Permission | Effect |
-| --- | --- |
-| `sparrow.max-homes.<number>` | Replace the default limit with the highest granted number. |
-| `sparrow.max-homes.unlimited` | Allow unlimited homes. |
-
-For example, `sparrow.max-homes.5` allows five homes. A number below the configured default can also reduce the limit. A limit of `0` prevents new homes; it does not mean unlimited. Lowering the limit does not delete existing homes, and renaming or moving them does not use another slot.
-
-## Chat list and management panel
-
-`/home-list` shows names, servers, and worlds. Your own list also shows your limit; another player's list displays their limit as unknown. `/edit-home <name>` shows the owner, position, server, and creation and update times.
-
-**Every Home list and panel button fills the chat input with a command. Press Enter yourself to execute it.** This includes travel, editing, moving, deletion, page navigation, refresh, and returning to the list. Buttons follow command entry points, switches, and permissions; the console displays commands to copy.
-
-| Command | Purpose | Extra default permission |
-| --- | --- | --- |
-| `/edit-home <name> rename <new_name>` | Rename a home. | `sparrow.command.edit-home.rename` |
-| `/edit-home <name> relocate` | Move a home to your current position and server; players only. | `sparrow.command.edit-home.relocate` |
-| `/edit-home <name> delete` | Delete a home immediately. | `sparrow.command.edit-home.delete` |
-
-Each operation also needs `sparrow.command.edit-home`. To edit someone else's home, use `<player>.<name>` and additionally grant `sparrow.command.edit-home.other`; that permission does not replace the individual operation permissions. Renaming and moving preserve ownership and creation time. Homes have no description or public setting.
-
-Changing a command's base permission in `commands.yml` changes its `.other` and operation permissions to use the new base.
-
-## Delete homes by filter
-
-`/del-home` and `/edit-home ... delete` delete a single home immediately, without confirmation. `all` is an ordinary name in `/del-home all`.
-
-For bulk deletion, use `/del-all-home` from the console. **It deletes immediately and has no second confirmation.** Supply at least one filter:
-
-| Filter | Matches |
-| --- | --- |
-| `--player <player>` | Homes belonging to that player. |
-| `--server <server>` | Homes on that `server-id`. |
-| `--world <world>` | Homes in that world name. Without `--server`, it matches that world name on every server. |
-
-Multiple filters must all match. An unknown player aborts the command; the player filter is never ignored. Quote a server or world name that contains spaces.
-
-~~~text title="Console examples"
-/del-all-home --player Alex
-/del-all-home --server survival --world old_world
-/del-all-home --player Alex --server survival --world "Old World"
-~~~
-
-## Countdown and cooldown
-
-Home travel defaults to a 3-second countdown. Moving more than half a block, changing worlds, or taking damage cancels it. Visiting another player's home still uses your own countdown and cooldown.
-
-The destination is chosen when you start the command; moving or deleting the home during the countdown does not change that trip. Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](../teleport/overview.mdx).
-
-## PlaceholderAPI
-
-Install PlaceholderAPI on each backend where you want to use these placeholders and enable Home. Sparrow supplies them directly; no separate expansion download is needed. The placeholders are available after startup without an extra `/sparrow reload`.
-
-| Placeholder | Value |
-| --- | --- |
-| `%sparrow-homes-count_value%` | The player's home count, for example `3`. |
-| `%sparrow-max-homes_value%` | The player's current limit; `-1` means unlimited. |
-| `%sparrow-homes-list_value%` | Names sorted without regard to case, preserving their spelling and joined with `, `, for example `home, mine`. |
-
-They work only with an online player as the context. Offline players, no player context, or a disabled Home feature leave them unresolved. You cannot append another player's name to query their homes.
-
-After a home changes on any server, the placeholders update automatically. They keep showing the previous values while the update is in progress; you do not need to run `/home-list`. When Home is re-enabled, placeholders may briefly be unavailable while it loads.
-
-In Sparrow messages, use `<papi:sparrow-homes-count_value>` or `<papi:sparrow-homes-list_value>`. Use the `%...%` forms above in other plugins that support PlaceholderAPI.
-
-## Configuration
-
-Merge this section into `features.yml`, keeping the other feature settings:
-
-~~~yaml title="features.yml · home"
-home:
-  enabled: true
-  default-name: home
-  max-homes: 3
-  name-pattern: '[\p{L}\p{N}_][\p{L}\p{N}_-]*'
-  suggestion-limit: 100
-  teleport-group: default
-~~~
-
-| Setting | Meaning |
-| --- | --- |
-| `enabled` | Enable Home commands and its placeholders. |
-| `default-name` | The name created by bare `/set-home` and preferred by bare `/home`; must satisfy the name rules. |
-| `max-homes` | Default limit, a nonnegative integer; `0` prevents new homes unless permissions override it. |
-| `name-pattern` | Regular expression for allowed names, in addition to the fixed length and character restrictions. |
-| `suggestion-limit` | Maximum Home names shown in Tab completion; at least 1. |
-| `teleport-group` | Which [teleport group](../teleport/overview.mdx) in `teleport.yml` to use. Leave it empty or use `default` for the default group. |
-
-Apply feature settings with `/sparrow reload`. Command switches, aliases, and base permissions are in `commands.yml` and require a restart. Lists use the regular `home-list` command switch; there is no separate list setting.
+With PlaceholderAPI installed, use `sparrowhome_count`, `sparrowhome_limit`, `sparrowhome_remaining` and `sparrowhome_list`. In Sparrow text, write `<papi:sparrowhome_count>`. Unlimited limits and remaining counts return `-1`.

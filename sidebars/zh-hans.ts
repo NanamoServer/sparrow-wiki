@@ -3,7 +3,6 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   tutorialSidebar: [
     'intro',
-    'installation',
     'commands',
     {
       type: 'category',
@@ -17,9 +16,8 @@ const sidebars: SidebarsConfig = {
         'features/maintenance',
         'features/player-limit',
         'features/ban',
-        'features/mute',
         'features/back',
-        'features/bed',
+        'features/rtp',
         'features/spawn',
         'features/warp',
         'features/home',
@@ -35,8 +33,14 @@ const sidebars: SidebarsConfig = {
         'teleport/processors',
       ],
     },
-    'faq',
-    'developer-api',
+    {
+      type: 'category',
+      label: '🛠️ API 使用',
+      collapsed: false,
+      items: [
+        'api/teleport',
+      ],
+    },
   ],
 };
 

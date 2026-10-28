@@ -1,6 +1,6 @@
 # Sparrow Wiki
 
-Documentation for Sparrow, including installation instructions, a permissions and commands quick reference, and feature guides.
+Documentation for Sparrow, including a command and permission reference, concise feature guides, and the Teleport API.
 
 **[Read the documentation](https://nanamoserver.github.io/sparrow-wiki/)** · **[Simplified Chinese documentation](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/)**
 

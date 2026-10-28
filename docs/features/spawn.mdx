@@ -1,29 +1,30 @@
 ---
-title: 📍 Network spawn
+title: 🏁 Spawn
 ---
 
-Set one shared destination for `/spawn` across your Sparrow servers. Players can return to it from another backend. This destination is used by the command; it does not change where players join or respawn after death.
+Module `spawn` · Configuration `features/spawn.yml`
 
-## Commands and permissions
+Travel to the configured spawn, including on another backend. The command is unavailable until a destination is configured.
 
 | Command | Purpose | Default permission |
 | --- | --- | --- |
-| `/spawn` | Travel to the shared spawn; players only. | `sparrow.command.spawn` |
-| `/set-spawn` | Set or replace the destination at your current position; players only. | `sparrow.command.set-spawn` |
-| `/del-spawn` | Delete the shared destination immediately; players and console. | `sparrow.command.del-spawn` |
+| `/spawn` | Travel to the configured spawn. | `sparrow.command.spawn` |
 
-Each command also accepts `/sparrow <command>`. Stand where you want players to arrive and run `/set-spawn`. The destination is shared across servers and kept after a restart.
+```yaml
+destination:
+  server: lobby
+  world: world
+  x: 0.5
+  y: 64
+  z: 0.5
+  yaw: 0
+  pitch: 0
+teleport-options:
+  cooldown: 5m
+  warmup:
+    duration: 0s
+```
 
-Until a destination is set, `/spawn` is hidden from the player's command list. Deleting the destination hides it again. If the destination server is offline or its world cannot be found, Sparrow reports the problem.
+Configure the destination on each server and run `/spr reload`. Spawn uses the exact coordinates without a safe-location search.
 
-## Configuration
-
-~~~yaml title="features.yml · spawn"
-spawn:
-  enabled: true
-  teleport-group: default
-~~~
-
-By default, players wait 3 seconds, with no cooldown. Moving more than half a block, changing worlds, or taking damage cancels the countdown.
-
-Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](../teleport/overview.mdx). Apply configuration changes with `/sparrow reload`. Disabling the feature hides its commands but keeps the saved destination for when you enable it again.
+Spawn supports cooldowns, warmups and permission overrides. Its warmup fields use hyphens, such as `cancel-on-move` and `cancel-on-damage`.
