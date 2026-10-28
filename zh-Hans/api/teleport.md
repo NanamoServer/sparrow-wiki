@@ -1,0 +1,120 @@
+# 传送 API
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/teleport>
+
+## Getting Started
+
+将当前版本 Sparrow 加入编译依赖，并声明插件依赖。下面的 `player` 是本服在线的 `SparrowPlayer`，`logger` 是你的插件日志器。
+
+```java
+import java.util.logging.Level;
+import net.momirealms.sparrow.teleport.Teleport;
+import net.momirealms.sparrow.teleport.TeleportSubmission;
+import net.momirealms.sparrow.teleport.processor.post.PlaySound;
+
+TeleportSubmission submission = Teleport.builder()
+        .server("lobby")
+        .position("world", 0.5, 64, 0.5)
+        .postProcessor(new PlaySound())
+        .commit(player)
+        .onResult(result -> result.ifFail(fail -> player.sendTranslatedMessage(fail.reason())))
+        .onError(error -> logger.log(Level.SEVERE, "Teleport failed", error));
+```
+
+`server` 填 Sparrow 服务器 ID；与本服相同时执行本地传送。跨服需要配置好 Sparrow 子服与代理端。`commit` 也接受 Bukkit `Player`。每个 builder 只提交一次。
+
+## 目的地与落点
+
+| 写法 | 用途 |
+| - | - |
+| `position(world, x, y, z[, yaw, pitch])` | 固定坐标。 |
+| `position(TeleportPosition.ofPos(worldLocation))` | 已保存的 `WorldLocation`。 |
+| `position(TeleportPosition.ofPlayer(uuid))` | 目标服玩家的位置，也可传玩家名。 |
+| `position(TeleportPosition.rtpBuilder()...build())` | 在区域内随机搜索。 |
+
+`server(...)` 还接受 `Supplier<String>` 和 `CompletionStage<String>`。玩家目的地在准备时读取位置，不持续追踪移动。
+
+固定坐标默认直接使用。需要安全检查时加上 `FindSafeLoc`：
+
+```java
+FindSafeLoc safe = FindSafeLoc.builder()
+        .search(SearchPattern.exact(),
+                SearchPattern.nearby().horizontalRadius(4).up(8).down(8).build())
+        .rules(PhysicalSafety.builder().build())
+        .chunks(ChunkPolicy.EXISTING_ONLY)
+        .maxChecks(10_000)
+        .timeout(Duration.ofSeconds(3))
+        .build();
+
+Teleport.builder()
+        .server("survival")
+        .position("world", 100.5, 64, 100.5)
+        .targetProcessor(safe)
+        .postProcessor(new Invulnerability(5))
+        .commit(player);
+```
+
+`SearchPattern` 提供 `exact()`、`nearby()`、`column()`，按顺序搜索。`PhysicalSafety` 检查碰撞、支撑、边界和危险方块，默认不允许水中、树叶支撑和下界顶层落点。`EXISTING_ONLY` 只使用已生成区块，`ALLOW_GENERATION` 允许生成。
+
+随机传送可直接构造目的地：
+
+```java
+TeleportPosition random = TeleportPosition.rtpBuilder()
+        .areas(RtpArea.builder("world").rectangle(-5000, -5000, 5000, 5000).build())
+        .nearbyColumns(2, 4, 4)
+        .rules(PhysicalSafety.builder().build())
+        .chunks(ChunkPolicy.ALLOW_GENERATION)
+        .maxAttempts(32)
+        .maxChecks(10_000)
+        .timeout(Duration.ofSeconds(9))
+        .build();
+
+Teleport.builder().server("survival").position(random).commit(player);
+```
+
+`rectangle` 的参数为 `minX, minZ, maxX, maxZ`，可再追加 `minY, maxY`；多个区域可属于同一目标服的不同世界。`scanMode` 可选 `AUTO`、`SURFACE`、`CAVITY_TOP_DOWN`、`CAVITY_BOTTOM_UP`。示例显式填写了搜索范围和预算。
+
+`targetProcessor` 在目的地解析后依次检查或修改坐标。自定义 `PositionProcessor` 返回 `Accept`、`Reject` 或 `Relocate`。`postProcessor` 在到达后依次执行，内置 `PlaySound`、`Invulnerability`。
+
+## 等待、结果与取消
+
+给传送附加条件，可在准备目的地的同时等待确认或倒计时：
+
+```java
+CompletableFuture<Void> confirmation = new CompletableFuture<>();
+TeleportSubmission pending = Teleport.builder()
+        .server("lobby")
+        .position("world", 0.5, 64, 0.5)
+        .condition(confirmation)
+        .commit(player);
+```
+
+确认时调用 `confirmation.complete(null)`，取消时调用 `pending.cancel()`。所有条件正常完成才执行；条件异常或取消得到 `Aborted`。条件只判断完成状态，`CompletableFuture<Boolean>` 返回 `false` 也算通过。
+
+| 入口 | 含义 |
+| - | - |
+| `onPrepared(...)` | 准备成功，可读取目的地；不会暂停传送。 |
+| `onResult(...)` | `Success`、`Fail(reason)` 或 `Aborted(cause)`；可用 `ifSuccess`、`ifFail`、`ifAborted` 分支处理。 |
+| `onError(...)` | 程序异常。 |
+| `preparationResult()` / `result()` | 用于异步组合的观察 Future，不要自行完成或取消。 |
+| `cancel()` | 仅执行开始前可取消，成功返回 `true`，结果为 `Fail(TELEPORT_CANCELLED)`。 |
+| `commitForget(player)` | 不观察业务结果，只记录程序异常。 |
+
+`Success` 表示传送已完成，不等待所有后处理器结束。回调没有玩家线程保证；修改实体或世界时按平台要求调度。
+
+## 扩展
+
+`context(new TeleportContext())` 可携带 NBT 参数，提交后交给本次传送使用。`TeleportContext.UNSAFE` 设为 `true` 时，`FindSafeLoc` 搜索失败会使用其输入坐标；RTP 不使用这个回退。
+
+| 扩展接口 | 类型注册表 |
+| - | - |
+| `TeleportPosition` | `TeleportPosition.TYPES` |
+| `PositionProcessor` | `PositionProcessor.TYPES` |
+| `PostProcessor` | `PostProcessor.TYPES` |
+| `SafetyRule` | `SafetyRule.TYPES` |
+
+扩展实现 `type()`、`toNbt()`，并用对应注册表的 `register(type, decoder)` 注册解码器；发送服与可能接收请求的服务器都要注册。NBT 只传配置，服务对象在各服获取。
+
+需要搜索继续尝试候选位置的限制放进 `SafetyRule`。RTP 的 `testBeforeResolve` 可提前按 X/Z 判断，返回 `PASS`、`REJECT` 或 `DEFER`；`DEFER` 在解析 Y 后调用 `test`。后置的目标处理器拒绝落点不会触发 RTP 重试，修改坐标也不会重新检查之前的区域限制。
+
+`TeleportRequestEvent`、`TeleportReadyEvent` 分别在目标服解析目的地前、处理器结束后触发，均可取消；`TeleportArriveEvent` 在跨服到达后提供出发与到达位置。

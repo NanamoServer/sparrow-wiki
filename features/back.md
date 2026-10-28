@@ -1,82 +1,18 @@
-# Back
+# Back and death back
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/back>
 
-Use `/back` to return to where you were before your last teleport. Use `/death-back` to return to your last death location. Both support cross-server travel.
+Module `back` · Configuration `features/back.yaml`
 
-## Commands and permissions
+`/back` returns to the previous departure point; `/death-back` returns to the last death location. Both support cross-server destinations. A named traveler must be on this server.
 
-| Command | Purpose | Default command permission |
+| Command | Purpose | Default permission |
 | - | - | - |
-| `/back` | Return to your own previous location. | `sparrow.command.back` |
-| `/back <player>` | Return the named player to their previous location. | `sparrow.command.back` + `sparrow.command.back.other` |
-| `/death-back` | Return to your last death location. | `sparrow.command.death-back` |
-| `/death-back <player>` | Return the named player to their last death location. | `sparrow.command.death-back` + `sparrow.command.death-back.other` |
+| `/back [player] [--unsafe] [--silent]` | Return to the previous teleport departure point. | `sparrow.command.back[.other]` |
+| `/death-back [player] [--unsafe] [--silent]` | Return to the last death location. | `sparrow.command.death-back[.other]` |
 
-You can also use `/sparrow back [player]` and `/sparrow death-back [player]`. Omit `player` to return to your own previous location; the console must name a player.
+`--unsafe` allows the original coordinates when no safe location is found; `--silent` hides command feedback.
 
-Specifying a player requires the base permission and `.other`, even when you name yourself. Without `.other`, Sparrow hides the player argument from completion and refuses it when entered manually. The `.other` permission uses the base permission from `commands.yml` followed by `.other`.
+`back.teleport-causes` records `COMMAND` and `PLUGIN` by default. `back.join-grace-seconds` ignores ordinary teleports during the first 3 seconds after joining. `deathback.record-death` controls recording of new death locations.
 
-```text title="Examples"
-/back
-/back Steve
-```
-
-## What counts as a previous location
-
-- Where the player stood before a teleport made by a command or another plugin. Which kinds of teleports count is configurable.
-- After switching servers, where the player left the previous server, until something new is recorded on the current server.
-
-Each player has only one previous location, and a new one replaces the old. `/back` is itself a teleport, so running it again takes the player back to where they just were.
-
-These are not recorded:
-
-- Moves shorter than one block within the same world, such as turning around with `/look`.
-- Teleports in the first few seconds after connecting to a server (`join-grace-seconds`). Spawn plugins often move players at that moment. If your server sends a resource pack, the time spent loading it counts toward this period.
-- Teleports cancelled by other plugins.
-
-## Returning to a death location
-
-`/death-back` uses the last recorded death location. It is saved across logouts and server restarts; each new death replaces it without overwriting your `/back` location. If no death is recorded, the command tells you so.
-
-Set `back.record-death: false` to stop recording new deaths. Existing death records are kept. Disabling the Back feature hides both commands.
-
-## Returning to another server
-
-When nothing has been recorded on the current server yet, `/back` looks at where the player last left a server. If that was a different server and the player switched from it within `server-switch-window-seconds`, `/back` sends them back to that spot through the proxy. Logging out and joining again later is not a switch, so `/back` then reports that there is nowhere to go back to.
-
-If the other server is offline, or the world of that location no longer exists, the player is told so and stays where they are.
-
-## Countdown and cooldown
-
-Returning yourself starts a 3-second countdown by default. Moving more than half a block, changing worlds, or taking damage during the countdown cancels the teleport. Sending another player back happens immediately. Naming yourself still uses your own countdown and cooldown.
-
-`/back` and `/death-back` use the same group, set with `back.teleport-group`, and share its cooldown. Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
-
-## When previous locations are lost
-
-Previous locations are kept only while the player stays on the server. They are cleared when the player leaves that server, when the feature is disabled, and when the server restarts or crashes. If the previous server crashed before the player left it, `/back` cannot return there.
-
-## Configuration
-
-```yaml title="features.yml · back"
-back:
-  enabled: true
-  record-death: true
-  teleport-causes:
-    - COMMAND
-    - PLUGIN
-  join-grace-seconds: 3
-  server-switch-window-seconds: 30
-  teleport-group: default
-```
-
-| Setting | Meaning |
-| - | - |
-| `record-death` | Save the last death location for `/death-back`. |
-| `teleport-causes` | Kinds of teleports that record the previous location. Common values: `COMMAND` (commands), `PLUGIN` (plugins), `NETHER_PORTAL`, `END_PORTAL`, `END_GATEWAY`, `ENDER_PEARL`, `SPECTATE`. Portals are not included by default. An unknown value keeps the feature from starting and is reported in the console. |
-| `join-grace-seconds` | Teleports within this many seconds after connecting are not recorded. |
-| `server-switch-window-seconds` | How recently the player must have left the previous server for `/back` to return there. |
-| `teleport-group` | Which [teleport group](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) in `teleport.yml` to use. Leave it empty or use `default` for the default group. |
-
-Apply changes with `/sparrow reload`.
+Configure their cooldowns and warmups separately under `back.teleport-options` and `deathback.teleport-options`; see [Teleport options](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).

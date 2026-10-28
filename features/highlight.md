@@ -2,56 +2,27 @@
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/highlight>
 
-Select a region and show glowing block outlines to players. Use it to explain building boundaries or inspect an area. The display is sent to selected viewers without changing real blocks.
+Module `highlight` · Configuration `features/highlight.yml`
 
-## Commands and permissions
+Show block outlines to selected viewers without changing real blocks. Omitting targets shows them to online players in that world.
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/highlight [targets] [options]` | Select and display a region. | `sparrow.command.highlight` |
+| `/highlight [targets] [options]` | Highlight a region's blocks. | `sparrow.command.highlight` |
 
-The full entry point is `/sparrow highlight`. **Omitting `targets` shows the region to all online players in that world.** Use `/highlight @s` for yourself only.
-
-### Interactive selection
-
-1. Run `/highlight @s`.
-2. Left-click to record your own position, or right-click a block to record its position.
-3. Repeat to record the second endpoint and display the region.
-
-The first and second clicks determine the endpoints; left and right click are not tied to a particular endpoint. Run `/highlight` again without coordinates to cancel an active selection. The default selection timeout is 30 seconds.
-
-### Coordinates
-
-```text title="Green outlines for yourself, lasting 20 seconds"
+```text
 /highlight @s --from 0 64 0 --to 5 68 5 --highlight-color green --highlight-duration 20
 ```
 
-Supply `--from` and `--to` together. The console must provide both coordinates and `--world <world>`.
+Without coordinates, select two points interactively: left-click records your position; right-click records the clicked block. Run the command again without coordinates to cancel selection.
 
-| Option | Meaning |
+| Option | Purpose |
 | - | - |
-| `--from <x> <y> <z>` | First endpoint. |
-| `--to <x> <y> <z>` | Second endpoint. |
-| `--world <world>` | Coordinate world; defaults to the sender's world. |
-| `--highlight-duration <seconds>` / `-d` | 0–300 seconds; 0 removes the display immediately. |
-| `--highlight-color <color>` / `-c` | Named color, such as `green`, `red`, or `yellow`. |
-| `--solid-only` | Show non-passable blocks exposed to passable neighbors or the selection boundary. |
-| `--silent` / `-s` | Suppress command feedback. |
+| `--from`, `--to` | Endpoints; provide both. |
+| `--world <world>` | World; required from console. |
+| `--highlight-duration <seconds>` / `-d` | Duration from 0 to 300 seconds. |
+| `--highlight-color <color>` / `-c` | A named color, such as green or red. |
+| `--solid-only` | Show solid blocks exposed to passable neighbors or the selection boundary. |
+| `--silent` / `-s` | Hide command feedback. |
 
-> **World and selection limits**
->
-> Peaceful worlds are not supported. Viewers must be online and in the selected world. The size limit covers the full volume including both endpoints, with a default maximum of 32,768 blocks.
-
-## Configuration
-
-```yaml title="features.yml · highlight"
-highlight:
-  enabled: true
-  default-color: green
-  default-duration: 30
-  max-blocks: 32768
-  solid-only: false
-  selection-timeout: 30
-```
-
-Color, duration, and `solid-only` provide defaults. If `solid-only` is enabled in configuration, it remains active for commands. `max-blocks` limits the complete selection volume, not the filtered display count.
+Defaults are 30 seconds of display, a 32768-block limit and a 30-second selection timeout. Peaceful worlds are not supported.

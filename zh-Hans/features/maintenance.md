@@ -2,47 +2,20 @@
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance>
 
-开启维护模式后，没有绕过权限的在线玩家会被移出服务器，新的玩家也无法进入；留在服务器中的玩家会看到一条 BossBar 提示。
+模块 `maintenance` · 配置 `features/maintenance.yml`
 
-## 命令与权限
+维护期间阻止普通玩家进入，并向在线玩家显示 BossBar。
 
-| 命令或权限 | 用途 | 默认命令权限 |
+| 命令 | 用途 | 默认权限 |
 | - | - | - |
-| `/maintenance [true\|false]` | 开启或关闭维护模式；省略参数时查看当前状态。 | `sparrow.command.maintenance` |
-| `sparrow.bypass.maintenance` | 维护期间仍可留在服务器或进入服务器。 | — |
+| `/maintenance [true\|false] [--all] [--tag <tag>]` | 切换维护状态。 | `sparrow.command.maintenance` |
 
-完整入口为 `/sparrow maintenance`。维护状态会保存到 `features.yml`，服务器重启后仍然保持。
-
-```text title="示例"
-/maintenance
+```text
 /maintenance true
-/maintenance false
+/maintenance false --all
+/maintenance true --tag survival
 ```
 
-## 谁可以留下或进入
+不带参数时切换本服状态；指定 `true` 或 `false` 可明确开启或关闭。`--all` 应用到在线群组服，`--tag` 按服务器标签筛选。`sparrow.bypass.maintenance` 允许维护期间进入。
 
-拥有 `sparrow.bypass.maintenance` 的玩家在维护期间可以留在服务器，也可以正常进入；其他玩家会被移出，尝试进入时看到维护提示。
-
-- 安装了 LuckPerms 时，以 LuckPerms 中设置的权限为准。明确设为 `false` 的玩家，即使是 OP 也无法进入。
-- 未安装 LuckPerms，或没有设置该权限时，只有 OP 可以进入。
-- 只在特定世界、游戏模式等条件下授予的权限，在进入服务器时不生效。
-
-开启维护模式时，已经在线的玩家会按当前的权限重新判断。
-
-## 配置
-
-```yaml title="features.yml · maintenance"
-maintenance:
-  enabled: true
-  active: false
-  boss-bar:
-    enabled: true
-    color: RED
-    overlay: PROGRESS
-```
-
-`active` 为当前维护状态，使用命令切换时会自动保存。`boss-bar.color` 可选 `PINK`、`BLUE`、`RED`、`GREEN`、`YELLOW`、`PURPLE`、`WHITE`；`boss-bar.overlay` 可选 `PROGRESS`、`NOTCHED_6`、`NOTCHED_10`、`NOTCHED_12`、`NOTCHED_20`。
-
-BossBar 标题和踢出提示在语言文件中修改，对应 `maintenance.boss_bar` 与 `maintenance.kick`。
-
-使用 `/sparrow feature-disable maintenance` 停用此功能时，会撤下 BossBar 并停止拦截玩家，但保存的维护状态不会改变；重新启用后按保存的状态恢复。
+`active` 保存维护状态，`boss-bar.enabled` 控制提示条，颜色与样式也在 `boss-bar` 中设置。

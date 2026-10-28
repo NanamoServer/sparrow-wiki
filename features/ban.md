@@ -2,102 +2,28 @@
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/ban>
 
-Ban accounts, IP addresses, or IP ranges on every server in your network. Banned players cannot join, and players who are already online are removed at once, whichever server they are on.
+Module `ban` · Configuration `features/ban.yml`
 
-## Commands and permissions
+Ban accounts, IPs or IP ranges across servers, with a persistent history.
 
-| Command or permission | Purpose | Default command permission |
+| Command | Purpose | Default permission |
 | - | - | - |
-| `/ban <player> [reason] [-t <time>] [-I] [--force] [-s]` | Ban an account by player name or UUID. `-I` also bans the player's last login IP. | `sparrow.command.ban` |
-| `/ban-ip <ip> [reason] [-t <time>] [--force] [-s]` | Ban an IP address or IP range. | `sparrow.command.ban-ip` |
-| `/unban <target> [-s]` | Lift active bans by player name, UUID, IP, or punishment ID. | `sparrow.command.unban` |
-| `/ban-history [target] [options]` | Browse ban records page by page. | `sparrow.command.ban-history` |
-| `sparrow.notify.ban` | Receive ban and unban notices from every server. | — |
+| `/ban <player\|player_ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | Ban an account or IP. | `sparrow.command.ban` |
+| `/unban <player\|player_ip\|ip> <target> [--silent]` | Lift an account or IP ban. | `sparrow.command.unban` |
+| `/unban_id <id> [--silent]` | Revoke a ban by record ID. | `sparrow.command.unban_id` |
+| `/ban_info <id>` | View a ban record. | `sparrow.command.ban_info` |
+| `/ban_history <all\|player <player>\|ip <ip>> [options]` | Search ban history. | `sparrow.command.ban_history` |
 
-Each command also has a `/sparrow <command>` entry point. `/ban` and `/unban` do not accept selectors such as `@s` or `@a`.
-
-```text title="Examples"
-/ban Steve Griefing at spawn -t 7d
-/ban Steve Alt account abuse -I
-/ban-ip 203.0.113.* Proxy abuse -t 1mo
-/unban Steve
-/unban #K7Q2M9XD
-/ban-history Steve
-/ban-history --operator Alex --within 30d --active
+```text
+/ban player Steve griefing --time 7d
+/ban player_ip Steve
+/ban ip 192.0.2.* unwanted traffic
+/ban_history player Steve --active
+/unban_id 12
 ```
 
-## What can be banned
+`player` bans an account. `player_ip` bans the player's last recorded IP without adding an account ban. `ip` accepts an address or range. Omit `--time` for a permanent ban; `--force` replaces an active ban for the same target. `--silent` hides notices and success feedback.
 
-- **Account**: a player name or UUID, with or without dashes. A player name must belong to someone who has joined one of your servers before; a UUID can be banned even if that player has never joined.
-- **Account and IP**: `/ban -I` adds the player's last login IP to the same ban. Logins from the account, or from any account on that IP, are refused.
-- **IP address**: for example `/ban-ip 203.0.113.7`.
-- **IP range**: replace the trailing parts with `*`, such as `203.0.113.*` or `203.0.*.*`.
+History filters are `--page <page>`, `--active`, `--within <duration>` and `--operator <name>`. `sparrow.notify.ban` receives ban and unban notices.
 
-Only IPv4 is supported, and CIDR notation such as `203.0.113.0/24` is not accepted. Players connected over IPv6 can only be banned by account.
-
-The reason is optional and can be up to 256 characters.
-
-## Duration
-
-Without `-t`, the ban is permanent. `-t` accepts `y` (365 days), `mo` (30 days), `w`, `d`, `h`, `m`, and `s`. Units can be combined and decimals are allowed, for example `1.5h`, `3d12h`, or `1mo2w`.
-
-## Punishment IDs
-
-Every ban gets a random ID such as `#K7Q2M9XD`. It appears in the command result, the kick screen, staff notices, and the ban history. Pass it to `/unban` or `/ban-history` to target exactly that record; letters are not case-sensitive.
-
-## Replacing and lifting bans
-
-- If an account already has an active ban, a new ban is refused. Add `--force` to replace it, for example `/ban Steve grief -t 7d --force`. The old record stays in history as revoked.
-- `/ban-ip` also requires `--force` to replace an active IP-only ban on exactly the same address or range.
-- `/unban <player>` lifts every active ban on that account, including account-and-IP bans.
-- `/unban <ip>` lifts only IP-only bans on exactly the same address or range. Use the player or the punishment ID to lift an account-and-IP ban.
-- `/unban #ID` lifts that one record.
-
-## How bans take effect
-
-- Online players are removed at once, whichever server they are on. An IP ban removes every online account connected from that address or range.
-- Banned players cannot join any server. During [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx) they still see the ban reason rather than the maintenance message.
-- A player sees "You are banned" when their own account is banned, and "Your IP address is banned" when the address they connect from is banned.
-- If Sparrow cannot reach the database while a player is joining, the player is let in and the error is shown in the console.
-- Banned players are disconnected from the whole network and see the ban reason. Follow the [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin) on the proxy and backends.
-
-## Staff notices and `-s`
-
-Without `-s`, online holders of `sparrow.notify.ban` on every server receive a notice with the target, operator, reason, expiry, and punishment ID. Only operators have this permission by default; grant it to your staff with a permission plugin.
-
-With `-s`:
-
-- The executor does not see the success message. Errors are still shown.
-- No notices are sent.
-- The ban still takes effect, and online players are still removed.
-
-## Ban history
-
-`/ban-history [target]` lists records from newest to oldest, 8 per page. Without a target, it lists every ban. The target can be a player name, UUID, IP, or punishment ID; an IP matches every ban whose range covers it.
-
-| Option | Purpose |
-| - | - |
-| `--operator <name>`, `-o` | Only bans issued by this operator; not case-sensitive. |
-| `--within <time>`, `-w` | Only bans created within this period, such as `7d`. Uses the same units as `-t`. |
-| `--active`, `-a` | Only bans that are still in effect. |
-| `--page <page>`, `-p` | Page number. |
-
-Each row shows the status (active, expired, or revoked), punishment ID, time, target, and operator, followed by an **\[Unban]** button that fills in `/unban #ID` for you to confirm. Hover the ID for full details. The page buttons keep the current target and filters.
-
-## Configuration
-
-```yaml title="features.yml · ban"
-ban:
-  enabled: true
-  reason-presets:
-    cheating: Cheating
-    grief: Griefing
-```
-
-`reason-presets` provides short names for common reasons. For example, `/ban Steve grief` uses the text configured for `grief`. Tab completion offers these names; other input remains a custom reason. Set it to `{}` to turn presets off.
-
-`notify-ban-sound` and `notify-unban-sound` control staff notification sounds. Use a sound name such as `entity.experience_orb.pickup`, or `''` to turn one off. `-s` also suppresses these sounds.
-
-Bans are saved in the database configured in `config.yml`. While the feature is disabled, bans are not enforced and the ban commands are hidden.
-
-Edit the kick screens and staff notices in the translation files under `ban.kick.player`, `ban.kick.ip`, `ban.notify.ban`, and `ban.notify.unban`.
+Add common reasons to `reason-presets`; an exact preset name expands to its text. Notification sounds use `notify-ban-sound` and `notify-unban-sound`.

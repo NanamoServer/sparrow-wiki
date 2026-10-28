@@ -2,6 +2,20 @@
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/>
 
-Sparrow 为 Minecraft 服务器提供日常管理和玩家便利功能。你可以用命令打开工作台、调整玩家状态、编辑物品、发送标题，也可以启用潜影盒快捷打开、玩家巡查、区域高亮、全服封禁和跨服返回上一位置等功能。
+Sparrow 提供日常管理命令，以及家、传送点、传送请求、随机传送等功能，支持 Paper 和 Folia。
 
-从[安装插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.mdx)开始部署，或在[权限命令速查表](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.mdx)中查找具体用法。
+[命令与权限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.mdx)用于速查，功能页列出用法和必要配置。开发接入见[传送 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/teleport.mdx)。
+
+## 配置入口
+
+| 文件 | 内容 |
+| - | - |
+| `config.yml` | 数据库、Redis 等基础配置。 |
+| `server.yml` | 当前服务器的 ID 与标签。 |
+| `commands.yml` | 命令入口、开关和权限；修改后重启。 |
+| `modules.yml` | 功能模块开关。 |
+| `features/` | 各模块的独立配置。 |
+
+用 `/spr feature_list` 查看模块状态，`/spr feature_enable <模块>` 和 `/spr feature_disable <模块>` 切换并保存。配置修改后执行 `/spr reload`，需要重启的设置以命令反馈为准。
+
+跨服功能需要子服共用数据库和 Redis，并在代理端安装 Sparrow 配套插件。PlaceholderAPI 是文本占位符的可选依赖；LuckPerms 用于权限查询。

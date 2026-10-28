@@ -2,6 +2,20 @@
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/>
 
-Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, region highlighting, network-wide bans, and returning to your previous location across servers.
+Sparrow provides everyday administration commands, homes, warps, teleport requests and random teleportation for Paper and Folia.
 
-Start with [Installation](https://nanamoserver.github.io/sparrow-wiki/installation.mdx), or find a specific tool in [Permissions & Commands Quick Reference](https://nanamoserver.github.io/sparrow-wiki/commands.mdx).
+Use [Commands and permissions](https://nanamoserver.github.io/sparrow-wiki/commands.mdx) as a quick reference. Feature pages cover usage and essential configuration; developers can start with the [Teleport API](https://nanamoserver.github.io/sparrow-wiki/api/teleport.mdx).
+
+## Configuration
+
+| File | Contents |
+| - | - |
+| `config.yml` | Database, Redis and other base settings. |
+| `server.yml` | This server's ID and tags. |
+| `commands.yml` | Command entry points, switches and permissions; restart after editing. |
+| `modules.yml` | Feature module switches. |
+| `features/` | Separate configuration files for each module. |
+
+Use `/spr feature_list` to check module states. `/spr feature_enable <module>` and `/spr feature_disable <module>` change and save them. Run `/spr reload` after editing settings; its feedback identifies changes that need a restart.
+
+Cross-server features require shared database and Redis connections, plus the Sparrow companion plugin on the proxy. PlaceholderAPI is optional for text placeholders; LuckPerms provides permission lookups.

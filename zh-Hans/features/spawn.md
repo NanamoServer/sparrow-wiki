@@ -1,29 +1,30 @@
-# 全服出生点
+# 出生点
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/spawn>
 
-为整个 Sparrow 群组服设置一个 `/spawn` 目的地，玩家可以从其他子服返回。这个位置供命令使用，不会改变玩家登录或死亡后的重生位置。
+模块 `spawn` · 配置 `features/spawn.yml`
 
-## 命令与权限
+前往配置中指定的出生点，支持其他子服。未配置目的地时命令不可用。
 
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
-| `/spawn` | 前往全服出生点，仅玩家可用。 | `sparrow.command.spawn` |
-| `/set-spawn` | 将当前位置设为全服出生点，覆盖已有设置，仅玩家可用。 | `sparrow.command.set-spawn` |
-| `/del-spawn` | 立即删除全服出生点，玩家和控制台均可用。 | `sparrow.command.del-spawn` |
+| `/spawn` | 前往配置中的出生点。 | `sparrow.command.spawn` |
 
-每条命令也可以写成 `/sparrow <命令>`。站在希望玩家到达的位置执行 `/set-spawn`，设置会同步到其他服务器，重启后仍然保留。
-
-未设置出生点时，玩家的命令列表中不显示 `/spawn`；删除后也会隐藏。目的地服务器不在线或找不到对应世界时，会给出提示。
-
-## 配置
-
-```yaml title="features.yml · spawn"
-spawn:
-  enabled: true
-  teleport-group: default
+```yaml
+destination:
+  server: lobby
+  world: world
+  x: 0.5
+  y: 64
+  z: 0.5
+  yaw: 0
+  pitch: 0
+teleport-options:
+  cooldown: 5m
+  warmup:
+    duration: 0s
 ```
 
-默认等待 3 秒，不设冷却。倒计时期间移动超过半格、切换世界或受伤会取消传送。
+在各服的配置中填写目的地，修改后执行 `/spr reload`。直接使用指定坐标，不搜索安全落点。
 
-冷却、倒计时、世界限制和音效在 `teleport.yml` 的分组里配置，见[传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。修改配置后执行 `/sparrow reload`。停用功能会隐藏相关命令，但保留已设置的出生点，重新启用后恢复使用。
+Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel-on-move`、`cancel-on-damage` 等连字符写法。

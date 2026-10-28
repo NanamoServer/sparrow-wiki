@@ -6,30 +6,30 @@ Every link below points to the Markdown version of that page. All pages combined
 
 简体中文: [llms.txt](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/llms.txt)
 
-- [Introduction](https://nanamoserver.github.io/sparrow-wiki/index.md): Sparrow provides everyday administration and player convenience tools for Minecraft servers. Open workstations, manage player state, edit items, send titles, or enable features such as quick shulker access, player patrols, region highlighting, network-wide bans, and returning to your previous location across servers.
-- [Installation](https://nanamoserver.github.io/sparrow-wiki/installation.md): Install the same Sparrow JAR on your proxy and backend servers, then configure server IDs, Redis, and persistent storage.
-- [Permissions & Commands Quick Reference](https://nanamoserver.github.io/sparrow-wiki/commands.md): <argument> is required; [argument] is optional. player generally means a local online player, and targets accepts player or entity selectors.
-- [Frequently Asked Questions](https://nanamoserver.github.io/sparrow-wiki/faq.md)
-- [Developer API](https://nanamoserver.github.io/sparrow-wiki/developer-api.md): This page is for plugin developers. Sparrow does not have a separate API module yet. Everything below uses classes from the plugin itself, and they may change between Sparrow versions.
+- [Introduction](https://nanamoserver.github.io/sparrow-wiki/index.md): Sparrow provides everyday administration commands, homes, warps, teleport requests and random teleportation for Paper and Folia.
+- [Commands and permissions](https://nanamoserver.github.io/sparrow-wiki/commands.md): <argument> is required; [argument] is optional. These are the default entry points and permissions. Short commands also accept /sparrow <command> or /spr <command>. Restart after editing commands.yml.
 
 ## Features
 
-- [Quick Shulker](https://nanamoserver.github.io/sparrow-wiki/features/quick-shulker.md): Access a shulker box without placing it. By default, hold the box, sneak, and right-click the air.
-- [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.md): Use /patrol to visit online players on the current server in rotation. Players not inspected recently are selected first; newly joined players enter at the front of the queue.
-- [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.md): Select a region and show glowing block outlines to players. Use it to explain building boundaries or inspect an area. The display is sent to selected viewers without changing real blocks.
-- [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.md): Use /head to get a player's head by name or UUID. You can specify the amount and recipients.
-- [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.md): When maintenance mode is on, online players without the bypass permission are removed from the server and new players cannot join. Players who stay see a boss bar notice.
-- [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.md): Use /max-players to change the server's player limit at runtime without a restart. Players with the bypass permission can join when the server is full.
-- [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.md): Ban accounts, IP addresses, or IP ranges on every server in your network. Banned players cannot join, and players who are already online are removed at once, whichever server they are on.
-- [Mutes](https://nanamoserver.github.io/sparrow-wiki/features/mute.md): Temporarily stop a player from sending ordinary chat messages across your Sparrow servers. The player can stay online, and the mute expires automatically.
-- [Back](https://nanamoserver.github.io/sparrow-wiki/features/back.md): Use /back to return to where you were before your last teleport. Use /death-back to return to your last death location. Both support cross-server travel.
-- [Return to bed](https://nanamoserver.github.io/sparrow-wiki/features/bed.md): Use /bed to return to your respawn point on the current server. This can be a bed, a charged respawn anchor, or a location set with /spawnpoint.
-- [Network spawn](https://nanamoserver.github.io/sparrow-wiki/features/spawn.md): Set one shared destination for /spawn across your Sparrow servers. Players can return to it from another backend. This destination is used by the command; it does not change where players join or respawn after death.
-- [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.md): Warps are named destinations shared across your Sparrow servers. Players can travel to them by command or from a clickable chat list. Complete the proxy setup before using cross-server destinations.
-- [Homes](https://nanamoserver.github.io/sparrow-wiki/features/home.md): Homes are personal destinations shared across your Sparrow servers. Players can save their current position and return to it, including on another server. Follow the proxy setup; the servers must share Redis and persistent storage.
-- [Teleport requests](https://nanamoserver.github.io/sparrow-wiki/features/tpa.md): A player asks another online player for a teleport, and nothing happens until the other player agrees. The two players can be on different backends: requests, answers, and the teleport itself all cross servers.
+- [Quick shulker](https://nanamoserver.github.io/sparrow-wiki/features/quick-shulker.md): Module quick-shulker · Configuration features/quick-shulker.yml
+- [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.md): Module patrol · Configuration features/patrol.yml
+- [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.md): Module highlight · Configuration features/highlight.yml
+- [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.md): Module head · Configuration features/head.yml
+- [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.md): Module maintenance · Configuration features/maintenance.yml
+- [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.md): Module player_limit · Configuration features/player_limit.yml
+- [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.md): Module ban · Configuration features/ban.yml
+- [Back and death back](https://nanamoserver.github.io/sparrow-wiki/features/back.md): Module back · Configuration features/back.yaml
+- [Random teleport](https://nanamoserver.github.io/sparrow-wiki/features/rtp.md): Module rtp · Configuration features/rtp.yml
+- [Spawn](https://nanamoserver.github.io/sparrow-wiki/features/spawn.md): Module spawn · Configuration features/spawn.yml
+- [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.md): Module warp · Configuration features/warp.yml
+- [Homes](https://nanamoserver.github.io/sparrow-wiki/features/home.md): Module home · Configuration features/home.yml
+- [Teleport requests](https://nanamoserver.github.io/sparrow-wiki/features/tpa.md): Module tpa · Configuration features/tpa.yml
 
 ## Teleport configuration
 
-- [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.md): Cooldowns, countdowns, world restrictions, and sounds for /warp, /home, /back and /death-back, /bed, /spawn, and teleport requests are configured in teleport.yml. The file is made of groups, and each feature picks its group with teleport-group in features.yml.
-- [Built-in processors](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md): This page lists every processor that ships with Sparrow and its options, as a reference while editing teleport.yml. See Teleport groups for what groups and stages mean.
+- [Teleport options](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.md): Cooldowns, warmups and arrival effects are configured in each feature's own file. For example, in features/home.yml:
+- [Landing rules](https://nanamoserver.github.io/sparrow-wiki/teleport/processors.md): Each feature defines how it chooses a landing position.
+
+## API usage
+
+- [Teleport API](https://nanamoserver.github.io/sparrow-wiki/api/teleport.md)

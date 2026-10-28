@@ -6,30 +6,30 @@
 
 English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 
-- [简介](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/index.md): Sparrow 为 Minecraft 服务器提供日常管理和玩家便利功能。你可以用命令打开工作台、调整玩家状态、编辑物品、发送标题，也可以启用潜影盒快捷打开、玩家巡查、区域高亮、全服封禁和跨服返回上一位置等功能。
-- [安装插件](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/installation.md): 在代理和各子服安装同一个 Sparrow JAR，然后设置服务器 ID，并连接 Redis 和数据库。
-- [权限命令速查表](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.md): <参数> 为必填，[参数] 为可选。player 通常为本服在线玩家名，targets 为玩家或实体选择器。
-- [常见问题](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/faq.md)
-- [开发者 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/developer-api.md): 这一页面向插件开发者。Sparrow 目前没有独立的 API 模块，下面用到的都是插件本体里的类，升级 Sparrow 时可能变化。
+- [简介](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/index.md): Sparrow 提供日常管理命令，以及家、传送点、传送请求、随机传送等功能，支持 Paper 和 Folia。
+- [命令与权限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.md): <参数> 必填，[参数] 可省略。下表是默认入口与权限，短命令也可写为 /sparrow <命令> 或 /spr <命令>。修改 commands.yml 后需要重启。
 
 ## 功能
 
-- [快捷潜影盒](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/quick-shulker.md): 不需要放置潜影盒，就能直接存取其中的物品。默认情况下，手持潜影盒，潜行并对着空气右键即可打开。
-- [玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.md): 使用 /patrol 轮流传送到本服在线玩家，适合管理员巡查。每次选择最久未被巡查的玩家，新加入的玩家会优先进入队列。
-- [区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.md): 选择一个区域，向玩家显示方块的发光轮廓，便于说明建筑范围或检查选区。显示只发送给指定玩家，不会改变实际方块。
-- [头颅获取](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): /head 可以按玩家名或 UUID 获取头颅，并指定数量和接收玩家。
-- [维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.md): 开启维护模式后，没有绕过权限的在线玩家会被移出服务器，新的玩家也无法进入；留在服务器中的玩家会看到一条 BossBar 提示。
-- [人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.md): 使用 /max-players 在运行时修改服务器人数上限，无需重启。拥有绕过权限的玩家可以在服务器满员时进入。
-- [全服封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.md): 按账号、IP 或 IP 段封禁玩家，在群组内的所有服务器上生效。被封禁的玩家无法进入服务器；已经在线的玩家无论在哪台服务器上，都会被立即移出。
-- [禁言](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/mute.md): 限时禁止玩家在所有 Sparrow 服务器的普通聊天中发言。玩家可以继续在线，禁言到期后自动解除。
-- [返回上一位置](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back.md): 使用 /back 回到上一次传送前的位置，使用 /death-back 回到最后一次死亡的位置。两条命令都支持跨服返回。
-- [返回床边](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/bed.md): 使用 /bed 回到本服的重生点，可以是床、已充能的重生锚，或用 /spawnpoint 设置的位置。
-- [全服出生点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/spawn.md): 为整个 Sparrow 群组服设置一个 /spawn 目的地，玩家可以从其他子服返回。这个位置供命令使用，不会改变玩家登录或死亡后的重生位置。
-- [公共传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.md): Warp 是各台 Sparrow 服务器共用的命名传送点。玩家可以通过命令前往，也可以在聊天列表中点击名称传送。使用前请完成代理部署。
-- [家](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home.md): Home 是各台 Sparrow 服务器共用的个人传送点。玩家可以保存当前位置，之后返回，包括前往其他服务器上的家。请先完成代理部署，各服务器需共用 Redis 和持久化存储。
-- [传送请求](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/tpa.md): 玩家向另一位在线玩家发出请求，对方同意后才传送。两人可以在不同的子服，请求、回应和传送都会跨服送达。
+- [快捷潜影盒](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/quick-shulker.md): 模块 quick-shulker · 配置 features/quick-shulker.yml
+- [玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.md): 模块 patrol · 配置 features/patrol.yml
+- [区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.md): 模块 highlight · 配置 features/highlight.yml
+- [玩家头颅](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): 模块 head · 配置 features/head.yml
+- [维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.md): 模块 maintenance · 配置 features/maintenance.yml
+- [人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.md): 模块 player_limit · 配置 features/player_limit.yml
+- [封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.md): 模块 ban · 配置 features/ban.yml
+- [返回与死亡返回](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back.md): 模块 back · 配置 features/back.yaml
+- [随机传送](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/rtp.md): 模块 rtp · 配置 features/rtp.yml
+- [出生点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/spawn.md): 模块 spawn · 配置 features/spawn.yml
+- [传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.md): 模块 warp · 配置 features/warp.yml
+- [家](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home.md): 模块 home · 配置 features/home.yml
+- [传送请求](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/tpa.md): 模块 tpa · 配置 features/tpa.yml
 
 ## 传送配置
 
-- [传送分组](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.md): /warp、/home、/back 和 /death-back、/bed、/spawn 和传送请求的冷却、倒计时、世界限制和音效，都在 teleport.yml 里配置。这个文件由若干「分组」组成，每个功能在 features.yml 中用 teleport-group 选择自己使用的分组。
-- [内置处理器](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/processors.md): 这一页列出 Sparrow 自带的全部处理器和它们的选项，供编写 teleport.yml 时对照。分组和阶段的含义见传送分组。
+- [传送选项](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.md): 冷却、倒计时和到达效果在各功能自己的配置文件中设置。以 features/home.yml 为例：
+- [落点规则](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/processors.md): 各命令的落点规则由功能确定。
+
+## API 使用
+
+- [传送 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/teleport.md)

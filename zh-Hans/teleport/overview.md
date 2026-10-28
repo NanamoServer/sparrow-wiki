@@ -1,141 +1,50 @@
-# 传送分组
+# 传送选项
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview>
 
-[`/warp`](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.mdx)、[`/home`](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home.mdx)、[`/back` 和 `/death-back`](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back.mdx)、[`/bed`](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/bed.mdx)、[`/spawn`](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/spawn.mdx) 和[传送请求](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/tpa.mdx)的冷却、倒计时、世界限制和音效，都在 `teleport.yml` 里配置。这个文件由若干「分组」组成，每个功能在 `features.yml` 中用 `teleport-group` 选择自己使用的分组。
+冷却、倒计时和到达效果在各功能自己的配置文件中设置。以 `features/home.yml` 为例：
 
-各处理器的全部选项见[内置处理器](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/processors.mdx)。
-
-## 一次传送经过哪些环节
-
-分组把一次传送分成三个阶段，每个阶段是一张处理器列表，从上到下依次执行。
-
-| 阶段 | 什么时候执行 | 在哪台服务器上执行 | 能做什么 |
-| - | - | - | - |
-| `pre-processor` | 出发前 | 玩家当前所在的服务器 | 放行或拒绝这次传送，例如冷却和倒计时。 |
-| `target-processor` | 确定落点时 | 落点所在的服务器 | 放行或拒绝这次传送，例如世界黑名单。 |
-| `post-processor` | 玩家到达后 | 落点所在的服务器 | 到达后的效果，例如音效。 |
-
-前两个阶段里只要有一个处理器拒绝，传送就此中止，玩家留在原地并看到原因。
-
-跨服传送时，出发前的处理器使用出发服务器的 `teleport.yml`，另外两个阶段使用目标服务器的 `teleport.yml`。各台服务器的配置不同时，请按这个规则判断哪份配置生效。
-
-## 默认分组
-
-`teleport.yml` 在第一次启动时生成，里面的 `default` 分组等价于下面的写法。没有另外指定分组的功能都使用它。
-
-```yaml title="teleport.yml"
-default:
-  pre-processor:
-    - processor-type: cooldown
-      id: teleport
-      seconds: 0
-      bypass-permission: sparrow.bypass.teleport-cooldown
-    - processor-type: warmup
-      seconds: 3
-      bypass-permission: sparrow.bypass.teleport-warmup
-      cancel-on-move: true
-      cancel-on-damage: true
-      display: ACTION_BAR
-      boss-bar-color: YELLOW
-      boss-bar-overlay: PROGRESS
-      warmup-sound: block.note_block.banjo
-      cancel-sound: entity.item.break
-  target-processor:
-    - processor-type: world-blacklist
-      worlds: []
-      bypass-permission: sparrow.bypass.teleport-world-blacklist
-  post-processor:
-    - processor-type: sound
-      sound: entity.enderman.teleport
-
-groups: {}
+```yaml
+teleport-options:
+  cooldown: 5m
+  warmup:
+    duration: 5s
+    cancel_on_move: true
+    cancel_on_damage: true
+    display: action_bar
+  invulnerability: 5s
+  after_sound: entity.enderman.teleport
+  overrides:
+    - permission: sparrow.home.teleport.staff
+      cooldown: 0s
+      warmup:
+        duration: 0s
+    - permission: sparrow.home.teleport.vip
+      cooldown: 1m
+      warmup:
+        duration: 3s
 ```
 
-默认效果是：没有冷却，出发前原地等待 3 秒，移动或受伤会取消，没有禁止进入的世界，到达时播放末影人传送的音效。
-
-分组只执行列表里写出的处理器：
-
-- 删掉某一项，就关闭了这个处理器。
-- 调整顺序，就改变了执行的先后。例如把 `sound` 放在 `warmup` 后面，它会在出发的那一刻播放。
-- 某一项里没有写出的选项，使用该处理器的默认值。
-
-修改后执行 `/sparrow reload` 生效。
-
-## 让功能使用某个分组
-
-在 `features.yml` 对应的功能下填写 `teleport-group`。留空或填 `default` 时使用默认分组。
-
-```yaml title="features.yml"
-home:
-  teleport-group: default
-warp:
-  teleport-group: warp
-```
-
-`/back` 和 `/death-back` 共用 `back.teleport-group`。填写了不存在的分组名称时，插件在启动或重载时报错，并在控制台指出名称。
-
-## 自定义分组
-
-在 `groups` 下添加分组，写法和 `default` 相同。分组里没有写出的阶段不执行任何处理器，不会沿用 `default` 的内容。
-
-下面的例子让 `/warp` 有自己的 60 秒冷却和 5 秒倒计时，再提供一个立即传送、只保留到达音效的分组：
-
-```yaml title="teleport.yml"
-groups:
-  warp:
-    pre-processor:
-      - processor-type: cooldown
-        id: warp
-        seconds: 60
-      - processor-type: warmup
-        seconds: 5
-    post-processor:
-      - processor-type: sound
-  instant:
-    post-processor:
-      - processor-type: sound
-```
-
-## 冷却怎样共用和分开
-
-冷却按 `cooldown` 处理器的 `id` 计算，`id` 相同的传送共用一份冷却，并且在各台服务器之间共享。
-
-默认分组的 `id` 是 `teleport`，所以使用默认分组的命令共用同一份冷却：把默认分组的冷却设为 30 秒后，用过 `/home` 的玩家在 30 秒内也不能使用 `/warp`。想让某个命令单独计算，就像上面的例子那样，给它一个使用不同 `id` 的分组。
-
-冷却在传送成功后才开始。被拒绝或倒计时被取消的传送不产生冷却。
-
-## 代其他玩家传送
-
-用 `/warp <name> <player>`、`/back <player>` 这类写法传送其他玩家时，立即执行，不经过冷却、倒计时和世界黑名单，也不产生冷却。到达音效照常播放。
-
-目标填写的是自己时，仍按自己传送处理。`/home <player>.<name>` 是自己前往他人的家，同样按自己传送处理。`/tp-offline` 不使用任何分组，立即传送。
-
-## 权限
-
-| 权限 | 效果 |
+| 选项 | 含义 |
 | - | - |
-| `sparrow.teleport-warmup.<秒>` | 缩短倒计时，取这些权限中的最小值与分组设置中较小的一个。 |
-| `sparrow.bypass.teleport-warmup` | 跳过倒计时。 |
-| `sparrow.bypass.teleport-cooldown` | 不受冷却限制。 |
-| `sparrow.bypass.teleport-world-blacklist` | 可以传送进黑名单中的世界。 |
+| `cooldown` | 成功传送后开始的跨服冷却；`0s` 关闭。 |
+| `warmup.duration` | 出发前等待时间；`0s` 立即传送。 |
+| `cancel_on_move` / `cancel_on_damage` | 移动超过半格、换世界或受伤时取消倒计时。 |
+| `display` | `action_bar`、`title`、`boss_bar`、`chat` 或 `none`。 |
+| `invulnerability` | 到达后的无敌时间。 |
+| `after_sound` | 到达音效；空字符串或零音量关闭。 |
+| `overrides` | 按被传送玩家的权限选择第一条匹配项。未写选项继承基础值，写出的 `warmup` 整体替换。 |
 
-后三个是各处理器 `bypass-permission` 的默认值，可以在分组里改成别的权限，这样不同分组可以使用不同的绕过权限。留空表示任何人都不能绕过。
+倒计时还可设置 `boss_bar_color`、`boss_bar_overlay`、`warmup_sound` 和 `cancel_sound`。音效支持名称或 `名称,音量,音调`，例如 `entity.enderman.teleport,0.5,1`。
 
-例如分组的倒计时是 3 秒，玩家有 `sparrow.teleport-warmup.1` 时只需等待 1 秒。数值比分组设置大的权限不会延长等待时间。
+## 各功能的差异
 
-## 写错时会怎样
+| 功能 | 配置位置 |
+| - | - |
+| Home、Warp、TPA、RTP | 各自 `features/<功能>.yml` 的 `teleport-options`。 |
+| Back、DeathBack | `features/back.yaml` 的 `back.teleport-options`、`deathback.teleport-options`。 |
+| Spawn | `features/spawn.yml` 的 `teleport-options`，只支持冷却、倒计时和权限覆盖。 |
 
-列表中某一项写错时，例如类型不存在、处理器放错了阶段、选项的值不合法，这一项会被忽略，其余各项照常生效，控制台会输出一条说明原因的警告。
+Spawn 的倒计时字段使用连字符，如 `cancel-on-move`、`boss-bar-color`，默认等待 `0s`。其他上述功能默认冷却 `5m`、等待 `5s`、到达保护 `5s`。冷却按功能区分，Back 和 DeathBack 分开计时。
 
-玩家执行 `/sparrow reload` 时，如果配置里有被忽略的项，会额外看到「配置文件存在 N 个错误，请在控制台检查」的提示。
-
-## 其他插件提供的处理器
-
-其他插件可以向 Sparrow 注册自己的处理器。使用方法和内置处理器相同，`processor-type` 填写该插件给出的类型，形如 `插件名:类型`，其余选项参照该插件的说明。对应的插件没有安装时，这一项会被当作类型不存在而忽略。
-
-## 从旧配置升级
-
-旧版本把这些设置放在 `features.yml` 各功能的 `teleport` 下。升级后请把其中的数值移到 `teleport.yml` 的分组里，再在功能下填写 `teleport-group`。`features.yml` 里原有的 `teleport` 内容不再生效，可以删除。
-
-使用 Sparrow 跨服传送的所有服务器需要一起升级到同一版本，新旧版本混用时跨服传送会失败。
+落点选择见[落点规则](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/processors.mdx)。

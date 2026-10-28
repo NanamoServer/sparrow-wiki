@@ -1,269 +1,160 @@
-# Permissions & Commands Quick Reference
+# Commands and permissions
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/commands>
 
-`<argument>` is required; `[argument]` is optional. `player` generally means a local online player, and `targets` accepts player or entity selectors.
+`<argument>` is required; `[argument]` is optional. These are the default entry points and permissions. Short commands also accept `/sparrow <command>` or `/spr <command>`. Restart after editing `commands.yml`.
 
-These are the default entry points and permissions. Short commands also accept `/sparrow <command>`. Restart after editing `commands.yml`.
+`[.other]` marks branches that additionally require `.other` when specifying another player. Entity selectors only select local targets; commands with cross-server support also accept a player name from another backend.
 
-Commands that belong to a feature, such as `/maintenance` or `/ban`, are hidden from players and refused with a notice while that feature is disabled. They reappear as soon as the feature is enabled again.
-
-## Player names and selectors {#player-targets}
-
-Commands that support cross-server players offer online names across the proxy network in Tab completion. Players remain listed while switching backends. You can still type a known offline name where the command supports it. Commands for local actions, such as healing or opening an inventory, continue to target local players.
-
-Selectors such as `@s` (yourself), `@p` (nearest player), `@r` (random player), and `@a` (all players) **only select players on the server where you run the command**.
-
-| Argument | Selectors |
-| - | - |
-| `/kick <player>` | Accepts multiple local players, such as `/kick @a Server restarting`. Type a name to kick someone on another server. |
-| `/ip`, `/ip-history`, `/player-uuid`, `/player-info`, and the destination player in `/tp-offline` | One player only: use `@s`, `@p`, `@r`, or `@a[limit=1]`. |
-| Owner in `/del-home <name> [player]`, `/home-list other <player>`, or `/del-all-home --player <player>` | One local player. The combined `<player>.<home>` form still requires a name. |
-| `/ban-history --operator <player>` | One local player. The history target itself uses a name, UUID, IP, or punishment ID. |
-| `/ban`, `/mute`, `/unmute`, `/unban` | No selectors. Enter a player name or another target type accepted by that command. |
-
-`@s` requires a player executor; it cannot select a player from the console. A single-player argument rejects `@a` without a limit, even if only one player is online.
-
-## ⚙️ Plugin management
+## Plugin management
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/sparrow reload [--silent]` | Reload settings that support runtime changes. | `sparrow.command.admin.reload` |
-| `/sparrow feature-list [page]` | List feature states by page. | `sparrow.command.admin.feature` |
-| `/sparrow feature-enable <feature>` | Enable a feature and save its switch. | `sparrow.command.admin.feature` |
-| `/sparrow feature-disable <feature>` | Disable a feature and save its switch. | `sparrow.command.admin.feature` |
+| `/sparrow reload [--silent]` | Reload configuration. | `sparrow.command.admin.reload` |
+| `/sparrow feature_list [page]` | List module states. | `sparrow.command.admin.feature` |
+| `/sparrow feature_enable <feature>` | Enable a module and save its switch. | `sparrow.command.admin.feature` |
+| `/sparrow feature_disable <feature>` | Disable a module and save its switch. | `sparrow.command.admin.feature` |
 
-## 🚧 Server access
-
-| Command | Purpose | Default permission |
-| - | - | - |
-| `/maintenance [true\|false]` | Turn maintenance mode on or off, or show its state. | `sparrow.command.maintenance` |
-| `/max-players [amount]` | Change the player limit at runtime, or show online players and the limit. | `sparrow.command.max-players` |
-
-## 🔨 Moderation
+## Administration and player records
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/kick <player> [reason] [-s]` | Kick a player from whichever server they are on; the kick screen shows the reason and who kicked them. | `sparrow.command.kick` |
-| `/ban <player> [reason] [-t <time>] [-I] [--force] [-s]` | Ban an account network-wide; `-I` also bans its last login IP. | `sparrow.command.ban` |
-| `/ban-ip <ip> [reason] [-t <time>] [--force] [-s]` | Ban an IP address or range such as `1.2.3.*`. | `sparrow.command.ban-ip` |
-| `/mute <player> <time> [reason]` | Temporarily mute a player across the network. See [Mutes](https://nanamoserver.github.io/sparrow-wiki/features/mute.mdx). | `sparrow.command.mute` |
-| `/unmute <player>` | Lift a player’s active mute. | `sparrow.command.unmute` |
-| `/unban <target> [-s]` | Lift bans by player name, UUID, IP, or punishment ID. | `sparrow.command.unban` |
-| `/ban-history [target] [options]` | Browse ban records with operator, time, and active filters. | `sparrow.command.ban-history` |
+| `/maintenance [true\|false] [--all] [--tag <tag>]` | Change maintenance mode. | `sparrow.command.maintenance` |
+| `/max_players [amount]` | View or change the player limit; -1 restores the original limit. | `sparrow.command.max_players` |
+| `/kick <targets> [reason] [--silent]` | Kick players, including across servers. | `sparrow.command.kick` |
+| `/ban <player\|player_ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | Ban an account or IP. | `sparrow.command.ban` |
+| `/unban <player\|player_ip\|ip> <target> [--silent]` | Lift an account or IP ban. | `sparrow.command.unban` |
+| `/unban_id <id> [--silent]` | Revoke a ban by record ID. | `sparrow.command.unban_id` |
+| `/ban_info <id>` | View a ban record. | `sparrow.command.ban_info` |
+| `/ban_history <all\|player <player>\|ip <ip>> [options]` | Search ban history. | `sparrow.command.ban_history` |
+| `/player_info <player>` | View player records and ban status. | `sparrow.command.player_info` |
+| `/player_uuid <name>` | Look up a player's UUID. | `sparrow.command.player_uuid` |
+| `/player_name <uuid>` | Look up the last recorded name. | `sparrow.command.player_name` |
+| `/name_history <name> [page]` | View name history. | `sparrow.command.name_history` |
+| `/ip_history <player <name>\|uuid <uuid>\|ip <ip>> [page]` | View a player's IP history or records for an IP. | `sparrow.command.ip_history` |
 
-`/kick` works for any player online in the network. `--silent` / `-s` hides the success message from the executor; on ban commands it also skips staff notices.
-
-`/kick` disconnects the player from the proxy, including while they are switching backends. The kick screen uses the translation files on the server where the command was run, in the target player's language. Success is reported after the proxy performs the kick; if the player has already left, the command reports them offline. See [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin).
-
-## 🔎 Player records
-
-| Command | Purpose | Default permission |
-| - | - | - |
-| `/player-info <player>` | Show player records and punishment status; also available as `/whois`. | `sparrow.command.player-info` |
-| `/ip <player>` | Show a player's last login IP and time, with a button to list players on the same IP. | `sparrow.command.ip` |
-| `/ip-history <target> [page]` | List players whose last login IP matches an IP, a range such as `1.2.3.*`, or a player's last login IP. | `sparrow.command.ip-history` |
-| `/player-uuid <player>` | Look up a player's UUID by name. | `sparrow.command.player-uuid` |
-| `/player-name <uuid>` | Look up the last name used by a UUID. | `sparrow.command.player-name` |
-
-These commands only know players who have joined your servers; nothing is looked up from Mojang. `player` here can be any such player, whether online or not, and `/ip` and `/ip-history` also accept a UUID. The last login IP is updated every time a player joins; only IPv4 addresses are recorded. `/ip-history` shows 8 players per page with their online status or last server, last login time, and IP.
-
-## 🧍 Player and entity state
+## Players and entities
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/heal [player]` | Restore player health. | `sparrow.command.heal[.other]` |
-| `/feed [player]` | Restore player hunger. | `sparrow.command.feed[.other]` |
-| `/fly` | Toggle your own flight state. | `sparrow.command.fly[.other]` |
-| `/fly <player> [enabled]` | Toggle the named player's flight state, or set it with true / false. | `sparrow.command.fly[.other]` |
-| `/fly-speed <speed> [player]` | Set flight speed from -1 to 1. | `sparrow.command.fly-speed[.other]` |
-| `/walk-speed <speed> [player]` | Set walking speed from -1 to 1. | `sparrow.command.walk-speed[.other]` |
-| `/smite <targets> [--effect]` | Strike selected local entities with lightning; `--effect` shows only the visual effect. | `sparrow.command.smite` |
-| `/suicide` | Kill yourself; players only. | `sparrow.command.suicide` |
-| `/burn <time> [targets]` | Set yourself or selected entities on fire; time accepts ticks or units such as `5s`. | `sparrow.command.burn[.other]` |
-| `/extinguish [targets]` | Extinguish target entities. | `sparrow.command.extinguish[.other]` |
-| `/look face <face> [targets]` | Turn yourself or selected entities toward a direction such as north or up. | `sparrow.command.look[.other]` |
-| `/look location <x> <y> <z> [targets]` | Turn yourself or selected entities toward a location. | `sparrow.command.look[.other]` |
-| `/look entity <entity> [targets]` | Turn yourself or selected entities toward another entity. | `sparrow.command.look[.other]` |
-| `/hat [player]` | Wear one of the main-hand items on the head. | `sparrow.command.hat[.other]` |
-| `/knockback <x> <y> <z> [player]` | Push a player in the given direction. | `sparrow.command.knockback[.other]` |
+| `/heal [player [--value <amount>]]` | Restore health; hunger and effects are unchanged. | `sparrow.command.heal[.other]` |
+| `/feed [player [--value <amount>]]` | Restore food level. | `sparrow.command.feed[.other]` |
+| `/air <player> [--value <amount>]` | Set remaining air; omit the value to refill it. | `sparrow.command.air` |
+| `/fly [player [enabled]]` | Toggle flight or set it for a named player. | `sparrow.command.fly[.other]` |
+| `/fly_speed <speed> [player]` | Set flight speed from -1 to 1. | `sparrow.command.fly_speed[.other]` |
+| `/walk_speed <speed> [player]` | Set walking speed from -1 to 1. | `sparrow.command.walk_speed[.other]` |
+| `/burn <time> [targets]` | Set entities on fire; durations accept units such as 5s. | `sparrow.command.burn[.other]` |
+| `/extinguish [targets]` | Extinguish entities. | `sparrow.command.extinguish[.other]` |
+| `/smite <targets> [--effect]` | Strike entities with lightning; --effect is visual only. | `sparrow.command.smite` |
+| `/look <face <face>\|location <x> <y> <z>\|entity <entity>> [targets]` | Change facing direction. | `sparrow.command.look[.other]` |
+| `/knockback <x> <y> <z> [player]` | Apply knockback. | `sparrow.command.knockback[.other]` |
+| `/hat [player]` | Wear one main-hand item as a hat. | `sparrow.command.hat[.other]` |
+| `/respawn [player]` | Respawn a dead player. | `sparrow.command.respawn[.other]` |
+| `/suicide` | Kill yourself. | `sparrow.command.suicide` |
+| `/patrol [targets]` | Cycle through players for patrol, including across servers. | `sparrow.command.patrol` |
+| `/force_say <player> <text>` | Make a local player send a chat message. | `sparrow.command.force_say` |
+| `/sudo <player> <command>` | Make a local player execute a command. | `sparrow.command.sudo` |
 
-`/hat` wears one item and leaves the rest of the stack in the hand. The previous helmet goes back to the hand if it is now empty, otherwise into the inventory, and is dropped at the player's feet when the inventory is full. A helmet with Curse of Binding cannot be replaced, except in Creative mode.
-
-`/knockback` uses blocks per tick: `/knockback 0 1 0` launches the player straight up, and `/knockback 2 0.5 0` pushes them east. Like being hit, the push replaces the player's current movement.
-
-## 🔍 Patrol and command execution
+## Teleportation
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/patrol [targets]` | Patrol local online players in rotation; players only. | `sparrow.command.patrol` |
-| `/force-say <targets> <text>` | Make selected local players send a chat message. | `sparrow.command.force-say` |
-| `/sudo <targets> <command>` | Make selected players execute a command. | `sparrow.command.sudo` |
+| `/world <world> [targets] [--location <x> <y> <z>] [--unsafe]` | Travel to a world on this server. | `sparrow.command.world[.other]` |
+| `/top_block [targets]` | Move to the top of the current block column. | `sparrow.command.top_block[.other]` |
+| `/tp_offline <player> [target] [--silent]` | Send yourself or a local target to a player's recorded logout location. | `sparrow.command.tp_offline` |
+| `/server <server> [targets]` | Transfer to another backend. | `sparrow.command.server[.other]` |
+| `/spawn` | Travel to the configured spawn. | `sparrow.command.spawn` |
+| `/back [player] [--unsafe] [--silent]` | Return to the previous teleport departure point. | `sparrow.command.back[.other]` |
+| `/death-back [player] [--unsafe] [--silent]` | Return to the last death location. | `sparrow.command.death-back[.other]` |
+| `/rtp <player> <region> [--silent]` | Teleport randomly within a configured region. | `sparrow.command.rtp[.other]` |
+| `/rtp_range <player> <server> <world> <min-radius> <max-radius> [options]` | Teleport randomly within a specified square range. | `sparrow.command.rtp_range[.other]` |
+| `/warp <name> [player]` | Travel to a warp, with support for cross-server players. | `sparrow.command.warp[.other]` |
+| `/set_warp <name>` | Create a warp at your position. | `sparrow.command.set_warp` |
+| `/del_warp <name>` | Delete a warp. | `sparrow.command.del_warp` |
+| `/warp_list [page]` | List warps. | `sparrow.command.warp_list` |
+| `/edit_warp <name> [rename <new_name>\|relocate]` | View, rename or relocate a warp. | `sparrow.command.edit_warp` |
+| `/home [name]` | Travel to your home; player.name selects another owner's home. | `sparrow.command.home[.other]` |
+| `/set_home [name]` | Create a home at your position; the default name is home. | `sparrow.command.set_home` |
+| `/del_home <name>` | Delete a home; accepts player.name. | `sparrow.command.del_home[.other]` |
+| `/home_list [owner\|page] [page]` | List your homes or another owner's homes. | `sparrow.command.home_list[.other]` |
+| `/edit_home <name> [rename <new_name>\|relocate]` | View, rename or relocate a home; accepts player.name. | `sparrow.command.edit_home[.other]` |
+| `/sparrow del_all_homes [--player <player>] [--server <server>] [--world <world>]` | Bulk delete from console; at least one filter, no confirmation. | `sparrow.command.del_all_homes` |
+| `/tpa <player>` | Ask to teleport to another player. | `sparrow.command.tpa` |
+| `/tpa_here <player>` | Ask another player to teleport to you. | `sparrow.command.tpa_here` |
+| `/tpa_accept [player]` | Accept a request; defaults to the most recent one. | `sparrow.command.tpa_accept` |
+| `/tpa_deny [player]` | Deny a request; defaults to the most recent one. | `sparrow.command.tpa_deny` |
+| `/tpa_cancel [player]` | Cancel an outgoing request; omit the player to cancel all. | `sparrow.command.tpa_cancel` |
 
-## 🧭 Teleportation
-
-| Command | Purpose | Default permission |
-| - | - | - |
-| `/world [world] [targets]` | Switch to a world, or the next world when omitted. | `sparrow.command.world[.other]` |
-| `/top-block [targets]` | Move targets to the highest usable position in their current block column. | `sparrow.command.top-block[.other]` |
-| `/tp-offline <player> [targets] [--silent]` | Teleport targets to the named player’s last recorded location. | `sparrow.command.tp-offline` |
-| `/server <server> [targets]` | Request a backend transfer through the proxy. | `sparrow.command.server[.other]` |
-| `/spawn` | Travel to the shared spawn; players only. See [Network spawn](https://nanamoserver.github.io/sparrow-wiki/features/spawn.mdx). | `sparrow.command.spawn` |
-| `/set-spawn` | Set or replace the shared spawn at your position; players only. | `sparrow.command.set-spawn` |
-| `/del-spawn` | Delete the shared spawn immediately; players and console. | `sparrow.command.del-spawn` |
-| `/bed [player]` | Teleport a player to their respawn point, such as their bed. | `sparrow.command.bed[.other]` |
-| `/death-back [player]` | Return to the last death location, including across servers. | `sparrow.command.death-back[.other]` |
-| `/back [player]` | Return a player to their previous location, including across servers. | `sparrow.command.back[.other]` |
-| `/warp <name> [player]` | Teleport yourself or the named player to a warp, including across servers. | `sparrow.command.warp[.other]` |
-| `/set-warp <name>` | Create a warp at your position, or move an existing one there; players only. | `sparrow.command.set-warp` |
-| `/del-warp <name>` | Delete a warp immediately. | `sparrow.command.del-warp` |
-| `/warp-list [page]` | Show the clickable chat list of warps. | `sparrow.command.warp-list` |
-| `/edit-warp <name>` | Show a warp's information and management panel. | `sparrow.command.edit-warp` |
-| `/edit-warp <name> rename <new_name>` | Rename a warp. | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.rename` |
-| `/edit-warp <name> description <text>` | Set the description, up to 256 characters. | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.description` |
-| `/edit-warp <name> relocate` | Move a warp to your current position; players only. | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.relocate` |
-| `/edit-warp <name> delete [confirm <id>]` | Request deletion confirmation, or enter the confirmation command shown in the panel. | `sparrow.command.edit-warp` + `sparrow.command.edit-warp.delete` |
-
-`/bed` uses the point where the player would respawn: their bed, a charged respawn anchor, or a point set with `/spawnpoint`. If the bed was broken or is blocked, the player is told they have no bed to return to.
-
-Bare `/warp` reports a missing name; use `/warp-list` to browse destinations. See [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.mdx) for per-destination permissions and management.
-
-Cooldowns, countdowns, world restrictions, and sounds are configured in groups in `teleport.yml`, and each feature picks its group with `teleport-group` in `features.yml`. See [Teleport groups](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx). `/tp-offline` teleports immediately.
-
-### Server name completion
-
-`/server` suggests online Sparrow servers, excluding the current server. It also respects `server.allowed-servers` in `features.yml`. Suggestions update automatically as servers start or stop, usually within a few seconds, and work from the console even when this server has no players.
-
-You can type a server name that is not suggested. It must be allowed by the configuration and exist on the proxy; the proxy decides whether the connection succeeds.
-
-```yaml title="features.yml · server"
-server:
-  enabled: true
-  allowed-servers: []
-```
-
-An empty list allows any destination. To restrict transfers, use a list such as `allowed-servers: [lobby, survival]`. Apply changes with `/sparrow reload`. See [proxy setup](https://nanamoserver.github.io/sparrow-wiki/installation.mdx#proxy-plugin).
-
-## 🏠 Homes
+## Containers and items
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/set-home [name]` | Create your home at your current position, defaulting to `home`; players only, no overwrite. | `sparrow.command.set-home` |
-| `/home [name]` | Travel to your named, default, or only home; players only. | `sparrow.command.home` |
-| `/home <player>.<name>` | Travel yourself to another player's home. | `sparrow.command.home` + `sparrow.command.home.other` |
-| `/del-home <name> [player]` | Delete your home, or the specified owner's home with `.other`, immediately. | `sparrow.command.del-home[.other]` |
-| `/home-list [page]` | List your homes, 10 per page. | `sparrow.command.home-list` |
-| `/home-list other <player> [page]` | List another player's homes. | `sparrow.command.home-list` + `sparrow.command.home-list.other` |
-| `/edit-home <home>` | Show a home's information and management panel. | `sparrow.command.edit-home[.other]` |
-| `/edit-home <home> rename <new_name>` | Rename a home. | `sparrow.command.edit-home` + `sparrow.command.edit-home.rename` |
-| `/edit-home <home> relocate` | Move a home to your current position and server; players only. | `sparrow.command.edit-home` + `sparrow.command.edit-home.relocate` |
-| `/edit-home <home> delete` | Delete a home immediately, without confirmation. | `sparrow.command.edit-home` + `sparrow.command.edit-home.delete` |
-| `/del-all-home [--player <player>] [--server <server>] [--world <world>]` | Delete homes matching all filters; console only, at least one filter, no confirmation. | `sparrow.command.del-all-home` |
+| `/workbench [player] [--title <text>]` | Open a crafting table. | `sparrow.command.workbench[.other]` |
+| `/anvil [player] [--title <text>]` | Open an anvil. | `sparrow.command.anvil[.other]` |
+| `/grindstone [player] [--title <text>]` | Open a grindstone. | `sparrow.command.grindstone[.other]` |
+| `/smithing_table [player] [--title <text>]` | Open a smithing table. | `sparrow.command.smithing_table[.other]` |
+| `/stonecutter [player] [--title <text>]` | Open a stonecutter. | `sparrow.command.stonecutter[.other]` |
+| `/cartography_table [player] [--title <text>]` | Open a cartography table. | `sparrow.command.cartography_table[.other]` |
+| `/enchantment_table [player] [--title <text>]` | Open an enchanting table. | `sparrow.command.enchantment_table[.other]` |
+| `/loom [player] [--title <text>]` | Open a loom. | `sparrow.command.loom[.other]` |
+| `/ender_chest [player] [--title <text>]` | Have the player open their own ender chest. | `sparrow.command.ender_chest[.other]` |
+| `/clear_inv <player>` | Clear inventory, equipment, cursor and crafting slots. | `sparrow.command.clear_inv` |
+| `/clear_ender <player>` | Clear an ender chest. | `sparrow.command.clear_ender` |
+| `/repair <player> [--slot <slot>] [--value <amount>]` | Repair an equipment slot; defaults to a full main-hand repair. | `sparrow.command.repair` |
+| `/repair_all <player>` | Repair inventory and equipment. | `sparrow.command.repair_all` |
+| `/item_damage <player> <value>` | Set main-hand item damage. | `sparrow.command.item_damage` |
+| `/enchant <player> <enchantment> [level] [--slot <slot>] [--check]` | Edit an enchantment; negative levels remove it, --check applies vanilla limits. | `sparrow.command.enchant` |
+| `/item_data [--full] [--chat]` | Inspect main-hand item data. | `sparrow.command.item_data` |
+| `/item_name [name] [--json]` | View or edit your main-hand item\_name. | `sparrow.command.item_name` |
+| `/custom_name [name] [--json]` | View or edit your main-hand custom\_name. | `sparrow.command.custom_name` |
+| `/item_lore [--lore <text>] [--operation <operation>] [--line <line>] [--json] [--page <page>]` | View or edit your main-hand lore. | `sparrow.command.item_lore` |
+| `/custom_model_data [value]` | View or edit the first custom model data float. | `sparrow.command.custom_model_data` |
+| `/color <color> [player]` | Dye the main-hand item. | `sparrow.command.color[.other]` |
+| `/more [amount] [player] [--silent]` | Replenish or copy the main-hand item. | `sparrow.command.more` |
+| `/head [source] [amount] [player] [--force] [--silent]` | Obtain a player head. | `sparrow.command.head[.other]` |
 
-For Home commands, `player` means the owner, including a known offline player. `<home>` accepts your home's name or `<player>.<name>`; editing another player's home requires `.other` in addition to each operation's permission. The console must specify an owner. `/home` has no argument for sending another player.
-
-Aliases: `/sethome`, `/delhome`, `/homelist`, and `/edithome`. Bare `/home` prefers the configured default home, then your only home; otherwise it asks for a name or shows how to create one. It never opens the list automatically.
-
-All Home list and panel buttons fill in a command for you to execute with Enter. See [Homes](https://nanamoserver.github.io/sparrow-wiki/features/home.mdx) for limits, configuration, bulk filters, and PlaceholderAPI placeholders.
-
-## 🤝 Teleport requests
-
-| Command | Purpose | Default permission |
-| - | - | - |
-| `/tpa <player>` | Ask to teleport to the other player. | `sparrow.command.tpa` |
-| `/tpa-here <player>` | Ask the other player to teleport to you. | `sparrow.command.tpa-here` |
-| `/tpa-accept [player]` | Accept a request you received; without a player, the most recent one. | `sparrow.command.tpa-accept` |
-| `/tpa-deny [player]` | Deny a request you received; without a player, the most recent one. | `sparrow.command.tpa-deny` |
-| `/tpa-cancel [player]` | Cancel your request to a player; without a player, every request you sent. | `sparrow.command.tpa-cancel` |
-
-These commands are for players only, and the target can be on another backend. Aliases: `/tpahere`, `/tpaccept`, `/tpdeny`, and `/tpacancel`. See [Teleport requests](https://nanamoserver.github.io/sparrow-wiki/features/tpa.mdx) for expiry, cooldowns, and configuration.
-
-## 🛠️ Portable workstations and containers
+## Messages and displays
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/workbench [player]` | Open a crafting table for a player. | `sparrow.command.workbench[.other]` |
-| `/anvil [player]` | Open an anvil for a player. | `sparrow.command.anvil[.other]` |
-| `/grindstone [player]` | Open a grindstone for a player. | `sparrow.command.grindstone[.other]` |
-| `/smithing-table [player]` | Open a smithing table for a player. | `sparrow.command.smithing-table[.other]` |
-| `/stonecutter [player]` | Open a stonecutter for a player. | `sparrow.command.stonecutter[.other]` |
-| `/cartography-table [player]` | Open a cartography table for a player. | `sparrow.command.cartography-table[.other]` |
-| `/enchantment-table [player]` | Open an enchanting table for a player. | `sparrow.command.enchantment-table[.other]` |
-| `/clear-inv <player>` | Clear a local player’s inventory, equipment, cursor, and crafting items. | `sparrow.command.clear-inv` |
-| `/clear-ender <player>` | Clear a local player’s ender chest. | `sparrow.command.clear-ender` |
-| `/ender_chest` | Open your own ender chest. | `sparrow.command.ender-chest[.other]` |
-| `/ender_chest <player> [--silent]` | Have the named player open their own ender chest. | `sparrow.command.ender-chest[.other]` |
+| `/broadcast <message> [--silent]` | Broadcast a message across the network. | `sparrow.command.broadcast` |
+| `/actionbar <targets> <message> [--silent]` | Send an action bar. | `sparrow.command.actionbar` |
+| `/title <targets> <fadeIn> <stay> <fadeOut> <message> [--silent]` | Send a title; durations are in ticks. | `sparrow.command.title` |
+| `/toast <targets> <type> <item> <message> [--silent]` | Display an advancement toast. | `sparrow.command.toast` |
+| `/totem_animation <targets> <item> [--silent]` | Play a totem animation using the specified item. | `sparrow.command.totem_animation` |
+| `/clear_chat [player]` | Clear chat; defaults to everyone on this server. | `sparrow.command.clear_chat` |
+| `/demo [player]` | Show the demo screen. | `sparrow.command.demo` |
+| `/credits [player]` | Show the credits. | `sparrow.command.credits` |
+| `/distance [--max-distance <distance>] [--disable-marker]` | Measure the distance along your line of sight. | `sparrow.command.distance` |
+| `/highlight [targets] [options]` | Highlight a region's blocks. | `sparrow.command.highlight` |
 
-## 📦 Item editing and acquisition
+## Additional syntax
 
-| Command | Purpose | Default permission |
-| - | - | - |
-| `/repair <player> [--slot <slot>] [--value <amount>]` | Repair the main-hand item, or the selected equipment slot. Omit `--value` for a full repair. | `sparrow.command.repair` |
-| `/repair-all <player>` | Fully repair items in a local player’s inventory and equipment. | `sparrow.command.repair-all` |
-| `/item-damage <player> <value>` | Set main-hand damage, not remaining durability; reaching the maximum breaks the item. | `sparrow.command.item-damage` |
-| `/enchant <targets> <enchantment> [level] [--slot <slot>] [--check]` | Edit an enchantment in a target entity’s equipment slot; a negative level removes it. `--check` applies the vanilla `/enchant` rules. | `sparrow.command.enchant` |
-| `/item_data [--full] [--chat]` | Inspect the main-hand item’s data; players only. | `sparrow.command.item-data` |
-| `/item_name <player> [name] [options]` | Read or edit the main-hand item\_name component. | `sparrow.command.item-name` |
-| `/custom_name <player> [name] [options]` | Read or edit the main-hand custom\_name component. | `sparrow.command.custom-name` |
-| `/item_lore [options]` | View or edit main-hand lore; players only. | `sparrow.command.item-lore` |
-| `/color <color>` | Set the dye color of your main-hand item. | `sparrow.command.color[.other]` |
-| `/color <color> <player> [--silent]` | Set the dye color of the named player's main-hand item. | `sparrow.command.color[.other]` |
-| `/custom_model_data [value]` | Read or edit the first custom model data float; players only. | `sparrow.command.custom-model-data` |
-| `/more [amount] [--player <player>] [--silent]` | Replenish or copy the main-hand item; amount 1–6400. | `sparrow.command.more` |
-| `/head [source] [amount]` | Fetch heads for yourself by player name or UUID; amount is 1–6400, default 1. | `sparrow.command.head[.other]` |
-| `/head <source> <amount> <player> [force] [--silent]` | Give heads to selected players; set `force` to `true` for a fresh lookup. | `sparrow.command.head[.other]` |
+- `ban_history` accepts `--page`, `--active`, `--within <duration>` and `--operator <name>`; see [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx).
+- `rtp_range` accepts `--center-x`, `--center-z`, `--min-y`, `--max-y` and `--silent`; see [Random teleport](https://nanamoserver.github.io/sparrow-wiki/features/rtp.mdx).
+- The `rename` and `relocate` branches of `edit_home` and `edit_warp` require `.rename` and `.relocate` appended to the base permission. Editing another owner's home also requires `.other`.
+- `item_lore` operations are `insert`, `remove`, `edit`, `up` and `down`. Run it without options to open the editor panel.
+- See [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx) for region, color and duration options.
 
-## 📐 Regions and measurement
+Messages and item text use MiniMessage. Use `<papi:placeholder>` or `<papi:placeholder:default>` for PlaceholderAPI. `item_name`, `custom_name` and `item_lore` accept JSON with `--json`.
 
-| Command | Purpose | Default permission |
-| - | - | - |
-| `/highlight [targets] [options]` | Select or specify a region to highlight. | `sparrow.command.highlight` |
-| `/distance [--max-distance <distance>] [--disable-marker]` | Measure distance to the targeted block; players only. | `sparrow.command.distance` |
-
-## 💬 Messages and effects
-
-| Command | Purpose | Default permission |
-| - | - | - |
-| `/clear-chat [player]` | Scroll chat out of view for a local player, or everyone on this server when omitted. | `sparrow.command.clear-chat` |
-| `/broadcast <message> [options]` | Broadcast a chat message to online players on every server, including the current server. | `sparrow.command.broadcast` |
-| `/actionbar <targets> <message> [options]` | Send an action bar to selected players. | `sparrow.command.actionbar` |
-| `/title <targets> <fadeIn> <stay> <fadeOut> <message> [options]` | Send a title with an optional subtitle. | `sparrow.command.title` |
-| `/toast <targets> <type> <item> <message> [options]` | Send an advancement toast with an item icon. | `sparrow.command.toast` |
-| `/totem-animation <targets> <item> [--silent]` | Play a totem animation with the specified item icon. | `sparrow.command.totem-animation` |
-| `/demo [player]` | Display the demo prompt. | `sparrow.command.demo` |
-| `/credits [player]` | Display the credits screen. | `sparrow.command.credits` |
-
-Players and the console can use `/broadcast`. The message is required, may contain spaces, and goes to all online players on Sparrow servers sharing the same Redis connection and database number, including the current server. Broadcasting works even when the server where you run the command has no players online.
-
-Messages support MiniMessage formatting, for example `/broadcast <gold>The market is now open!</gold>`. Add options after the message:
-
-| Broadcast option | Effect |
-| - | - |
-| `--silent` / `-s` | Hide the executor's single confirmation; players still receive the broadcast. |
-| `--legacy-color` / `-l` | Enable legacy color codes such as `&a`. |
-
-Use `<papi:placeholder>` in Sparrow messages, for example `/broadcast <gold>Hello, <papi:player_name>!</gold>`. Each recipient sees their own name. To provide default text, use `<papi:player_name:Player>`. Receiving servers need PlaceholderAPI and the relevant expansions; no parsing switch is required.
-
-Legacy colors are off by default. Set `text-options.parse-legacy-color: true` in the sending server's `config.yml`, or add `-l` to an individual command.
-
-## 🔑 Additional permissions
+## Other permissions
 
 | Permission | Purpose |
 | - | - |
-| `sparrow.bypass.patrol` | Exclude the holder from patrol selection. |
-| `sparrow.bypass.maintenance` | Stay on or join the server during maintenance. |
-| `sparrow.bypass.player-limit` | Join even when the server is full. |
-| `sparrow.notify.ban` | Receive ban and unban notices from every server. Only operators have it by default. |
-| `sparrow.notify.mute` | Receive mute and unmute notices from every server. |
-| `sparrow.warp.<lowercase-name>` | Access the named warp when `permission-restrict` is enabled. |
-| `sparrow.max-homes.<number>` | Set the Home limit; the highest granted number replaces the configured default. |
-| `sparrow.max-homes.unlimited` | Remove the Home limit. |
-| `sparrow.teleport-warmup.<seconds>` | Shorten the countdown before `/warp`, `/home`, `/back`, `/death-back`, `/bed`, `/spawn`, or an accepted teleport request; the lowest permission value or group setting wins. |
-| `sparrow.bypass.teleport-warmup` | Skip the countdown before teleporting yourself. |
-| `sparrow.bypass.teleport-cooldown` | Not held by teleport cooldowns. |
-| `sparrow.bypass.teleport-world-blacklist` | May teleport into worlds on the world blacklist. |
-| `sparrow.bypass.tpa-cooldown` | Send teleport requests without the request cooldown or the deny cooldown. |
+| `sparrow.bypass.maintenance` | Allow entry during maintenance. |
+| `sparrow.bypass.player_limit` | Allow entry when full. |
+| `sparrow.bypass.patrol` | Exclude from patrol. |
+| `sparrow.notify.ban` | Receive ban and unban notices. |
+| `sparrow.bypass.tpa_cooldown` | Skip request and denial cooldowns. |
+| `sparrow.home.limit.<amount> / sparrow.home.limit.unlimited` | Override the home limit. |
+| `sparrow.warp.use.<lowercase-name>` | Allow access to a warp when permission-restrict is enabled. |
+| `sparrow.back.staff / sparrow.back.vip` | Default Back cooldown and warmup overrides. |
+| `sparrow.deathback.staff / sparrow.deathback.vip` | Default DeathBack cooldown and warmup overrides. |
+| `sparrow.rtp.staff / sparrow.rtp.vip` | Default RTP cooldown and warmup overrides. |
+| `sparrow.tpa.staff / sparrow.tpa.vip` | Default TPA teleport cooldown and warmup overrides. |
+| `sparrow.home.teleport.staff / sparrow.home.teleport.vip` | Default Home cooldown and warmup overrides. |
+| `sparrow.warp.teleport.staff / sparrow.warp.teleport.vip` | Default Warp cooldown and warmup overrides. |
+| `sparrow.spawn.staff` | Default Spawn cooldown and warmup override. |
 
-With `--check`, `/enchant` follows the vanilla command: the level cannot exceed the enchantment's maximum level, the item must support the enchantment, and the enchantment must not conflict with existing ones, including the same enchantment already on the item. Enchanted books are not supported items in vanilla, so they are refused as well. Removing an enchantment is never checked.
-
-See [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.mdx), [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx), [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.mdx), [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.mdx), [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.mdx), [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx), and [Back](https://nanamoserver.github.io/sparrow-wiki/features/back.mdx) for their complete usage.
+Teleport override permissions are configurable in each feature's `teleport-options.overrides`; RTP region permissions use `regions.<name>.permission`.

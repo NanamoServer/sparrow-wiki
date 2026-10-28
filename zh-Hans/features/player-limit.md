@@ -2,46 +2,12 @@
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit>
 
-使用 `/max-players` 在运行时修改服务器人数上限，无需重启。拥有绕过权限的玩家可以在服务器满员时进入。
+模块 `player_limit` · 配置 `features/player_limit.yml`
 
-## 命令与权限
+运行时修改本服人数上限，命令修改会保存到配置。
 
-| 命令或权限 | 用途 | 默认命令权限 |
+| 命令 | 用途 | 默认权限 |
 | - | - | - |
-| `/max-players [amount]` | 设置人数上限；`-1` 恢复为 `server.properties` 的值；省略参数时查看在线人数和当前上限。 | `sparrow.command.max-players` |
-| `sparrow.bypass.player-limit` | 服务器满员时仍可进入。 | — |
+| `/max_players [amount]` | 查询或修改人数上限；-1 恢复原上限。 | `sparrow.command.max_players` |
 
-完整入口为 `/sparrow max-players`。调低上限不会移出已在线的玩家，只影响之后的进入。
-
-```text title="示例"
-/max-players
-/max-players 100
-/max-players -1
-```
-
-设置的上限保存在 `features.yml`，服务器重启后仍然生效；`server.properties` 不会被修改。使用 `/sparrow feature-disable player-limit` 停用此功能时，上限恢复为 `server.properties` 的值。
-
-## 满员时进入
-
-拥有 `sparrow.bypass.player-limit` 的玩家在服务器满员时仍可进入。
-
-- 安装了 LuckPerms 时，以 LuckPerms 中设置的权限为准。
-- 未安装 LuckPerms，或没有设置该权限时，只有 OP 可以绕过上限。
-- 只在特定世界、游戏模式等条件下授予的权限，在进入服务器时不生效。
-- 在 Spigot 服务器上，直接使用玩家的普通权限判断。
-
-原版 `ops.json` 中 `bypassesPlayerLimit` 为 `true` 的 OP 仍然可以绕过上限。
-
-## 配置
-
-```yaml title="features.yml · player-limit"
-player-limit:
-  enabled: true
-  max-players: -1
-```
-
-`max-players` 为 `-1` 时沿用 `server.properties` 的 `max-players`，使用命令修改时会自动保存。
-
-> **备注**
->
-> 代理端有自己的人数上限和服务器列表显示，此功能只影响当前子服。
+`sparrow.bypass.player_limit` 允许满员时进入。`max-players: -1` 恢复模块启用前的上限，`0` 表示上限为零；停用模块也会恢复原上限。
