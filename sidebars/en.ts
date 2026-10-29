@@ -15,6 +15,7 @@ const sidebars: SidebarsConfig = {
         'features/head',
         'features/maintenance',
         'features/player-limit',
+        'features/death-messages',
         'features/ban',
         'features/back',
         'features/rtp',
