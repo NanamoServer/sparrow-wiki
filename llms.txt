@@ -6,7 +6,7 @@ Every link below points to the Markdown version of that page. All pages combined
 
 简体中文: [llms.txt](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/llms.txt)
 
-- [Introduction](https://nanamoserver.github.io/sparrow-wiki/index.md): Sparrow provides everyday administration commands, homes, warps, teleport requests and random teleportation for Paper and Folia.
+- [Introduction](https://nanamoserver.github.io/sparrow-wiki/index.md): Sparrow provides everyday administration commands, homes, warps, teleport requests, random teleportation and custom death messages for Paper and Folia.
 - [Commands and permissions](https://nanamoserver.github.io/sparrow-wiki/commands.md): <argument> is required; [argument] is optional. These are the default entry points and permissions. Short commands also accept /sparrow <command> or /spr <command>. Restart after editing commands.yml.
 
 ## Features
@@ -17,6 +17,7 @@ Every link below points to the Markdown version of that page. All pages combined
 - [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.md): Module head · Configuration features/head.yml
 - [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.md): Module maintenance · Configuration features/maintenance.yml
 - [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.md): Module player_limit · Configuration features/player_limit.yml
+- [Death messages](https://nanamoserver.github.io/sparrow-wiki/features/death-messages.md): Module death_messages · Configuration features/death_messages.yml
 - [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.md): Module ban · Configuration features/ban.yml
 - [Back and death back](https://nanamoserver.github.io/sparrow-wiki/features/back.md): Module back · Configuration features/back.yaml
 - [Random teleport](https://nanamoserver.github.io/sparrow-wiki/features/rtp.md): Module rtp · Configuration features/rtp.yml

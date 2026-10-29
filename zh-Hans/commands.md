@@ -12,8 +12,10 @@
 | - | - | - |
 | `/sparrow reload [--silent]` | 重载配置。 | `sparrow.command.admin.reload` |
 | `/sparrow feature_list [page]` | 查看模块状态。 | `sparrow.command.admin.feature` |
-| `/sparrow feature_enable <feature>` | 启用模块并保存开关。 | `sparrow.command.admin.feature` |
-| `/sparrow feature_disable <feature>` | 停用模块并保存开关。 | `sparrow.command.admin.feature` |
+| `/sparrow feature_enable <feature>` | 立即启用模块，不保存开关。 | `sparrow.command.admin.feature` |
+| `/sparrow feature_disable <feature>` | 立即停用模块，不保存开关。 | `sparrow.command.admin.feature` |
+
+管理[死亡消息](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/death-messages.mdx)时，模块名填写 `death_messages`。需要在重载或重启后保留模块开关时，请修改 `modules.yml`。
 
 ## 管理与玩家记录
 

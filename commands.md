@@ -12,8 +12,10 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/commands>
 | - | - | - |
 | `/sparrow reload [--silent]` | Reload configuration. | `sparrow.command.admin.reload` |
 | `/sparrow feature_list [page]` | List module states. | `sparrow.command.admin.feature` |
-| `/sparrow feature_enable <feature>` | Enable a module and save its switch. | `sparrow.command.admin.feature` |
-| `/sparrow feature_disable <feature>` | Disable a module and save its switch. | `sparrow.command.admin.feature` |
+| `/sparrow feature_enable <feature>` | Enable a module immediately without saving its switch. | `sparrow.command.admin.feature` |
+| `/sparrow feature_disable <feature>` | Disable a module immediately without saving its switch. | `sparrow.command.admin.feature` |
+
+Use `death_messages` as the feature name to manage [Death messages](https://nanamoserver.github.io/sparrow-wiki/features/death-messages.mdx). Edit `modules.yml` to keep module switches after a reload or restart.
 
 ## Administration and player records
 

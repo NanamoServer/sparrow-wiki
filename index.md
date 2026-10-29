@@ -2,7 +2,7 @@
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/>
 
-Sparrow provides everyday administration commands, homes, warps, teleport requests and random teleportation for Paper and Folia.
+Sparrow provides everyday administration commands, homes, warps, teleport requests, random teleportation and [custom death messages](https://nanamoserver.github.io/sparrow-wiki/features/death-messages.mdx) for Paper and Folia.
 
 Use [Commands and permissions](https://nanamoserver.github.io/sparrow-wiki/commands.mdx) as a quick reference. Feature pages cover usage and essential configuration; developers can start with the [Teleport API](https://nanamoserver.github.io/sparrow-wiki/api/teleport.mdx).
 
@@ -16,6 +16,6 @@ Use [Commands and permissions](https://nanamoserver.github.io/sparrow-wiki/comma
 | `modules.yml` | Feature module switches. |
 | `features/` | Separate configuration files for each module. |
 
-Use `/spr feature_list` to check module states. `/spr feature_enable <module>` and `/spr feature_disable <module>` change and save them. Run `/spr reload` after editing settings; its feedback identifies changes that need a restart.
+Use `/spr feature_list` to check module states. `/spr feature_enable <module>` and `/spr feature_disable <module>` change the current state without saving it. Edit `modules.yml` to keep your choice after a reload or restart. Run `/spr reload` after editing settings; its feedback identifies changes that need a restart.
 
 Cross-server features require shared database and Redis connections, plus the Sparrow companion plugin on the proxy. PlaceholderAPI is optional for text placeholders; LuckPerms provides permission lookups.

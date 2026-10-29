@@ -6,7 +6,7 @@
 
 English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 
-- [简介](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/index.md): Sparrow 提供日常管理命令，以及家、传送点、传送请求、随机传送等功能，支持 Paper 和 Folia。
+- [简介](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/index.md): Sparrow 提供日常管理命令，以及家、传送点、传送请求、随机传送和自定义死亡消息等功能，支持 Paper 和 Folia。
 - [命令与权限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.md): <参数> 必填，[参数] 可省略。下表是默认入口与权限，短命令也可写为 /sparrow <命令> 或 /spr <命令>。修改 commands.yml 后需要重启。
 
 ## 功能
@@ -17,6 +17,7 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 - [玩家头颅](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): 模块 head · 配置 features/head.yml
 - [维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.md): 模块 maintenance · 配置 features/maintenance.yml
 - [人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.md): 模块 player_limit · 配置 features/player_limit.yml
+- [死亡消息](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/death-messages.md): 模块 death_messages · 配置 features/death_messages.yml
 - [封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.md): 模块 ban · 配置 features/ban.yml
 - [返回与死亡返回](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back.md): 模块 back · 配置 features/back.yaml
 - [随机传送](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/rtp.md): 模块 rtp · 配置 features/rtp.yml
