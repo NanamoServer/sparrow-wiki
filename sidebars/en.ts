@@ -10,6 +10,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'features/quick-shulker',
+        'features/elevator',
         'features/patrol',
         'features/highlight',
         'features/head',

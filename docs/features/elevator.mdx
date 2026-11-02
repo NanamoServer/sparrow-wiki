@@ -1,0 +1,42 @@
+---
+title: ↕️ Elevators
+---
+
+Module `elevator` · Configuration `features/elevator.yaml`
+
+Place iron blocks at the same X and Z on two floors in the same world. Stand on the lower block and jump to go up. Stand on the upper block and start sneaking to go down. Holding sneak moves you down just one floor. Building an elevator requires only the usual permission to place blocks.
+
+- Each ride goes to the nearest block **with the same ID** in the chosen direction. Solid floors and other elevator types can lie between the stops.
+- The player lands in the center of the target block on its top surface and keeps their viewing direction. If the nearest matching floor is obstructed, the player stays on the original floor even if another floor is clear.
+- Without permission, a clear landing or a matching floor within range, the player can jump or sneak normally. There is no message or sound. A successful ride preserves the existing `/back` location.
+
+## Configure each block type
+
+The default file enables only iron blocks. This example adds a custom elevator. Replace `smc:lanzi/tiancai` with an ID from your CraftEngine pack.
+
+```yaml
+elevators:
+  "minecraft:iron_block":
+    max_distance: 64
+    use_permission: ""
+
+  "smc:lanzi/tiancai":
+    max_distance: 32
+    use_permission: "sparrow.elevator.tiancai"
+    sound:
+      key: minecraft:block.amethyst_block.chime
+      volume: 0.8
+      pitch: 1.2
+```
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `max_distance` | `64` | Maximum difference in Y between consecutive floors. Use a positive integer. The limit is inclusive, so Y=20 and Y=84 connect at the default distance. |
+| `use_permission` | `""` | Empty allows everyone to ride. Otherwise, grant the configured node to the players who may use this elevator type. |
+| `sound` | Omitted | Only the rider hears it, after a successful trip in either direction. Set `key` to the sound ID. `volume` and `pitch` both default to `1.0`. |
+
+Run `/spr reload` after editing. When upgrading an old `elevator-blocks` list, Sparrow creates one entry per block and copies its distance and permission.
+
+## CraftEngine blocks
+
+Install CraftEngine on the backend to use custom floors. Without it, Sparrow skips custom entries with a console warning and vanilla elevators still work. Sparrow resolves the IDs when CraftEngine loads or reloads its resources. Different states of the same custom block connect. An unknown ID in a loaded pack is a configuration error.
