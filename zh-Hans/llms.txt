@@ -14,7 +14,6 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 - [快捷潜影盒](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/quick-shulker.md): 模块 quick-shulker · 配置 features/quick-shulker.yml
 - [电梯](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/elevator.md): 模块 elevator · 配置文件 features/elevator.yaml
 - [玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.md): 模块 patrol · 配置 features/patrol.yml
-- [区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.md): 模块 highlight · 配置 features/highlight.yml
 - [玩家头颅](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): 模块 head · 配置 features/head.yml
 - [维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.md): 模块 maintenance · 配置 features/maintenance.yml
 - [人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.md): 模块 player_limit · 配置 features/player_limit.yml
@@ -35,3 +34,5 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 ## API 使用
 
 - [传送 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/teleport.md)
+- [Waypoint API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/waypoint.md): Waypoint 让一个本服玩家看到指向目标的标记。观察者是看到标记的玩家，目标是真实位置，锚点是标记的显示位置。目标很远时，标记可以投影到观察者附近；到达判定和距离文字仍使用真实目标。
+- [高亮 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/highlight.md): 通过 net.momirealms.sparrow.service.highlight.Highlight 向本服玩家显示方块轮廓。服务随 Sparrow 启动，关闭高亮命令后仍可使用。

@@ -14,7 +14,6 @@ Every link below points to the Markdown version of that page. All pages combined
 - [Quick shulker](https://nanamoserver.github.io/sparrow-wiki/features/quick-shulker.md): Module quick-shulker · Configuration features/quick-shulker.yml
 - [Elevators](https://nanamoserver.github.io/sparrow-wiki/features/elevator.md): Module elevator · Configuration features/elevator.yaml
 - [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.md): Module patrol · Configuration features/patrol.yml
-- [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.md): Module highlight · Configuration features/highlight.yml
 - [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.md): Module head · Configuration features/head.yml
 - [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.md): Module maintenance · Configuration features/maintenance.yml
 - [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.md): Module player_limit · Configuration features/player_limit.yml
@@ -35,3 +34,5 @@ Every link below points to the Markdown version of that page. All pages combined
 ## API usage
 
 - [Teleport API](https://nanamoserver.github.io/sparrow-wiki/api/teleport.md)
+- [Waypoint API](https://nanamoserver.github.io/sparrow-wiki/api/waypoint.md): A waypoint shows one local player a marker for a target. The viewer sees the marker, the target is the real location, and the anchor is where the marker is drawn. A distant target can have an anchor close to the viewer. Arrival checks and distance labels still use the real target.
+- [Highlight API](https://nanamoserver.github.io/sparrow-wiki/api/highlight.md): Use net.momirealms.sparrow.service.highlight.Highlight to show block outlines to local players. The service starts with Sparrow and remains available when the command is disabled.

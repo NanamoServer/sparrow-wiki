@@ -138,7 +138,7 @@ Use `death_messages` as the feature name to manage [Death messages](https://nana
 - `ban-history` accepts `--active`, `--within <duration>` and `--operator <name>`. Turn pages in the dialog. See [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.mdx).
 - `rtp-range` accepts `--center-x`, `--center-z`, `--min-y`, `--max-y` and `--silent`; see [Random teleport](https://nanamoserver.github.io/sparrow-wiki/features/rtp.mdx).
 - The `rename` and `relocate` branches of `edit-home` and `edit-warp` require `.rename` and `.relocate` appended to the base permission. Editing another owner's home also requires `.other`.
-- See [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx) for region, color and duration options.
+- See the [command options](https://nanamoserver.github.io/sparrow-wiki/features/highlight.mdx) and the [Highlight API](https://nanamoserver.github.io/sparrow-wiki/api/highlight.mdx).
 
 Messages and item text use MiniMessage. Use `<papi:placeholder>` or `<papi:placeholder:default>` for PlaceholderAPI. `item-name` and `custom-name` accept JSON with `--json`.
 

@@ -2,7 +2,7 @@
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight>
 
-模块 `highlight` · 配置 `features/highlight.yml`
+在 `commands.yml` 中设置命令开关、权限和别名。插件可直接调用[高亮 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/highlight.mdx)。
 
 为指定玩家显示区域内的方块轮廓，不修改实际方块。省略目标时，向该世界的在线玩家显示。
 
@@ -23,6 +23,7 @@
 | `--highlight-duration <秒>` / `-d` | 持续 0–300 秒。 |
 | `--highlight-color <颜色>` / `-c` | 颜色，如 green、red。 |
 | `--solid-only` | 仅显示实体方块中暴露于空气等可穿过方块或选区边界的部分。 |
+| `--selection-timeout <秒>` | 完成两次选点的时限，至少 1 秒。 |
 | `--silent` / `-s` | 隐藏命令反馈。 |
 
-默认显示 30 秒、最多 32768 格，选点超时 30 秒。和平难度世界不支持此功能。
+默认绿色，显示 30 秒、最多 32768 格，选点超时 30 秒。和平难度世界不支持此功能。

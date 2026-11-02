@@ -138,7 +138,7 @@
 - `ban-history` 支持 `--active`、`--within <时长>`、`--operator <名称>`，在对话框中翻页。详见[封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.mdx)。
 - `rtp-range` 支持 `--center-x`、`--center-z`、`--min-y`、`--max-y`、`--silent`，详见[随机传送](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/rtp.mdx)。
 - `edit-home` 和 `edit-warp` 的 `rename`、`relocate` 分别需要在基础权限后追加 `.rename`、`.relocate`。编辑他人的家还需要 `.other`。
-- `highlight` 的范围、颜色和时长选项见[区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.mdx)。
+- 参见[高亮命令参数](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.mdx)和[高亮 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/highlight.mdx)。
 
 消息与物品文本使用 MiniMessage。PlaceholderAPI 用 `<papi:占位符>` 或 `<papi:占位符:默认值>`；`item-name` 和 `custom-name` 可用 `--json` 输入 JSON。
 
