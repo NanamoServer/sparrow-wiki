@@ -12,7 +12,6 @@ const sidebars: SidebarsConfig = {
         'features/quick-shulker',
         'features/elevator',
         'features/patrol',
-        'features/highlight',
         'features/head',
         'features/maintenance',
         'features/player-limit',
@@ -41,6 +40,8 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'api/teleport',
+        'api/waypoint',
+        'api/highlight',
       ],
     },
   ],
