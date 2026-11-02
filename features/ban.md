@@ -8,22 +8,24 @@ Ban accounts, IPs or IP ranges across servers, with a persistent history.
 
 | Command | Purpose | Default permission |
 | - | - | - |
-| `/ban <player\|player_ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | Ban an account or IP. | `sparrow.command.ban` |
-| `/unban <player\|player_ip\|ip> <target> [--silent]` | Lift an account or IP ban. | `sparrow.command.unban` |
-| `/unban_id <id> [--silent]` | Revoke a ban by record ID. | `sparrow.command.unban_id` |
-| `/ban_info <id>` | View a ban record. | `sparrow.command.ban_info` |
-| `/ban_history <all\|player <player>\|ip <ip>> [options]` | Search ban history. | `sparrow.command.ban_history` |
+| `/ban <player\|player-ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | Ban an account or IP. | `sparrow.command.ban` |
+| `/unban <player\|player-ip\|ip> <target> [--silent]` | Lift an account or IP ban. | `sparrow.command.unban` |
+| `/unban-id <id> [--silent]` | Revoke a ban by record ID. | `sparrow.command.unban_id` |
+| `/ban-info <id>` | Open a ban record (players only). | `sparrow.command.ban_info` |
+| `/ban-history <all\|player <player>\|ip <ip>> [options]` | Browse ban history (players only). | `sparrow.command.ban_history` |
 
 ```text
 /ban player Steve griefing --time 7d
-/ban player_ip Steve
+/ban player-ip Steve
 /ban ip 192.0.2.* unwanted traffic
-/ban_history player Steve --active
-/unban_id 12
+/ban-history player Steve --active
+/unban-id 12
 ```
 
-`player` bans an account. `player_ip` bans the player's last recorded IP without adding an account ban. `ip` accepts an address or range. Omit `--time` for a permanent ban; `--force` replaces an active ban for the same target. `--silent` hides notices and success feedback.
+`player` bans an account. `player-ip` bans the player's last recorded IP without adding an account ban. `ip` accepts an address or range. Omit `--time` for a permanent ban; `--force` replaces an active ban for the same target. `--silent` hides notices and success feedback.
 
-History filters are `--page <page>`, `--active`, `--within <duration>` and `--operator <name>`. `sparrow.notify.ban` receives ban and unban notices.
+Turn pages in the dialog. History filters are `--active`, `--within <duration>` and `--operator <name>`. `sparrow.notify.ban` receives ban and unban notices.
+
+With permission for `/ban-info`, select a history entry to open its details. With permission for `/unban-id`, revoke an active ban from its details and choose whether to silence notices before confirming.
 
 Add common reasons to `reason-presets`; an exact preset name expands to its text. Notification sounds use `notify-ban-sound` and `notify-unban-sound`.

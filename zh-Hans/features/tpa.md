@@ -9,10 +9,10 @@
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/tpa <player>` | 请求传送到对方。 | `sparrow.command.tpa` |
-| `/tpa_here <player>` | 请求对方传送到自己。 | `sparrow.command.tpa_here` |
-| `/tpa_accept [player]` | 接受请求，省略玩家时选择最新请求。 | `sparrow.command.tpa_accept` |
-| `/tpa_deny [player]` | 拒绝请求，省略玩家时选择最新请求。 | `sparrow.command.tpa_deny` |
-| `/tpa_cancel [player]` | 撤销发出的请求，省略玩家时撤销全部。 | `sparrow.command.tpa_cancel` |
+| `/tpa-here <player>` | 请求对方传送到自己。 | `sparrow.command.tpa_here` |
+| `/tpa-accept [player]` | 接受请求，省略玩家时选择最新请求。 | `sparrow.command.tpa_accept` |
+| `/tpa-deny [player]` | 拒绝请求，省略玩家时选择最新请求。 | `sparrow.command.tpa_deny` |
+| `/tpa-cancel [player]` | 撤销发出的请求，省略玩家时撤销全部。 | `sparrow.command.tpa_cancel` |
 
 ```yaml
 expire-seconds: 60

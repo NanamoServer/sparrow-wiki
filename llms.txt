@@ -12,6 +12,7 @@ Every link below points to the Markdown version of that page. All pages combined
 ## Features
 
 - [Quick shulker](https://nanamoserver.github.io/sparrow-wiki/features/quick-shulker.md): Module quick-shulker · Configuration features/quick-shulker.yml
+- [Elevators](https://nanamoserver.github.io/sparrow-wiki/features/elevator.md): Module elevator · Configuration features/elevator.yaml
 - [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.md): Module patrol · Configuration features/patrol.yml
 - [Highlight](https://nanamoserver.github.io/sparrow-wiki/features/highlight.md): Module highlight · Configuration features/highlight.yml
 - [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.md): Module head · Configuration features/head.yml

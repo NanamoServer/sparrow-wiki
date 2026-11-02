@@ -18,8 +18,8 @@ death_messages: true
 
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
-| `/spr feature_enable death_messages` | 立即启用本服死亡公告改写。 | `sparrow.command.admin.feature` |
-| `/spr feature_disable death_messages` | 立即停止本服死亡公告改写。 | `sparrow.command.admin.feature` |
+| `/spr feature-enable death_messages` | 立即启用本服死亡公告改写。 | `sparrow.command.admin.feature` |
+| `/spr feature-disable death_messages` | 立即停止本服死亡公告改写。 | `sparrow.command.admin.feature` |
 | `/spr reload` | 应用配置修改。 | `sparrow.command.admin.reload` |
 
 启用和停用命令只改变当前状态，不保存开关。需要在重载或重启后保留选择时，请修改 `modules.yml`。DeathMessages 配置无效时，该模块重载失败，并继续使用上次成功加载的设置。

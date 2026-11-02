@@ -12,6 +12,7 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 ## 功能
 
 - [快捷潜影盒](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/quick-shulker.md): 模块 quick-shulker · 配置 features/quick-shulker.yml
+- [电梯](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/elevator.md): 模块 elevator · 配置文件 features/elevator.yaml
 - [玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.md): 模块 patrol · 配置 features/patrol.yml
 - [区域高亮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/highlight.md): 模块 highlight · 配置 features/highlight.yml
 - [玩家头颅](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): 模块 head · 配置 features/head.yml

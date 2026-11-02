@@ -9,10 +9,10 @@ Send, accept or decline player-to-player teleport requests across servers.
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/tpa <player>` | Ask to teleport to another player. | `sparrow.command.tpa` |
-| `/tpa_here <player>` | Ask another player to teleport to you. | `sparrow.command.tpa_here` |
-| `/tpa_accept [player]` | Accept a request; defaults to the most recent one. | `sparrow.command.tpa_accept` |
-| `/tpa_deny [player]` | Deny a request; defaults to the most recent one. | `sparrow.command.tpa_deny` |
-| `/tpa_cancel [player]` | Cancel an outgoing request; omit the player to cancel all. | `sparrow.command.tpa_cancel` |
+| `/tpa-here <player>` | Ask another player to teleport to you. | `sparrow.command.tpa_here` |
+| `/tpa-accept [player]` | Accept a request; defaults to the most recent one. | `sparrow.command.tpa_accept` |
+| `/tpa-deny [player]` | Deny a request; defaults to the most recent one. | `sparrow.command.tpa_deny` |
+| `/tpa-cancel [player]` | Cancel an outgoing request; omit the player to cancel all. | `sparrow.command.tpa_cancel` |
 
 ```yaml
 expire-seconds: 60

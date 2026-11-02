@@ -1,0 +1,42 @@
+# 电梯
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/elevator>
+
+模块 `elevator` · 配置文件 `features/elevator.yaml`
+
+在同一世界的两层地板上各放一块铁块，让两块铁块的 X、Z 坐标相同。站在下层铁块上跳跃即可上楼，站在上层铁块上按下潜行即可下楼。按住潜行只下一层，再下一层需要松开后重新按下。建电梯只需满足原有的方块放置权限。
+
+- 每次乘梯只前往所选方向上**最近的同 ID 方块**。两层之间可以有实心楼板，也可以放置其他类型的电梯方块。
+- 玩家落在目标方块顶面的中心，保留原来的视角。最近的同类楼层放不下玩家时，即使更远的一层有空间，也会留在原层。
+- 没有使用权限、落点受阻或范围内没有同类楼层时，玩家可以照常跳跃或潜行，不会收到消息或听到音效。乘梯成功后，原有的 `/back` 返回点也会保留。
+
+## 按方块类型配置
+
+默认文件只启用铁块。下面的示例额外配置了一种自定义方块电梯。请将 `smc:lanzi/tiancai` 换成本服 CraftEngine 资源包中的方块 ID。
+
+```yaml
+elevators:
+  "minecraft:iron_block":
+    max_distance: 64
+    use_permission: ""
+
+  "smc:lanzi/tiancai":
+    max_distance: 32
+    use_permission: "sparrow.elevator.tiancai"
+    sound:
+      key: minecraft:block.amethyst_block.chime
+      volume: 0.8
+      pitch: 1.2
+```
+
+| 配置项 | 默认值 | 用途 |
+| - | - | - |
+| `max_distance` | `64` | 相邻两层方块 Y 坐标之差的上限，填写正整数。上限包含边界，按默认值设置时，Y=20 和 Y=84 的铁块可以互通。 |
+| `use_permission` | `""` | 留空时所有玩家都能乘坐。填写权限节点后，将该权限授予可以使用这种方块电梯的玩家。 |
+| `sound` | 省略 | 上楼、下楼成功后，仅乘梯玩家能听到。用 `key` 指定音效 ID，`volume` 和 `pitch` 默认均为 `1.0`。 |
+
+修改后执行 `/spr reload`。从旧版 `elevator-blocks` 列表升级时，Sparrow 会为每种方块生成独立条目，沿用原来的距离和权限。
+
+## CraftEngine 方块
+
+要使用自定义方块 ID，请在子服安装 CraftEngine。未安装时，Sparrow 会在控制台提示并跳过自定义条目，原版方块电梯仍可使用。CraftEngine 加载或重载资源时，Sparrow 会重新识别方块。同一自定义方块的不同状态可以互通。资源加载后找不到配置的 ID 时会报错。
