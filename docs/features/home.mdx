@@ -9,22 +9,24 @@ Save personal destinations and return to them across servers.
 | Command | Purpose | Default permission |
 | --- | --- | --- |
 | `/home [name]` | Travel to your home; player.name selects another owner's home. | `sparrow.command.home[.other]` |
-| `/set_home [name]` | Create a home at your position; the default name is home. | `sparrow.command.set_home` |
-| `/del_home <name>` | Delete a home; accepts player.name. | `sparrow.command.del_home[.other]` |
-| `/home_list [owner\|page] [page]` | List your homes or another owner's homes. | `sparrow.command.home_list[.other]` |
-| `/edit_home <name> [rename <new_name>\|relocate]` | View, rename or relocate a home; accepts player.name. | `sparrow.command.edit_home[.other]` |
-| `/sparrow del_all_homes [--player <player>] [--server <server>] [--world <world>]` | Bulk delete from console; at least one filter, no confirmation. | `sparrow.command.del_all_homes` |
+| `/set-home [name]` | Create a home at your position; the default name is home. | `sparrow.command.set_home` |
+| `/del-home <name>` | Delete a home; accepts player.name. | `sparrow.command.del_home[.other]` |
+| `/home-list [owner]` | Open your or another owner’s home list (players only). | `sparrow.command.home_list[.other]` |
+| `/edit-home <name> [rename <new_name>\|relocate]` | View, rename or relocate a home; accepts player.name. | `sparrow.command.edit_home[.other]` |
+| `/sparrow del-all-homes [--player <player>] [--server <server>] [--world <world>]` | Bulk delete from console; at least one filter, no confirmation. | `sparrow.command.del_all_homes` |
 
 ```text
-/set_home mine
+/set-home mine
 /home mine
 /home Steve.mine
-/home_list Steve 2
+/home-list Steve
 ```
 
-Without a name, `/home` prefers `default-name`, then your only home. `/set_home` does not overwrite an existing name. Use `player.name` to visit, delete or edit another owner's home, with the corresponding `.other` permission. `home_list` takes the owner's name directly.
+Without a name, `/home` prefers `default-name`, then your only home. If several homes exist and none matches the default, it opens the list. `/set-home` does not overwrite an existing name. Use `player.name` to visit, delete or edit another owner's home, with the corresponding `.other` permission. `home-list` takes the owner's name directly.
 
-The rename and relocate branches of `edit_home` also need `.rename` and `.relocate`. `del_all_homes` is console-only and deletes immediately using the intersection of all supplied filters.
+The rename and relocate branches of `edit-home` also need `.rename` and `.relocate`. `del-all-homes` is console-only and deletes immediately using the intersection of all supplied filters.
+
+Players can open home details from the list or with `/edit-home <name>`. The dialog offers travel, rename, relocate and delete according to permissions. Relocation and deletion from the dialog require confirmation.
 
 The default limit is 3 homes. `sparrow.home.limit.<amount>` overrides `max-homes`; `sparrow.home.limit.unlimited` removes the limit. See [Teleport options](../teleport/overview.mdx) for teleport behavior.
 

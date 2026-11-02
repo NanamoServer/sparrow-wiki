@@ -18,8 +18,8 @@ death_messages: true
 
 | Command | Purpose | Default permission |
 | --- | --- | --- |
-| `/spr feature_enable death_messages` | Enable rewriting on this server immediately. | `sparrow.command.admin.feature` |
-| `/spr feature_disable death_messages` | Stop rewriting on this server immediately. | `sparrow.command.admin.feature` |
+| `/spr feature-enable death_messages` | Enable rewriting on this server immediately. | `sparrow.command.admin.feature` |
+| `/spr feature-disable death_messages` | Stop rewriting on this server immediately. | `sparrow.command.admin.feature` |
 | `/spr reload` | Apply configuration changes. | `sparrow.command.admin.reload` |
 
 The enable and disable commands change the current state without saving the switch. Edit `modules.yml` to keep the choice after a reload or restart. If the DeathMessages configuration is invalid, reloading fails for this module and its last valid settings remain active.

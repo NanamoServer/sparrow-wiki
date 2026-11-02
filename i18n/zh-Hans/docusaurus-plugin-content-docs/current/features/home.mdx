@@ -9,22 +9,24 @@ title: 🏠 家
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
 | `/home [name]` | 前往自己的家；player.name 可访问他人的家。 | `sparrow.command.home[.other]` |
-| `/set_home [name]` | 在当前位置新建家，默认名称为 home。 | `sparrow.command.set_home` |
-| `/del_home <name>` | 删除家；支持 player.name。 | `sparrow.command.del_home[.other]` |
-| `/home_list [owner\|page] [page]` | 查看自己或他人的家。 | `sparrow.command.home_list[.other]` |
-| `/edit_home <name> [rename <new_name>\|relocate]` | 查看、改名或移动家；支持 player.name。 | `sparrow.command.edit_home[.other]` |
-| `/sparrow del_all_homes [--player <player>] [--server <server>] [--world <world>]` | 控制台批量删除，至少一个筛选条件，无确认。 | `sparrow.command.del_all_homes` |
+| `/set-home [name]` | 在当前位置新建家，默认名称为 home。 | `sparrow.command.set_home` |
+| `/del-home <name>` | 删除家；支持 player.name。 | `sparrow.command.del_home[.other]` |
+| `/home-list [owner]` | 玩家打开自己或他人的家列表。 | `sparrow.command.home_list[.other]` |
+| `/edit-home <name> [rename <new_name>\|relocate]` | 查看、改名或移动家；支持 player.name。 | `sparrow.command.edit_home[.other]` |
+| `/sparrow del-all-homes [--player <player>] [--server <server>] [--world <world>]` | 控制台批量删除，至少一个筛选条件，无确认。 | `sparrow.command.del_all_homes` |
 
 ```text
-/set_home mine
+/set-home mine
 /home mine
 /home Steve.mine
-/home_list Steve 2
+/home-list Steve
 ```
 
-省略名称时，`/home` 优先使用 `default-name`，其次是唯一的家。`/set_home` 不覆盖同名记录。访问、删除或编辑他人的家用 `玩家.名称`，并需要对应命令的 `.other` 权限；`home_list` 直接填写所有者。
+省略名称时，`/home` 优先使用 `default-name`，其次是唯一的家。如果有多个家且没有默认家，则打开列表。`/set-home` 不覆盖同名记录。访问、删除或编辑他人的家用 `玩家.名称`，并需要对应命令的 `.other` 权限；`home-list` 直接填写所有者。
 
-`edit_home` 的改名、移动操作另需 `.rename`、`.relocate` 权限。`del_all_homes` 仅限控制台，按全部筛选条件取交集，直接删除。
+`edit-home` 的改名、移动操作另需 `.rename`、`.relocate` 权限。`del-all-homes` 仅限控制台，按全部筛选条件取交集，直接删除。
+
+玩家可从列表或 `/edit-home <name>` 打开详情。按权限可传送、改名、迁移或删除，窗口内迁移和删除需要确认。
 
 默认最多 3 个家。`sparrow.home.limit.<数量>` 覆盖 `max-homes`，`sparrow.home.limit.unlimited` 取消限制。传送行为见[传送选项](../teleport/overview.mdx)。
 

@@ -18,6 +18,6 @@ Use [Commands and permissions](./commands.mdx) as a quick reference. Feature pag
 | `modules.yml` | Feature module switches. |
 | `features/` | Separate configuration files for each module. |
 
-Use `/spr feature_list` to check module states. `/spr feature_enable <module>` and `/spr feature_disable <module>` change the current state without saving it. Edit `modules.yml` to keep your choice after a reload or restart. Run `/spr reload` after editing settings; its feedback identifies changes that need a restart.
+Use `/spr feature-list` in game to open the module list. Select a module to check its state and hot toggle support. Its detail dialog offers a toggle when permitted. `/spr feature-enable <module>` and `/spr feature-disable <module>` change the current state without saving it. Edit `modules.yml` to keep your choice after a reload or restart. Run `/spr reload` after editing settings; its feedback identifies changes that need a restart.
 
 Cross-server features require shared database and Redis connections, plus the Sparrow companion plugin on the proxy. PlaceholderAPI is optional for text placeholders; LuckPerms provides permission lookups.

@@ -6,14 +6,16 @@ title: 🔑 Commands and permissions
 
 `[.other]` marks branches that additionally require `.other` when specifying another player. Entity selectors only select local targets; commands with cross-server support also accept a player name from another backend.
 
+Default multiword commands use hyphens, as in `/set-home`. Its permission is `sparrow.command.set_home`.
+
 ## Plugin management
 
 | Command | Purpose | Default permission |
 | --- | --- | --- |
 | `/sparrow reload [--silent]` | Reload configuration. | `sparrow.command.admin.reload` |
-| `/sparrow feature_list [page]` | List module states. | `sparrow.command.admin.feature` |
-| `/sparrow feature_enable <feature>` | Enable a module immediately without saving its switch. | `sparrow.command.admin.feature` |
-| `/sparrow feature_disable <feature>` | Disable a module immediately without saving its switch. | `sparrow.command.admin.feature` |
+| `/sparrow feature-list` | Open the module management dialog (players only). | `sparrow.command.admin.feature` |
+| `/sparrow feature-enable <feature>` | Enable a module immediately without saving its switch. | `sparrow.command.admin.feature` |
+| `/sparrow feature-disable <feature>` | Disable a module immediately without saving its switch. | `sparrow.command.admin.feature` |
 
 Use `death_messages` as the feature name to manage [Death messages](./features/death-messages.mdx). Edit `modules.yml` to keep module switches after a reload or restart.
 
@@ -22,18 +24,19 @@ Use `death_messages` as the feature name to manage [Death messages](./features/d
 | Command | Purpose | Default permission |
 | --- | --- | --- |
 | `/maintenance [true\|false] [--all] [--tag <tag>]` | Change maintenance mode. | `sparrow.command.maintenance` |
-| `/max_players [amount]` | View or change the player limit; -1 restores the original limit. | `sparrow.command.max_players` |
+| `/max-players [amount]` | View or change the player limit; -1 restores the original limit. | `sparrow.command.max_players` |
 | `/kick <targets> [reason] [--silent]` | Kick players, including across servers. | `sparrow.command.kick` |
-| `/ban <player\|player_ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | Ban an account or IP. | `sparrow.command.ban` |
-| `/unban <player\|player_ip\|ip> <target> [--silent]` | Lift an account or IP ban. | `sparrow.command.unban` |
-| `/unban_id <id> [--silent]` | Revoke a ban by record ID. | `sparrow.command.unban_id` |
-| `/ban_info <id>` | View a ban record. | `sparrow.command.ban_info` |
-| `/ban_history <all\|player <player>\|ip <ip>> [options]` | Search ban history. | `sparrow.command.ban_history` |
-| `/player_info <player>` | View player records and ban status. | `sparrow.command.player_info` |
-| `/player_uuid <name>` | Look up a player's UUID. | `sparrow.command.player_uuid` |
-| `/player_name <uuid>` | Look up the last recorded name. | `sparrow.command.player_name` |
-| `/name_history <name> [page]` | View name history. | `sparrow.command.name_history` |
-| `/ip_history <player <name>\|uuid <uuid>\|ip <ip>> [page]` | View a player's IP history or records for an IP. | `sparrow.command.ip_history` |
+| `/ban <player\|player-ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | Ban an account or IP. | `sparrow.command.ban` |
+| `/unban <player\|player-ip\|ip> <target> [--silent]` | Lift an account or IP ban. | `sparrow.command.unban` |
+| `/unban-id <id> [--silent]` | Revoke a ban by record ID. | `sparrow.command.unban_id` |
+| `/ban-info <id>` | Open a ban record (players only). | `sparrow.command.ban_info` |
+| `/ban-history <all\|player <player>\|ip <ip>> [options]` | Browse ban history (players only). | `sparrow.command.ban_history` |
+| `/player-info <name-or-uuid>` | View player records and ban status. | `sparrow.command.player_info` |
+| `/player-uuid <name>` | Look up a player's UUID. | `sparrow.command.player_uuid` |
+| `/name-history <name-or-uuid>` | View name history. | `sparrow.command.name_history` |
+| `/ip-history <player <name>\|uuid <uuid>\|ip <ip>>` | View a player's IP history or records for an IP. | `sparrow.command.ip_history` |
+
+`/player-info`, `/name-history` and `/ip-history` open player-only dialogs. From a profile, the available actions depend on your permissions. You can open name, IP or ban history, or travel to the recorded logout location. Select an IP in the history dialog to see which players used it.
 
 ## Players and entities
 
@@ -43,8 +46,8 @@ Use `death_messages` as the feature name to manage [Death messages](./features/d
 | `/feed [player [--value <amount>]]` | Restore food level. | `sparrow.command.feed[.other]` |
 | `/air <player> [--value <amount>]` | Set remaining air; omit the value to refill it. | `sparrow.command.air` |
 | `/fly [player [enabled]]` | Toggle flight or set it for a named player. | `sparrow.command.fly[.other]` |
-| `/fly_speed <speed> [player]` | Set flight speed from -1 to 1. | `sparrow.command.fly_speed[.other]` |
-| `/walk_speed <speed> [player]` | Set walking speed from -1 to 1. | `sparrow.command.walk_speed[.other]` |
+| `/fly-speed <speed> [player]` | Set flight speed from -1 to 1. | `sparrow.command.fly_speed[.other]` |
+| `/walk-speed <speed> [player]` | Set walking speed from -1 to 1. | `sparrow.command.walk_speed[.other]` |
 | `/burn <time> [targets]` | Set entities on fire; durations accept units such as 5s. | `sparrow.command.burn[.other]` |
 | `/extinguish [targets]` | Extinguish entities. | `sparrow.command.extinguish[.other]` |
 | `/smite <targets> [--effect]` | Strike entities with lightning; --effect is visual only. | `sparrow.command.smite` |
@@ -54,7 +57,7 @@ Use `death_messages` as the feature name to manage [Death messages](./features/d
 | `/respawn [player]` | Respawn a dead player. | `sparrow.command.respawn[.other]` |
 | `/suicide` | Kill yourself. | `sparrow.command.suicide` |
 | `/patrol [targets]` | Cycle through players for patrol, including across servers. | `sparrow.command.patrol` |
-| `/force_say <player> <text>` | Make a local player send a chat message. | `sparrow.command.force_say` |
+| `/force-say <player> <text>` | Make a local player send a chat message. | `sparrow.command.force_say` |
 | `/sudo <player> <command>` | Make a local player execute a command. | `sparrow.command.sudo` |
 
 ## Teleportation
@@ -62,30 +65,30 @@ Use `death_messages` as the feature name to manage [Death messages](./features/d
 | Command | Purpose | Default permission |
 | --- | --- | --- |
 | `/world <world> [targets] [--location <x> <y> <z>] [--unsafe]` | Travel to a world on this server. | `sparrow.command.world[.other]` |
-| `/top_block [targets]` | Move to the top of the current block column. | `sparrow.command.top_block[.other]` |
-| `/tp_offline <player> [target] [--silent]` | Send yourself or a local target to a player's recorded logout location. | `sparrow.command.tp_offline` |
+| `/top-block [targets]` | Move to the top of the current block column. | `sparrow.command.top_block[.other]` |
+| `/tp-offline <player> [target] [--silent]` | Send yourself or a local target to a player's recorded logout location. | `sparrow.command.tp_offline` |
 | `/server <server> [targets]` | Transfer to another backend. | `sparrow.command.server[.other]` |
 | `/spawn` | Travel to the configured spawn. | `sparrow.command.spawn` |
 | `/back [player] [--unsafe] [--silent]` | Return to the previous teleport departure point. | `sparrow.command.back[.other]` |
 | `/death-back [player] [--unsafe] [--silent]` | Return to the last death location. | `sparrow.command.death-back[.other]` |
 | `/rtp <player> <region> [--silent]` | Teleport randomly within a configured region. | `sparrow.command.rtp[.other]` |
-| `/rtp_range <player> <server> <world> <min-radius> <max-radius> [options]` | Teleport randomly within a specified square range. | `sparrow.command.rtp_range[.other]` |
+| `/rtp-range <player> <server> <world> <min-radius> <max-radius> [options]` | Teleport randomly within a specified square range. | `sparrow.command.rtp_range[.other]` |
 | `/warp <name> [player]` | Travel to a warp, with support for cross-server players. | `sparrow.command.warp[.other]` |
-| `/set_warp <name>` | Create a warp at your position. | `sparrow.command.set_warp` |
-| `/del_warp <name>` | Delete a warp. | `sparrow.command.del_warp` |
-| `/warp_list [page]` | List warps. | `sparrow.command.warp_list` |
-| `/edit_warp <name> [rename <new_name>\|relocate]` | View, rename or relocate a warp. | `sparrow.command.edit_warp` |
+| `/set-warp <name>` | Create a warp at your position. | `sparrow.command.set_warp` |
+| `/del-warp <name>` | Delete a warp. | `sparrow.command.del_warp` |
+| `/warp-list` | Open the list of visible warps (players only). | `sparrow.command.warp_list` |
+| `/edit-warp <name> [rename <new_name>\|relocate]` | View, rename or relocate a warp. | `sparrow.command.edit_warp` |
 | `/home [name]` | Travel to your home; player.name selects another owner's home. | `sparrow.command.home[.other]` |
-| `/set_home [name]` | Create a home at your position; the default name is home. | `sparrow.command.set_home` |
-| `/del_home <name>` | Delete a home; accepts player.name. | `sparrow.command.del_home[.other]` |
-| `/home_list [owner\|page] [page]` | List your homes or another owner's homes. | `sparrow.command.home_list[.other]` |
-| `/edit_home <name> [rename <new_name>\|relocate]` | View, rename or relocate a home; accepts player.name. | `sparrow.command.edit_home[.other]` |
-| `/sparrow del_all_homes [--player <player>] [--server <server>] [--world <world>]` | Bulk delete from console; at least one filter, no confirmation. | `sparrow.command.del_all_homes` |
+| `/set-home [name]` | Create a home at your position; the default name is home. | `sparrow.command.set_home` |
+| `/del-home <name>` | Delete a home; accepts player.name. | `sparrow.command.del_home[.other]` |
+| `/home-list [owner]` | Open your or another owner’s home list (players only). | `sparrow.command.home_list[.other]` |
+| `/edit-home <name> [rename <new_name>\|relocate]` | View, rename or relocate a home; accepts player.name. | `sparrow.command.edit_home[.other]` |
+| `/sparrow del-all-homes [--player <player>] [--server <server>] [--world <world>]` | Bulk delete from console; at least one filter, no confirmation. | `sparrow.command.del_all_homes` |
 | `/tpa <player>` | Ask to teleport to another player. | `sparrow.command.tpa` |
-| `/tpa_here <player>` | Ask another player to teleport to you. | `sparrow.command.tpa_here` |
-| `/tpa_accept [player]` | Accept a request; defaults to the most recent one. | `sparrow.command.tpa_accept` |
-| `/tpa_deny [player]` | Deny a request; defaults to the most recent one. | `sparrow.command.tpa_deny` |
-| `/tpa_cancel [player]` | Cancel an outgoing request; omit the player to cancel all. | `sparrow.command.tpa_cancel` |
+| `/tpa-here <player>` | Ask another player to teleport to you. | `sparrow.command.tpa_here` |
+| `/tpa-accept [player]` | Accept a request; defaults to the most recent one. | `sparrow.command.tpa_accept` |
+| `/tpa-deny [player]` | Deny a request; defaults to the most recent one. | `sparrow.command.tpa_deny` |
+| `/tpa-cancel [player]` | Cancel an outgoing request; omit the player to cancel all. | `sparrow.command.tpa_cancel` |
 
 ## Containers and items
 
@@ -94,23 +97,23 @@ Use `death_messages` as the feature name to manage [Death messages](./features/d
 | `/workbench [player] [--title <text>]` | Open a crafting table. | `sparrow.command.workbench[.other]` |
 | `/anvil [player] [--title <text>]` | Open an anvil. | `sparrow.command.anvil[.other]` |
 | `/grindstone [player] [--title <text>]` | Open a grindstone. | `sparrow.command.grindstone[.other]` |
-| `/smithing_table [player] [--title <text>]` | Open a smithing table. | `sparrow.command.smithing_table[.other]` |
+| `/smithing-table [player] [--title <text>]` | Open a smithing table. | `sparrow.command.smithing_table[.other]` |
 | `/stonecutter [player] [--title <text>]` | Open a stonecutter. | `sparrow.command.stonecutter[.other]` |
-| `/cartography_table [player] [--title <text>]` | Open a cartography table. | `sparrow.command.cartography_table[.other]` |
-| `/enchantment_table [player] [--title <text>]` | Open an enchanting table. | `sparrow.command.enchantment_table[.other]` |
+| `/cartography-table [player] [--title <text>]` | Open a cartography table. | `sparrow.command.cartography_table[.other]` |
+| `/enchantment-table [player] [--title <text>]` | Open an enchanting table. | `sparrow.command.enchantment_table[.other]` |
 | `/loom [player] [--title <text>]` | Open a loom. | `sparrow.command.loom[.other]` |
-| `/ender_chest [player] [--title <text>]` | Have the player open their own ender chest. | `sparrow.command.ender_chest[.other]` |
-| `/clear_inv <player>` | Clear inventory, equipment, cursor and crafting slots. | `sparrow.command.clear_inv` |
-| `/clear_ender <player>` | Clear an ender chest. | `sparrow.command.clear_ender` |
+| `/ender-chest [player] [--title <text>]` | Have the player open their own ender chest. | `sparrow.command.ender_chest[.other]` |
+| `/clear-inv <player>` | Clear inventory, equipment, cursor and crafting slots. | `sparrow.command.clear_inv` |
+| `/clear-ender <player>` | Clear an ender chest. | `sparrow.command.clear_ender` |
 | `/repair <player> [--slot <slot>] [--value <amount>]` | Repair an equipment slot; defaults to a full main-hand repair. | `sparrow.command.repair` |
-| `/repair_all <player>` | Repair inventory and equipment. | `sparrow.command.repair_all` |
-| `/item_damage <player> <value>` | Set main-hand item damage. | `sparrow.command.item_damage` |
+| `/repair-all <player>` | Repair inventory and equipment. | `sparrow.command.repair_all` |
+| `/item-damage <player> <value>` | Set main-hand item damage. | `sparrow.command.item_damage` |
 | `/enchant <player> <enchantment> [level] [--slot <slot>] [--check]` | Edit an enchantment; negative levels remove it, --check applies vanilla limits. | `sparrow.command.enchant` |
-| `/item_data [--full] [--chat]` | Inspect main-hand item data. | `sparrow.command.item_data` |
-| `/item_name [name] [--json]` | View or edit your main-hand item_name. | `sparrow.command.item_name` |
-| `/custom_name [name] [--json]` | View or edit your main-hand custom_name. | `sparrow.command.custom_name` |
-| `/item_lore [--lore <text>] [--operation <operation>] [--line <line>] [--json] [--page <page>]` | View or edit your main-hand lore. | `sparrow.command.item_lore` |
-| `/custom_model_data [value]` | View or edit the first custom model data float. | `sparrow.command.custom_model_data` |
+| `/item-name [name] [--json]` | View or edit your main-hand item_name. | `sparrow.command.item_name` |
+| `/custom-name [name] [--json]` | View or edit your main-hand custom_name. | `sparrow.command.custom_name` |
+| `/item-lore editor` | Open the multiline editor for your main-hand item (players only). | `sparrow.command.item_lore` |
+| `/item-lore edit --operation <operation> [--player <player>] [--slot <slot>] [--line <line>] [--lore <text>]` | Edit lore in the selected slot. Defaults to yourself and your main hand. | `sparrow.command.item_lore[.other]` |
+| `/custom-model-data [value]` | View or edit the first custom model data float. | `sparrow.command.custom_model_data` |
 | `/color <color> [player]` | Dye the main-hand item. | `sparrow.command.color[.other]` |
 | `/more [amount] [player] [--silent]` | Replenish or copy the main-hand item. | `sparrow.command.more` |
 | `/head [source] [amount] [player] [--force] [--silent]` | Obtain a player head. | `sparrow.command.head[.other]` |
@@ -123,8 +126,8 @@ Use `death_messages` as the feature name to manage [Death messages](./features/d
 | `/actionbar <targets> <message> [--silent]` | Send an action bar. | `sparrow.command.actionbar` |
 | `/title <targets> <fadeIn> <stay> <fadeOut> <message> [--silent]` | Send a title; durations are in ticks. | `sparrow.command.title` |
 | `/toast <targets> <type> <item> <message> [--silent]` | Display an advancement toast. | `sparrow.command.toast` |
-| `/totem_animation <targets> <item> [--silent]` | Play a totem animation using the specified item. | `sparrow.command.totem_animation` |
-| `/clear_chat [player]` | Clear chat; defaults to everyone on this server. | `sparrow.command.clear_chat` |
+| `/totem-animation <targets> <item> [--silent]` | Play a totem animation using the specified item. | `sparrow.command.totem_animation` |
+| `/clear-chat [player]` | Clear chat; defaults to everyone on this server. | `sparrow.command.clear_chat` |
 | `/demo [player]` | Show the demo screen. | `sparrow.command.demo` |
 | `/credits [player]` | Show the credits. | `sparrow.command.credits` |
 | `/distance [--max-distance <distance>] [--disable-marker]` | Measure the distance along your line of sight. | `sparrow.command.distance` |
@@ -132,13 +135,16 @@ Use `death_messages` as the feature name to manage [Death messages](./features/d
 
 ## Additional syntax
 
-- `ban_history` accepts `--page`, `--active`, `--within <duration>` and `--operator <name>`; see [Bans](./features/ban.mdx).
-- `rtp_range` accepts `--center-x`, `--center-z`, `--min-y`, `--max-y` and `--silent`; see [Random teleport](./features/rtp.mdx).
-- The `rename` and `relocate` branches of `edit_home` and `edit_warp` require `.rename` and `.relocate` appended to the base permission. Editing another owner's home also requires `.other`.
-- `item_lore` operations are `insert`, `remove`, `edit`, `up` and `down`. Run it without options to open the editor panel.
+- `ban-history` accepts `--active`, `--within <duration>` and `--operator <name>`. Turn pages in the dialog. See [Bans](./features/ban.mdx).
+- `rtp-range` accepts `--center-x`, `--center-z`, `--min-y`, `--max-y` and `--silent`; see [Random teleport](./features/rtp.mdx).
+- The `rename` and `relocate` branches of `edit-home` and `edit-warp` require `.rename` and `.relocate` appended to the base permission. Editing another owner's home also requires `.other`.
 - See [Highlight](./features/highlight.mdx) for region, color and duration options.
 
-Messages and item text use MiniMessage. Use `<papi:placeholder>` or `<papi:placeholder:default>` for PlaceholderAPI. `item_name`, `custom_name` and `item_lore` accept JSON with `--json`.
+Messages and item text use MiniMessage. Use `<papi:placeholder>` or `<papi:placeholder:default>` for PlaceholderAPI. `item-name` and `custom-name` accept JSON with `--json`.
+
+### Item lore
+
+In `/item-lore editor`, each line is one lore entry. Clear the editor and save to remove all lore. To append a line, use `/item-lore edit --operation insert --lore <gold>Treasure`. Line numbers start at 1. Only `insert` can omit `--line`. The other operations are `edit`, `remove`, `up` and `down`. Both `insert` and `edit` require MiniMessage text in `--lore`. From console, specify a local online player with `--player`. Editing another player requires `sparrow.command.item_lore.other`.
 
 ## Other permissions
 
