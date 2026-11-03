@@ -17,7 +17,7 @@
 ```yaml
 elevators:
   "minecraft:iron_block":
-    max_distance: 64
+    max_distance: 64  # 同列上下两站之间的最大距离
     use_permission: ""
 
   "smc:lanzi/tiancai":

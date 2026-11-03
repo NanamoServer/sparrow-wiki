@@ -6,6 +6,8 @@ Module `warp` · Configuration `features/warp.yml`
 
 Named destinations shared across your Sparrow servers. Players can open details from `/warp-list` or `/edit-warp <name>` to travel, rename, relocate or delete, subject to permissions. Relocation and deletion from the dialog require confirmation.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/warp <name> [player]` | Travel to a warp, with support for cross-server players. | `sparrow.command.warp[.other]` |
@@ -13,6 +15,17 @@ Named destinations shared across your Sparrow servers. Players can open details 
 | `/del-warp <name>` | Delete a warp. | `sparrow.command.del_warp` |
 | `/warp-list` | Open the list of visible warps (players only). | `sparrow.command.warp_list` |
 | `/edit-warp <name> [rename <new_name>\|relocate]` | View, rename or relocate a warp. | `sparrow.command.edit_warp` |
+
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.warp.use.<lowercase-name>` | Allow access to a warp when permission-restrict is enabled. |
+| `sparrow.warp.teleport.staff / sparrow.warp.teleport.vip` | Default Warp cooldown and warmup overrides. |
+| `sparrow.command.edit_warp.rename` | Rename a warp |
+| `sparrow.command.edit_warp.relocate` | Relocate a warp |
+
+## Usage
 
 ```text
 /set-warp market
@@ -25,3 +38,14 @@ Creation and relocation require a player. `/set-warp` does not overwrite an exis
 `rename` and `relocate` additionally require `sparrow.command.edit_warp.rename` and `sparrow.command.edit_warp.relocate`. Use `/del-warp` to delete a warp.
 
 With `permission-restrict` enabled, viewing and using a warp requires `sparrow.warp.use.<lowercase-name>`. Management still uses command permissions. Configure cooldowns, warmups and arrival effects under `teleport-options`; see [Teleport options](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
+
+![Details for the gogo warp showing its world, coordinates, orientation and actions](https://nanamoserver.github.io/sparrow-wiki/img/features/warp-details.png)
+
+Select a warp in `/warp-list` to check its world and coordinates before choosing the travel button.
+
+## Configuration example
+
+```yaml
+# Example: require a separate permission for each warp
+permission-restrict: true
+```

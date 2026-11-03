@@ -218,10 +218,12 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/features/quick-shulker>
 
 Module `quick-shulker` · Configuration `features/quick-shulker.yml`
 
-Hold a shulker box and sneak-right-click the air to open it. The off hand is supported; the main hand takes priority. No command or separate usage permission is required.
+Hold a shulker box, sneak and right-click the air. The off hand is supported by default; the main hand takes priority.
+
+## Configuration example
 
 ```yaml
-require-sneaking: true
+require-sneaking: true  # Require sneaking to open the box
 allow-offhand: true
 title: '<arg:hover_name>'
 disabled-worlds: []
@@ -248,7 +250,7 @@ The default file enables only iron blocks. This example adds a custom elevator. 
 ```yaml
 elevators:
   "minecraft:iron_block":
-    max_distance: 64
+    max_distance: 64  # Maximum vertical distance between stops
     use_permission: ""
 
   "smc:lanzi/tiancai":
@@ -280,11 +282,24 @@ Module `patrol` · Configuration `features/patrol.yml`
 
 Cycle through players across the network by teleporting to them. Omit the target to rotate through eligible players.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/patrol [targets]` | Cycle through players for patrol, including across servers. | `sparrow.command.patrol` |
 
-`sparrow.bypass.patrol` excludes a player. Spectators are skipped by default; set `skip-spectators: false` to include them.
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.bypass.patrol` | Exclude from patrol. |
+
+## Configuration example
+
+```yaml
+# Skip spectators when selecting a patrol target
+skip-spectators: true
+```
 
 # Heads
 
@@ -294,9 +309,13 @@ Module `head` · Configuration `features/head.yml`
 
 Get a head from a player name or UUID. Omit the source to get your own head.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/head [source] [amount] [player] [--force] [--silent]` | Obtain a player head. | `sparrow.command.head[.other]` |
+
+## Usage
 
 ```text
 /head Notch
@@ -304,6 +323,13 @@ Get a head from a player name or UUID. Omit the source to get your own head.
 ```
 
 Amounts range from 1 to 6400. `--force` refreshes profile data. By default, Sparrow tries online player textures before the API. Source order, cache settings and endpoints are configurable.
+
+## Configuration example
+
+```yaml
+# Try the online skin first, then the configured API
+source-order: [online, api]
+```
 
 # Maintenance
 
@@ -313,9 +339,19 @@ Module `maintenance` · Configuration `features/maintenance.yml`
 
 Block ordinary players from joining during maintenance and show a BossBar to online players.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/maintenance [true\|false] [--all] [--tag <tag>]` | Change maintenance mode. | `sparrow.command.maintenance` |
+
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.bypass.maintenance` | Allow entry during maintenance. |
+
+## Usage
 
 ```text
 /maintenance true
@@ -327,6 +363,14 @@ With no arguments, toggle maintenance on this server; use `true` or `false` to s
 
 `active` stores the maintenance state. `boss-bar.enabled` controls the bar; its color and style are configured under `boss-bar`.
 
+## Configuration example
+
+```yaml
+# Show the maintenance bar to online players
+boss-bar:
+  enabled: true
+```
+
 # Player limit
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/player-limit>
@@ -335,11 +379,26 @@ Module `player_limit` · Configuration `features/player_limit.yml`
 
 Change this server's player limit at runtime. Command changes are saved.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/max-players [amount]` | View or change the player limit; -1 restores the original limit. | `sparrow.command.max_players` |
 
-`sparrow.bypass.player_limit` allows joining when full. `max-players: -1` restores the limit from before the module was enabled; `0` sets a zero-player limit. Disabling the module also restores the original limit.
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.bypass.player_limit` | Allow entry when full. |
+
+## Configuration example
+
+```yaml
+# Restore the previous limit; 0 sets a zero-player limit
+max-players: -1
+```
+
+Disabling the module also restores the original limit.
 
 # Death messages
 
@@ -539,6 +598,8 @@ Module `ban` · Configuration `features/ban.yml`
 
 Ban accounts, IPs or IP ranges across servers, with a persistent history.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/ban <player\|player-ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | Ban an account or IP. | `sparrow.command.ban` |
@@ -546,6 +607,14 @@ Ban accounts, IPs or IP ranges across servers, with a persistent history.
 | `/unban-id <id> [--silent]` | Revoke a ban by record ID. | `sparrow.command.unban_id` |
 | `/ban-info <id>` | Open a ban record (players only). | `sparrow.command.ban_info` |
 | `/ban-history <all\|player <player>\|ip <ip>> [options]` | Browse ban history (players only). | `sparrow.command.ban_history` |
+
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.notify.ban` | Receive ban and unban notices. |
+
+## Usage
 
 ```text
 /ban player Steve griefing --time 7d
@@ -563,6 +632,18 @@ With permission for `/ban-info`, select a history entry to open its details. Wit
 
 Add common reasons to `reason-presets`; an exact preset name expands to its text. Notification sounds use `notify-ban-sound` and `notify-unban-sound`.
 
+![Disconnect screen for a permanent account ban, showing ban ID 21](https://nanamoserver.github.io/sparrow-wiki/img/features/ban-disconnect.png)
+
+Players can give the ban ID on the disconnect screen to an administrator. For the record shown here, use `/ban-info 21`.
+
+## Configuration example
+
+```yaml
+# Example: expand grief to Griefing when entered as the reason
+reason-presets:
+  grief: "Griefing"
+```
+
 # Back and death back
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/back>
@@ -571,16 +652,35 @@ Module `back` · Configuration `features/back.yaml`
 
 `/back` returns to the previous departure point; `/death-back` returns to the last death location. Both support cross-server destinations. A named traveler must be on this server.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/back [player] [--unsafe] [--silent]` | Return to the previous teleport departure point. | `sparrow.command.back[.other]` |
 | `/death-back [player] [--unsafe] [--silent]` | Return to the last death location. | `sparrow.command.death-back[.other]` |
+
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.back.staff / sparrow.back.vip` | Default Back cooldown and warmup overrides. |
+| `sparrow.deathback.staff / sparrow.deathback.vip` | Default DeathBack cooldown and warmup overrides. |
+
+## Usage
 
 `--unsafe` allows the original coordinates when no safe location is found; `--silent` hides command feedback.
 
 `back.teleport-causes` records `COMMAND` and `PLUGIN` by default. `back.join-grace-seconds` ignores ordinary teleports during the first 3 seconds after joining. `deathback.record-death` controls recording of new death locations.
 
 Configure their cooldowns and warmups separately under `back.teleport-options` and `deathback.teleport-options`; see [Teleport options](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
+
+## Configuration example
+
+```yaml
+# Ignore ordinary teleports for this many seconds after joining
+back:
+  join-grace-seconds: 3
+```
 
 # Random teleport
 
@@ -590,16 +690,27 @@ Module `rtp` · Configuration `features/rtp.yml`
 
 Find a safe location within a region, including on another backend. The traveler must be on this server.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/rtp <player> <region> [--silent]` | Teleport randomly within a configured region. | `sparrow.command.rtp[.other]` |
 | `/rtp-range <player> <server> <world> <min-radius> <max-radius> [options]` | Teleport randomly within a specified square range. | `sparrow.command.rtp_range[.other]` |
 
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.rtp.staff / sparrow.rtp.vip` | Default RTP cooldown and warmup overrides. |
+| `regions.<name>.permission` | Configurable permission to enter this region |
+
+## Usage
+
 ```yaml
 regions:
   wild:
     server: survival
-    permission: sparrow.rtp.wild
+    permission: sparrow.rtp.wild  # Permission required for this example region
     area:
       world:
         - x: [-5000, 5000]
@@ -625,13 +736,23 @@ Module `spawn` · Configuration `features/spawn.yml`
 
 Travel to the configured spawn, including on another backend. The command is unavailable until a destination is configured.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/spawn` | Travel to the configured spawn. | `sparrow.command.spawn` |
 
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.spawn.staff` | Default Spawn cooldown and warmup override. |
+
+## Usage
+
 ```yaml
 destination:
-  server: lobby
+  server: lobby  # Use the destination backend server ID
   world: world
   x: 0.5
   y: 64
@@ -656,6 +777,8 @@ Module `warp` · Configuration `features/warp.yml`
 
 Named destinations shared across your Sparrow servers. Players can open details from `/warp-list` or `/edit-warp <name>` to travel, rename, relocate or delete, subject to permissions. Relocation and deletion from the dialog require confirmation.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/warp <name> [player]` | Travel to a warp, with support for cross-server players. | `sparrow.command.warp[.other]` |
@@ -663,6 +786,17 @@ Named destinations shared across your Sparrow servers. Players can open details 
 | `/del-warp <name>` | Delete a warp. | `sparrow.command.del_warp` |
 | `/warp-list` | Open the list of visible warps (players only). | `sparrow.command.warp_list` |
 | `/edit-warp <name> [rename <new_name>\|relocate]` | View, rename or relocate a warp. | `sparrow.command.edit_warp` |
+
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.warp.use.<lowercase-name>` | Allow access to a warp when permission-restrict is enabled. |
+| `sparrow.warp.teleport.staff / sparrow.warp.teleport.vip` | Default Warp cooldown and warmup overrides. |
+| `sparrow.command.edit_warp.rename` | Rename a warp |
+| `sparrow.command.edit_warp.relocate` | Relocate a warp |
+
+## Usage
 
 ```text
 /set-warp market
@@ -676,6 +810,17 @@ Creation and relocation require a player. `/set-warp` does not overwrite an exis
 
 With `permission-restrict` enabled, viewing and using a warp requires `sparrow.warp.use.<lowercase-name>`. Management still uses command permissions. Configure cooldowns, warmups and arrival effects under `teleport-options`; see [Teleport options](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx).
 
+![Details for the gogo warp showing its world, coordinates, orientation and actions](https://nanamoserver.github.io/sparrow-wiki/img/features/warp-details.png)
+
+Select a warp in `/warp-list` to check its world and coordinates before choosing the travel button.
+
+## Configuration example
+
+```yaml
+# Example: require a separate permission for each warp
+permission-restrict: true
+```
+
 # Homes
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/home>
@@ -683,6 +828,8 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/features/home>
 Module `home` · Configuration `features/home.yml`
 
 Save personal destinations and return to them across servers.
+
+## Command and permission reference
 
 | Command | Purpose | Default permission |
 | - | - | - |
@@ -692,6 +839,17 @@ Save personal destinations and return to them across servers.
 | `/home-list [owner]` | Open your or another owner’s home list (players only). | `sparrow.command.home_list[.other]` |
 | `/edit-home <name> [rename <new_name>\|relocate]` | View, rename or relocate a home; accepts player.name. | `sparrow.command.edit_home[.other]` |
 | `/sparrow del-all-homes [--player <player>] [--server <server>] [--world <world>]` | Bulk delete from console; at least one filter, no confirmation. | `sparrow.command.del_all_homes` |
+
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.home.limit.<amount> / sparrow.home.limit.unlimited` | Override the home limit. |
+| `sparrow.home.teleport.staff / sparrow.home.teleport.vip` | Default Home cooldown and warmup overrides. |
+| `sparrow.command.edit_home.rename` | Rename a home |
+| `sparrow.command.edit_home.relocate` | Relocate a home |
+
+## Usage
 
 ```text
 /set-home mine
@@ -708,13 +866,118 @@ Players can open home details from the list or with `/edit-home <name>`. The dia
 
 The default limit is 3 homes. `sparrow.home.limit.<amount>` overrides `max-homes`; `sparrow.home.limit.unlimited` removes the limit. See [Teleport options](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) for teleport behavior.
 
-With PlaceholderAPI installed, use `sparrowhome_count`, `sparrowhome_limit`, `sparrowhome_remaining` and `sparrowhome_list`. In Sparrow text, write `<papi:sparrowhome_count>`. Unlimited limits and remaining counts return `-1`.
+## PlaceholderAPI
+
+Requires a local online player with a loaded home list. Use `<papi:sparrowhome_count>` in Sparrow text.
+
+| Placeholder | Result |
+| - | - |
+| `%sparrowhome_count%` | Number of saved homes |
+| `%sparrowhome_limit%` | Home limit, or -1 for unlimited |
+| `%sparrowhome_remaining%` | Available slots, or -1 for unlimited |
+| `%sparrowhome_list%` | Names sorted and separated by a comma and space |
+
+## Configuration example
+
+```yaml
+# Prefer home when no name is given; allow three homes per player
+default-name: home
+max-homes: 3
+```
 
 # Multi-currency economy
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/economy>
 
 Set `economy: true` in `modules.yml` and restart. Use `/money` or `/coins` for coins and `/points` for points. Each wallet starts at zero for each currency.
+
+## Command and permission reference
+
+Examples use the coin alias `/money`. The same branches are available under `/economy <currency ID>`. Use `/economy history` to search across currencies.
+
+| Command | Purpose | Permission |
+| - | - | - |
+| `/money` | Show your balance | `sparrow.command.economy.balance` |
+| `/money balance <player>` | Inspect a player’s exact balance | `sparrow.command.economy.inspect` |
+| `/money give <player> <amount> [reason] [-s]` | Credit a wallet | `sparrow.command.economy.give` |
+| `/money take <player> <amount> [reason] [-s]` | Debit a wallet | `sparrow.command.economy.take` |
+| `/money pay <player> <amount>` | Pay a player | `sparrow.command.economy.pay` |
+| `/money top [limit]` | Open the rich list | `sparrow.command.economy.top` |
+| `/money history all` | Browse currency history | `sparrow.command.economy.history` |
+| `/money history player <player>` | Filter history by player | `sparrow.command.economy.history` |
+| `/money history transaction <id>` | Inspect one transaction | `sparrow.command.economy.history` |
+
+`sparrow.command.economy.pay.offline` allows payments to offline players and defaults to OP. History lists accept `--min`, `--max` and `--within`.
+
+## Default configuration
+
+**Economy configuration files**
+
+- `plugins/Sparrow`
+  - `modules.yml` — Enable the economy module here.
+  - `features`
+    - `economy`
+      - `economy.yml` — Set history page size, retention and the Vault currency.
+      - `currencies`
+        - `coin.yml` — Display format, command aliases and transfer rules for coins.
+        - `points.yml` — Points display as whole numbers and disable player transfers by default.
+
+### economy.yml
+
+```yaml
+vault:
+  enabled: true  # Enable the integration when Vault is installed.
+  currency: "coin"  # Use the currency file name without .yml.
+
+history:
+  retention-days: 90  # Days from the transaction date; 0 keeps records indefinitely.
+  page-size: 15  # History rows per page; minimum 1.
+```
+
+With Vault installed, shops and other Vault integrations charge and credit the currency selected by `vault.currency`. Enter its file ID, such as `coin`. History retention is measured from the transaction date. Set `history.retention-days` to `0` to keep records indefinitely. `history.page-size` sets the number of rows per history page and must be at least 1.
+
+### coin.yml
+
+```yaml
+display:
+  name: "金币"  # Currency name shown to players.
+  symbol: "￥"  # Shown wherever the template uses <symbol>.
+  format: "<gold><amount> <name></gold>"  # Full amount format.
+  short-format: "<amount> <name>"  # Compact format using K, M or B.
+  group-thousands: true  # Group digits in formatted amounts.
+
+commands:
+  aliases: [money, coins]  # Command names without the slash.
+
+balance:
+  precision: 2  # Use 0 to 2; 2 displays two decimal places.
+
+transfer:
+  enabled: true  # Allow player payments with pay.
+  allow-offline-recipient: false  # When false, ordinary players can pay recipients online on any backend.
+  permission: ""  # Leave empty to require no additional payment permission.
+```
+
+### points.yml
+
+```yaml
+display:
+  name: "点券"  # Currency name shown to players.
+  symbol: "★"  # Shown wherever the template uses <symbol>.
+  format: "<aqua><amount> <name></aqua>"  # Full amount format.
+  short-format: "<amount> <name>"  # Compact format using K, M or B.
+  group-thousands: true  # Group digits in formatted amounts.
+
+commands:
+  aliases: [points]  # Command names without the slash.
+
+balance:
+  precision: 0  # Display whole numbers; wallets retain four decimals.
+
+transfer:
+  enabled: false  # Disable player transfers; admins can still credit or debit wallets.
+  allow-offline-recipient: false  # When false, ordinary players can pay recipients online on any backend.
+```
 
 ## Configure a currency
 
@@ -728,7 +991,22 @@ Edit currency files under `plugins/Sparrow/features/economy/currencies/`. The fi
 
 Use `/money history player Alex --min 10 --within 7d` to see Alex’s coin transactions of at least 10 over the past seven days. Open a transfer to see the payer and recipient. Returning restores the filtered page. In `features/economy/economy.yml`, `history.page-size` defaults to 15 and `history.retention-days` to 90.
 
-With PlaceholderAPI installed, use these for a player online on the local backend: `%sparroweco_balance_coin%`, `%sparroweco_integer_balance_coin%`, `%sparroweco_formatted_balance_coin%`, `%sparroweco_short_balance_coin%`. Replace the final `coin` with another currency ID.
+![Transaction list with credits in green and debits in red](https://nanamoserver.github.io/sparrow-wiki/img/features/currency-history.png)
+
+Use `/economy history all` to include every player and currency. Select a row to inspect that transaction.
+
+## PlaceholderAPI
+
+These examples use the default coin configuration and a wallet balance of `12345.6789`. Use the placeholders for a player online on the local backend. An offline player or a wallet that is not ready returns empty text.
+
+| Placeholder | Output | Example |
+| - | - | - |
+| `%sparroweco_balance_coin%` | Plain number at the currency’s display precision, without grouping | `12345.67` |
+| `%sparroweco_integer_balance_coin%` | Rounded down to a whole number | `12345` |
+| `%sparroweco_formatted_balance_coin%` | Plain text from `display.format` | `12,345.67 金币` |
+| `%sparroweco_short_balance_coin%` | Plain text from `display.short-format`, abbreviated with K, M or B | `12.34K 金币` |
+
+Replace the final `coin` with `points` for points, for example `%sparroweco_balance_points%`. In Sparrow MiniMessage text, write `<papi:sparroweco_formatted_balance_coin>`. Use the percent-delimited form in other plugins that accept PlaceholderAPI placeholders.
 
 [Commands and permissions](https://nanamoserver.github.io/sparrow-wiki/commands.mdx) · [Economy API](https://nanamoserver.github.io/sparrow-wiki/api/economy.mdx)
 
@@ -740,6 +1018,8 @@ Module `tpa` · Configuration `features/tpa.yml`
 
 Send, accept or decline player-to-player teleport requests across servers.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/tpa <player>` | Ask to teleport to another player. | `sparrow.command.tpa` |
@@ -748,10 +1028,19 @@ Send, accept or decline player-to-player teleport requests across servers.
 | `/tpa-deny [player]` | Deny a request; defaults to the most recent one. | `sparrow.command.tpa_deny` |
 | `/tpa-cancel [player]` | Cancel an outgoing request; omit the player to cancel all. | `sparrow.command.tpa_cancel` |
 
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.bypass.tpa_cooldown` | Skip request and denial cooldowns. |
+| `sparrow.tpa.staff / sparrow.tpa.vip` | Default TPA teleport cooldown and warmup overrides. |
+
+## Usage
+
 ```yaml
 expire-seconds: 60
 request-cooldown-seconds: 10
-deny-cooldown-seconds: 120
+deny-cooldown-seconds: 120  # Seconds to wait before asking the same player after a denial
 ```
 
 Requests expire after 60 seconds by default, with 10 seconds between requests and 120 seconds before requesting the same player after a denial. `sparrow.bypass.tpa_cooldown` skips both request cooldowns.

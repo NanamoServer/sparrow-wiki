@@ -6,6 +6,8 @@
 
 跨服封禁账号、IP 或 IP 范围，并保留历史记录。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/ban <player\|player-ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | 封禁账号或 IP。 | `sparrow.command.ban` |
@@ -13,6 +15,14 @@
 | `/unban-id <id> [--silent]` | 按记录 ID 解封。 | `sparrow.command.unban_id` |
 | `/ban-info <id>` | 玩家打开封禁详情。 | `sparrow.command.ban_info` |
 | `/ban-history <all\|player <player>\|ip <ip>> [options]` | 玩家浏览封禁历史。 | `sparrow.command.ban_history` |
+
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.notify.ban` | 接收封禁与解封通知。 |
+
+## 使用说明
 
 ```text
 /ban player Steve griefing --time 7d
@@ -29,3 +39,15 @@
 拥有 `/ban-info` 权限时，可从历史列表打开记录详情。拥有 `/unban-id` 权限时，可在详情中解封有效记录，确认时可选择静默解封。
 
 在 `reason-presets` 中配置常用原因，输入与预设名称完全相同时展开。通知音效使用 `notify-ban-sound`、`notify-unban-sound`。
+
+![玩家被永久封禁后看到的断开连接提示，处罚编号为 21](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/img/features/ban-disconnect.png)
+
+玩家可以把断开连接提示中的处罚编号交给管理员。图中的记录可用 `/ban-info 21` 查询。
+
+## 配置示例
+
+```yaml
+# 示例：输入 grief 时，将原因展开为 Griefing
+reason-presets:
+  grief: "Griefing"
+```

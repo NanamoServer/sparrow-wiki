@@ -6,16 +6,27 @@ Module `rtp` · Configuration `features/rtp.yml`
 
 Find a safe location within a region, including on another backend. The traveler must be on this server.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/rtp <player> <region> [--silent]` | Teleport randomly within a configured region. | `sparrow.command.rtp[.other]` |
 | `/rtp-range <player> <server> <world> <min-radius> <max-radius> [options]` | Teleport randomly within a specified square range. | `sparrow.command.rtp_range[.other]` |
 
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.rtp.staff / sparrow.rtp.vip` | Default RTP cooldown and warmup overrides. |
+| `regions.<name>.permission` | Configurable permission to enter this region |
+
+## Usage
+
 ```yaml
 regions:
   wild:
     server: survival
-    permission: sparrow.rtp.wild
+    permission: sparrow.rtp.wild  # Permission required for this example region
     area:
       world:
         - x: [-5000, 5000]

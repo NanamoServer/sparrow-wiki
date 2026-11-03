@@ -6,6 +6,8 @@ Module `home` · Configuration `features/home.yml`
 
 Save personal destinations and return to them across servers.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | - | - | - |
 | `/home [name]` | Travel to your home; player.name selects another owner's home. | `sparrow.command.home[.other]` |
@@ -14,6 +16,17 @@ Save personal destinations and return to them across servers.
 | `/home-list [owner]` | Open your or another owner’s home list (players only). | `sparrow.command.home_list[.other]` |
 | `/edit-home <name> [rename <new_name>\|relocate]` | View, rename or relocate a home; accepts player.name. | `sparrow.command.edit_home[.other]` |
 | `/sparrow del-all-homes [--player <player>] [--server <server>] [--world <world>]` | Bulk delete from console; at least one filter, no confirmation. | `sparrow.command.del_all_homes` |
+
+### Additional permissions
+
+| Permission | Purpose |
+| - | - |
+| `sparrow.home.limit.<amount> / sparrow.home.limit.unlimited` | Override the home limit. |
+| `sparrow.home.teleport.staff / sparrow.home.teleport.vip` | Default Home cooldown and warmup overrides. |
+| `sparrow.command.edit_home.rename` | Rename a home |
+| `sparrow.command.edit_home.relocate` | Relocate a home |
+
+## Usage
 
 ```text
 /set-home mine
@@ -30,4 +43,21 @@ Players can open home details from the list or with `/edit-home <name>`. The dia
 
 The default limit is 3 homes. `sparrow.home.limit.<amount>` overrides `max-homes`; `sparrow.home.limit.unlimited` removes the limit. See [Teleport options](https://nanamoserver.github.io/sparrow-wiki/teleport/overview.mdx) for teleport behavior.
 
-With PlaceholderAPI installed, use `sparrowhome_count`, `sparrowhome_limit`, `sparrowhome_remaining` and `sparrowhome_list`. In Sparrow text, write `<papi:sparrowhome_count>`. Unlimited limits and remaining counts return `-1`.
+## PlaceholderAPI
+
+Requires a local online player with a loaded home list. Use `<papi:sparrowhome_count>` in Sparrow text.
+
+| Placeholder | Result |
+| - | - |
+| `%sparrowhome_count%` | Number of saved homes |
+| `%sparrowhome_limit%` | Home limit, or -1 for unlimited |
+| `%sparrowhome_remaining%` | Available slots, or -1 for unlimited |
+| `%sparrowhome_list%` | Names sorted and separated by a comma and space |
+
+## Configuration example
+
+```yaml
+# Prefer home when no name is given; allow three homes per player
+default-name: home
+max-homes: 3
+```

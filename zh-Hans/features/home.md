@@ -6,6 +6,8 @@
 
 保存个人位置并跨服返回。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/home [name]` | 前往自己的家；player.name 可访问他人的家。 | `sparrow.command.home[.other]` |
@@ -14,6 +16,17 @@
 | `/home-list [owner]` | 玩家打开自己或他人的家列表。 | `sparrow.command.home_list[.other]` |
 | `/edit-home <name> [rename <new_name>\|relocate]` | 查看、改名或移动家；支持 player.name。 | `sparrow.command.edit_home[.other]` |
 | `/sparrow del-all-homes [--player <player>] [--server <server>] [--world <world>]` | 控制台批量删除，至少一个筛选条件，无确认。 | `sparrow.command.del_all_homes` |
+
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.home.limit.<数量> / sparrow.home.limit.unlimited` | 覆盖家的数量限制。 |
+| `sparrow.home.teleport.staff / sparrow.home.teleport.vip` | Home 默认冷却与倒计时覆盖。 |
+| `sparrow.command.edit_home.rename` | 重命名家 |
+| `sparrow.command.edit_home.relocate` | 迁移家的位置 |
+
+## 使用说明
 
 ```text
 /set-home mine
@@ -30,4 +43,21 @@
 
 默认最多 3 个家。`sparrow.home.limit.<数量>` 覆盖 `max-homes`，`sparrow.home.limit.unlimited` 取消限制。传送行为见[传送选项](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。
 
-安装 PlaceholderAPI 后可用 `sparrowhome_count`、`sparrowhome_limit`、`sparrowhome_remaining`、`sparrowhome_list`。Sparrow 文本中写作 `<papi:sparrowhome_count>`；无限上限和剩余数量返回 `-1`。
+## PlaceholderAPI
+
+限本服在线且家列表已就绪的玩家。Sparrow 文本中可写 `<papi:sparrowhome_count>`。
+
+| Placeholder | 结果 |
+| - | - |
+| `%sparrowhome_count%` | 已设置的家数 |
+| `%sparrowhome_limit%` | 可设置的家数，无限为 -1 |
+| `%sparrowhome_remaining%` | 剩余名额，无限为 -1 |
+| `%sparrowhome_list%` | 按名称排序，以逗号和空格分隔 |
+
+## 配置示例
+
+```yaml
+# 未指定名称时优先选择 home；每人默认可设 3 个家
+default-name: home
+max-homes: 3
+```

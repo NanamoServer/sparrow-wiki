@@ -218,10 +218,12 @@ Sparrow 提供日常管理命令，以及家、传送点、传送请求、随机
 
 模块 `quick-shulker` · 配置 `features/quick-shulker.yml`
 
-手持潜影盒，默认潜行右键空气即可打开。支持副手，两只手都有潜影盒时优先主手。无需命令或额外使用权限。
+手持潜影盒，潜行并右键空气即可打开。默认支持副手，两只手都持有潜影盒时优先打开主手。
+
+## 配置示例
 
 ```yaml
-require-sneaking: true
+require-sneaking: true  # true 表示潜行时才能打开
 allow-offhand: true
 title: '<arg:hover_name>'
 disabled-worlds: []
@@ -248,7 +250,7 @@ disabled-worlds: []
 ```yaml
 elevators:
   "minecraft:iron_block":
-    max_distance: 64
+    max_distance: 64  # 同列上下两站之间的最大距离
     use_permission: ""
 
   "smc:lanzi/tiancai":
@@ -280,11 +282,24 @@ elevators:
 
 依次传送到群组服玩家身边。省略目标时从可巡查玩家中轮流选择。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/patrol [targets]` | 轮流巡查玩家，支持跨服。 | `sparrow.command.patrol` |
 
-`sparrow.bypass.patrol` 可免于被巡查；默认跳过旁观模式玩家。配置 `skip-spectators: false` 可将旁观玩家纳入。
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.bypass.patrol` | 不被巡查选中。 |
+
+## 配置示例
+
+```yaml
+# 选择巡查目标时跳过旁观者
+skip-spectators: true
+```
 
 # 玩家头颅
 
@@ -294,9 +309,13 @@ elevators:
 
 根据玩家名称或 UUID 获取头颅。省略来源时获取自己的头颅。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/head [source] [amount] [player] [--force] [--silent]` | 获取玩家头颅。 | `sparrow.command.head[.other]` |
+
+## 使用说明
 
 ```text
 /head Notch
@@ -304,6 +323,13 @@ elevators:
 ```
 
 数量范围为 1–6400。`--force` 强制刷新资料；默认先使用在线玩家纹理，再查询 API。获取顺序、缓存和接口地址在配置文件中调整。
+
+## 配置示例
+
+```yaml
+# 先取在线玩家的皮肤，再向接口查询
+source-order: [online, api]
+```
 
 # 维护模式
 
@@ -313,9 +339,19 @@ elevators:
 
 维护期间阻止普通玩家进入，并向在线玩家显示 BossBar。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/maintenance [true\|false] [--all] [--tag <tag>]` | 切换维护状态。 | `sparrow.command.maintenance` |
+
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.bypass.maintenance` | 维护期间允许进入。 |
+
+## 使用说明
 
 ```text
 /maintenance true
@@ -327,6 +363,14 @@ elevators:
 
 `active` 保存维护状态，`boss-bar.enabled` 控制提示条，颜色与样式也在 `boss-bar` 中设置。
 
+## 配置示例
+
+```yaml
+# 维护期间向在线玩家显示提示条
+boss-bar:
+  enabled: true
+```
+
 # 人数上限
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit>
@@ -335,11 +379,26 @@ elevators:
 
 运行时修改本服人数上限，命令修改会保存到配置。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/max-players [amount]` | 查询或修改人数上限；-1 恢复原上限。 | `sparrow.command.max_players` |
 
-`sparrow.bypass.player_limit` 允许满员时进入。`max-players: -1` 恢复模块启用前的上限，`0` 表示上限为零；停用模块也会恢复原上限。
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.bypass.player_limit` | 满员时允许进入。 |
+
+## 配置示例
+
+```yaml
+# 恢复启用模块前的人数上限；0 表示上限为零
+max-players: -1
+```
+
+禁用模块时也会恢复原人数上限。
 
 # 死亡消息
 
@@ -539,6 +598,8 @@ PlaceholderAPI 是可选依赖。安装后使用 `<papi:占位符>` 或 `<papi:�
 
 跨服封禁账号、IP 或 IP 范围，并保留历史记录。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/ban <player\|player-ip\|ip> <target> [reason] [--time <duration>] [--force] [--silent]` | 封禁账号或 IP。 | `sparrow.command.ban` |
@@ -546,6 +607,14 @@ PlaceholderAPI 是可选依赖。安装后使用 `<papi:占位符>` 或 `<papi:�
 | `/unban-id <id> [--silent]` | 按记录 ID 解封。 | `sparrow.command.unban_id` |
 | `/ban-info <id>` | 玩家打开封禁详情。 | `sparrow.command.ban_info` |
 | `/ban-history <all\|player <player>\|ip <ip>> [options]` | 玩家浏览封禁历史。 | `sparrow.command.ban_history` |
+
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.notify.ban` | 接收封禁与解封通知。 |
+
+## 使用说明
 
 ```text
 /ban player Steve griefing --time 7d
@@ -563,6 +632,18 @@ PlaceholderAPI 是可选依赖。安装后使用 `<papi:占位符>` 或 `<papi:�
 
 在 `reason-presets` 中配置常用原因，输入与预设名称完全相同时展开。通知音效使用 `notify-ban-sound`、`notify-unban-sound`。
 
+![玩家被永久封禁后看到的断开连接提示，处罚编号为 21](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/img/features/ban-disconnect.png)
+
+玩家可以把断开连接提示中的处罚编号交给管理员。图中的记录可用 `/ban-info 21` 查询。
+
+## 配置示例
+
+```yaml
+# 示例：输入 grief 时，将原因展开为 Griefing
+reason-presets:
+  grief: "Griefing"
+```
+
 # 返回与死亡返回
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/back>
@@ -571,16 +652,35 @@ PlaceholderAPI 是可选依赖。安装后使用 `<papi:占位符>` 或 `<papi:�
 
 `/back` 返回上一次传送前的位置，`/death-back` 返回上一次死亡位置，均支持跨服。指定玩家时，玩家须在本服。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/back [player] [--unsafe] [--silent]` | 返回上一次传送前的位置。 | `sparrow.command.back[.other]` |
 | `/death-back [player] [--unsafe] [--silent]` | 返回上一次死亡位置。 | `sparrow.command.death-back[.other]` |
+
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.back.staff / sparrow.back.vip` | Back 默认冷却与倒计时覆盖。 |
+| `sparrow.deathback.staff / sparrow.deathback.vip` | DeathBack 默认冷却与倒计时覆盖。 |
+
+## 使用说明
 
 `--unsafe` 允许找不到安全落点时使用原坐标；`--silent` 隐藏命令反馈。
 
 `back.teleport-causes` 默认记录 `COMMAND`、`PLUGIN`，`back.join-grace-seconds` 默认忽略进服后 3 秒内的普通传送。`deathback.record-death` 控制是否记录新的死亡位置。
 
 两种返回分别在 `back.teleport-options`、`deathback.teleport-options` 配置冷却和倒计时，详见[传送选项](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。
+
+## 配置示例
+
+```yaml
+# 进服后这几秒内的普通传送不会覆盖返回点
+back:
+  join-grace-seconds: 3
+```
 
 # 随机传送
 
@@ -590,16 +690,27 @@ PlaceholderAPI 是可选依赖。安装后使用 `<papi:占位符>` 或 `<papi:�
 
 在指定区域内寻找安全落点，支持跨服目的地。被传送玩家须在本服。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/rtp <player> <region> [--silent]` | 在配置的区域内随机传送。 | `sparrow.command.rtp[.other]` |
 | `/rtp-range <player> <server> <world> <min-radius> <max-radius> [options]` | 在指定方形范围内随机传送。 | `sparrow.command.rtp_range[.other]` |
 
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.rtp.staff / sparrow.rtp.vip` | RTP 默认冷却与倒计时覆盖。 |
+| `regions.<name>.permission` | 由服主指定，限制使用该区域 |
+
+## 使用说明
+
 ```yaml
 regions:
   wild:
     server: survival
-    permission: sparrow.rtp.wild
+    permission: sparrow.rtp.wild  # 示例区域所需的权限
     area:
       world:
         - x: [-5000, 5000]
@@ -625,13 +736,23 @@ regions:
 
 前往配置中指定的出生点，支持其他子服。未配置目的地时命令不可用。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/spawn` | 前往配置中的出生点。 | `sparrow.command.spawn` |
 
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.spawn.staff` | Spawn 默认冷却与倒计时覆盖。 |
+
+## 使用说明
+
 ```yaml
 destination:
-  server: lobby
+  server: lobby  # 填写目标后端服务器的 ID
   world: world
   x: 0.5
   y: 64
@@ -656,6 +777,8 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 
 群组服共用的命名传送点。 玩家可从 `/warp-list` 或 `/edit-warp <name>` 打开详情，按权限传送、改名、迁移或删除。窗口内迁移和删除需要确认。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/warp <name> [player]` | 前往传送点，支持跨服玩家。 | `sparrow.command.warp[.other]` |
@@ -663,6 +786,17 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 | `/del-warp <name>` | 删除传送点。 | `sparrow.command.del_warp` |
 | `/warp-list` | 玩家打开可见传送点列表。 | `sparrow.command.warp_list` |
 | `/edit-warp <name> [rename <new_name>\|relocate]` | 查看、改名或移动传送点。 | `sparrow.command.edit_warp` |
+
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.warp.use.<小写名称>` | 启用 permission-restrict 后允许使用对应传送点。 |
+| `sparrow.warp.teleport.staff / sparrow.warp.teleport.vip` | Warp 默认冷却与倒计时覆盖。 |
+| `sparrow.command.edit_warp.rename` | 重命名传送点 |
+| `sparrow.command.edit_warp.relocate` | 迁移传送点 |
+
+## 使用说明
 
 ```text
 /set-warp market
@@ -676,6 +810,17 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 
 开启 `permission-restrict` 后，查看和使用传送点需要 `sparrow.warp.use.<小写名称>`；管理操作仍用命令权限。冷却、倒计时和到达效果在 `teleport-options` 中配置，见[传送选项](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。
 
+![地标 gogo 的详情，包含世界、坐标、朝向和操作按钮](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/img/features/warp-details.png)
+
+在 `/warp-list` 中选中地标，可先核对世界和落点坐标，再点「前往」。
+
+## 配置示例
+
+```yaml
+# 示例：每个传送点单独授权
+permission-restrict: true
+```
+
 # 家
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home>
@@ -683,6 +828,8 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 模块 `home` · 配置 `features/home.yml`
 
 保存个人位置并跨服返回。
+
+## 命令与权限速查
 
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
@@ -692,6 +839,17 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 | `/home-list [owner]` | 玩家打开自己或他人的家列表。 | `sparrow.command.home_list[.other]` |
 | `/edit-home <name> [rename <new_name>\|relocate]` | 查看、改名或移动家；支持 player.name。 | `sparrow.command.edit_home[.other]` |
 | `/sparrow del-all-homes [--player <player>] [--server <server>] [--world <world>]` | 控制台批量删除，至少一个筛选条件，无确认。 | `sparrow.command.del_all_homes` |
+
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.home.limit.<数量> / sparrow.home.limit.unlimited` | 覆盖家的数量限制。 |
+| `sparrow.home.teleport.staff / sparrow.home.teleport.vip` | Home 默认冷却与倒计时覆盖。 |
+| `sparrow.command.edit_home.rename` | 重命名家 |
+| `sparrow.command.edit_home.relocate` | 迁移家的位置 |
+
+## 使用说明
 
 ```text
 /set-home mine
@@ -708,13 +866,118 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 
 默认最多 3 个家。`sparrow.home.limit.<数量>` 覆盖 `max-homes`，`sparrow.home.limit.unlimited` 取消限制。传送行为见[传送选项](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/teleport/overview.mdx)。
 
-安装 PlaceholderAPI 后可用 `sparrowhome_count`、`sparrowhome_limit`、`sparrowhome_remaining`、`sparrowhome_list`。Sparrow 文本中写作 `<papi:sparrowhome_count>`；无限上限和剩余数量返回 `-1`。
+## PlaceholderAPI
+
+限本服在线且家列表已就绪的玩家。Sparrow 文本中可写 `<papi:sparrowhome_count>`。
+
+| Placeholder | 结果 |
+| - | - |
+| `%sparrowhome_count%` | 已设置的家数 |
+| `%sparrowhome_limit%` | 可设置的家数，无限为 -1 |
+| `%sparrowhome_remaining%` | 剩余名额，无限为 -1 |
+| `%sparrowhome_list%` | 按名称排序，以逗号和空格分隔 |
+
+## 配置示例
+
+```yaml
+# 未指定名称时优先选择 home；每人默认可设 3 个家
+default-name: home
+max-homes: 3
+```
 
 # 多货币经济
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/economy>
 
 在 `modules.yml` 设置 `economy: true` 后重启。默认金币使用 `/money` 或 `/coins`，点券使用 `/points`。每种货币独立记账，新玩家余额为零。
+
+## 命令与权限速查
+
+以金币别名 `/money` 为例。`/economy <币种 ID>` 后面可接相同子命令；`/economy history` 可跨币种查账。
+
+| 命令 | 用途 | 权限 |
+| - | - | - |
+| `/money` | 查看自己的余额 | `sparrow.command.economy.balance` |
+| `/money balance <player>` | 查看玩家的精确余额 | `sparrow.command.economy.inspect` |
+| `/money give <player> <amount> [reason] [-s]` | 增加余额 | `sparrow.command.economy.give` |
+| `/money take <player> <amount> [reason] [-s]` | 扣除余额 | `sparrow.command.economy.take` |
+| `/money pay <player> <amount>` | 转账 | `sparrow.command.economy.pay` |
+| `/money top [limit]` | 打开富豪榜 | `sparrow.command.economy.top` |
+| `/money history all` | 查看币种流水 | `sparrow.command.economy.history` |
+| `/money history player <player>` | 按玩家查账 | `sparrow.command.economy.history` |
+| `/money history transaction <id>` | 查看整笔交易 | `sparrow.command.economy.history` |
+
+`sparrow.command.economy.pay.offline` 允许向离线玩家付款，默认 OP 拥有。查账列表接受 `--min`、`--max` 和 `--within`。
+
+## 默认配置
+
+**经济模块配置文件**
+
+- `plugins/Sparrow`
+  - `modules.yml` — 在这里启用 economy 模块。
+  - `features`
+    - `economy`
+      - `economy.yml` — 设置查账页大小、流水保留天数和 Vault 币种。
+      - `currencies`
+        - `coin.yml` — 金币的显示格式、命令别名和转账规则。
+        - `points.yml` — 点券默认显示整数，并关闭玩家转账。
+
+### economy.yml
+
+```yaml
+vault:
+  enabled: true  # 安装 Vault 时启用兼容。
+  currency: "coin"  # 填写币种文件名，不带 .yml。
+
+history:
+  retention-days: 90  # 从成交时间起算，0 表示永久保留。
+  page-size: 15  # 每页展示的流水条数，至少为 1。
+```
+
+安装 Vault 时，使用 Vault 的商店等插件会通过 `vault.currency` 指定的币种收付款。这里填币种 ID，例如 `coin`。`history.retention-days` 从成交时间起算，设为 `0` 可永久保留流水。`history.page-size` 控制查账窗口每页行数，至少为 `1`。
+
+### coin.yml
+
+```yaml
+display:
+  name: "金币"  # 玩家看到的币种名称。
+  symbol: "￥"  # 模板使用 <symbol> 时显示。
+  format: "<gold><amount> <name></gold>"  # 完整金额模板。
+  short-format: "<amount> <name>"  # 缩写模板，可显示 K、M、B。
+  group-thousands: true  # 格式化金额时使用千分位。
+
+commands:
+  aliases: [money, coins]  # 命令别名，不带斜杠。
+
+balance:
+  precision: 2  # 可选 0～2；2 表示显示到小数点后两位。
+
+transfer:
+  enabled: true  # 允许玩家使用 pay 转账。
+  allow-offline-recipient: false  # false 要求普通付款人的收款对象在任一服在线。
+  permission: ""  # 留空表示不额外要求付款权限。
+```
+
+### points.yml
+
+```yaml
+display:
+  name: "点券"  # 玩家看到的币种名称。
+  symbol: "★"  # 模板使用 <symbol> 时显示。
+  format: "<aqua><amount> <name></aqua>"  # 完整金额模板。
+  short-format: "<amount> <name>"  # 缩写模板，可显示 K、M、B。
+  group-thousands: true  # 格式化金额时使用千分位。
+
+commands:
+  aliases: [points]  # 命令别名，不带斜杠。
+
+balance:
+  precision: 0  # 只显示整数，实际余额保留四位。
+
+transfer:
+  enabled: false  # 关闭玩家转账，管理员仍可增扣。
+  allow-offline-recipient: false  # false 要求普通付款人的收款对象在任一服在线。
+```
 
 ## 设置币种
 
@@ -728,7 +991,22 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 
 管理员可用 `/money history player Alex --min 10 --within 7d` 查看 Alex 最近 7 天金额至少为 10 的金币流水。点开转账能看到付款人和收款人，返回后保留原筛选和页码。主配置 `features/economy/economy.yml` 中，`history.page-size` 默认 15，`history.retention-days` 默认 90。
 
-安装 PlaceholderAPI 后，可对本服在线玩家使用 `%sparroweco_balance_coin%`, `%sparroweco_integer_balance_coin%`, `%sparroweco_formatted_balance_coin%`, `%sparroweco_short_balance_coin%`. 将末尾的 `coin` 换成其他币种 ID 即可。
+![资金流水列表，绿色为入账，红色为扣款](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/img/features/currency-history.png)
+
+用 `/economy history all` 查看全部玩家和币种的流水。点击一行可查看这笔交易的详情。
+
+## PlaceholderAPI
+
+下面以默认金币配置、实际余额 `12345.6789` 为例。占位符用于本服在线玩家；玩家离线或余额尚未就绪时返回空文本。
+
+| 占位符 | 输出规则 | 示例 |
+| - | - | - |
+| `%sparroweco_balance_coin%` | 按币种展示精度截断的纯数字，无千分位 | `12345.67` |
+| `%sparroweco_integer_balance_coin%` | 向下取整，无小数位 | `12345` |
+| `%sparroweco_formatted_balance_coin%` | 套用 `display.format`，输出纯文本 | `12,345.67 金币` |
+| `%sparroweco_short_balance_coin%` | 套用 `display.short-format`，以 K、M、B 缩写 | `12.34K 金币` |
+
+查点券时把末尾的 `coin` 换成 `points`，例如 `%sparroweco_balance_points%`。在 Sparrow 自己的 MiniMessage 文本中写 `<papi:sparroweco_formatted_balance_coin>`；其他支持 PlaceholderAPI 的插件使用表中的百分号写法。
 
 [命令与权限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.mdx) · [货币经济 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/economy.mdx)
 
@@ -740,6 +1018,8 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 
 玩家之间发送、接受或拒绝跨服传送请求。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | - | - | - |
 | `/tpa <player>` | 请求传送到对方。 | `sparrow.command.tpa` |
@@ -748,10 +1028,19 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 | `/tpa-deny [player]` | 拒绝请求，省略玩家时选择最新请求。 | `sparrow.command.tpa_deny` |
 | `/tpa-cancel [player]` | 撤销发出的请求，省略玩家时撤销全部。 | `sparrow.command.tpa_cancel` |
 
+### 附加权限
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.bypass.tpa_cooldown` | 跳过请求间隔和拒绝后的等待。 |
+| `sparrow.tpa.staff / sparrow.tpa.vip` | TPA 默认传送冷却与倒计时覆盖。 |
+
+## 使用说明
+
 ```yaml
 expire-seconds: 60
 request-cooldown-seconds: 10
-deny-cooldown-seconds: 120
+deny-cooldown-seconds: 120  # 被拒后再次向同一人请求的等待秒数
 ```
 
 请求默认 60 秒失效，两次请求间隔 10 秒，被拒绝后向同一玩家再次请求需等待 120 秒。`sparrow.bypass.tpa_cooldown` 跳过两种请求间隔。
