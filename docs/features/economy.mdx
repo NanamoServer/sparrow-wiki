@@ -1,0 +1,21 @@
+---
+title: 💰 Multi-currency economy
+---
+
+Set `economy: true` in `modules.yml` and restart. Use `/money` or `/coins` for coins and `/points` for points. Each wallet starts at zero for each currency.
+
+## Configure a currency
+
+Edit currency files under `plugins/Sparrow/features/economy/currencies/`. The file name is the currency ID. To rename coins for players, edit `display.name` in `coin.yml`. Set command names in `commands.aliases`. Both `display.format` and `display.short-format` accept `<amount>`, `<name>` and `<symbol>`. `balance.precision` accepts 0 through 2. At precision 2, a balance of 123.4993 displays as 123.49.
+
+`transfer.enabled` controls player transfers. Coins allow them by default and points disable them. Set `transfer.permission` to require an additional permission. With `transfer.allow-offline-recipient` off (the default), players can still pay someone online on another backend. Administrators can credit or debit offline wallets. Online targets receive a notice unless the administrator appends `--silent` or `-s`.
+
+## Rankings and transaction history
+
+`/money top` shows the top 50 positive balances across the network, including offline players. Request 1–1000 wallets, ten per page. Reopen the dialog to refresh the ranking.
+
+Use `/money history player Alex --min 10 --within 7d` to see Alex’s coin transactions of at least 10 over the past seven days. Open a transfer to see the payer and recipient. Returning restores the filtered page. In `features/economy/economy.yml`, `history.page-size` defaults to 15 and `history.retention-days` to 90.
+
+With PlaceholderAPI installed, use these for a player online on the local backend: `%sparroweco_balance_coin%`, `%sparroweco_integer_balance_coin%`, `%sparroweco_formatted_balance_coin%`, `%sparroweco_short_balance_coin%`. Replace the final `coin` with another currency ID.
+
+[Commands and permissions](../commands.mdx) · [Economy API](../api/economy.mdx)

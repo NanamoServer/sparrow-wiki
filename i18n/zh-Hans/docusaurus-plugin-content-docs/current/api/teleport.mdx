@@ -1,5 +1,5 @@
 ---
-title: 传送 API
+title: 🌀 传送 API
 ---
 
 ## Getting Started
@@ -7,11 +7,6 @@ title: 传送 API
 将当前版本 Sparrow 加入编译依赖，并声明插件依赖。下面的 `player` 是本服在线的 `SparrowPlayer`，`logger` 是你的插件日志器。
 
 ```java
-import java.util.logging.Level;
-import net.momirealms.sparrow.teleport.Teleport;
-import net.momirealms.sparrow.teleport.TeleportSubmission;
-import net.momirealms.sparrow.teleport.processor.post.PlaySound;
-
 TeleportSubmission submission = Teleport.builder()
         .server("lobby")
         .position("world", 0.5, 64, 0.5)

@@ -8,6 +8,24 @@ title: 🔑 命令与权限
 
 默认多词命令使用连字符，例如 `/set-home`，对应权限为 `sparrow.command.set_home`。
 
+## 多货币经济
+
+以金币别名 `/money` 为例。`/economy <币种 ID>` 后面可接相同子命令；`/economy history` 可跨币种查账。
+
+| 命令 | 用途 | 权限 |
+| --- | --- | --- |
+| `/money` | 查看自己的余额 | `sparrow.command.economy.balance` |
+| `/money balance <player>` | 查看玩家的精确余额 | `sparrow.command.economy.inspect` |
+| `/money give <player> <amount> [reason] [-s]` | 增加余额 | `sparrow.command.economy.give` |
+| `/money take <player> <amount> [reason] [-s]` | 扣除余额 | `sparrow.command.economy.take` |
+| `/money pay <player> <amount>` | 转账 | `sparrow.command.economy.pay` |
+| `/money top [limit]` | 打开富豪榜 | `sparrow.command.economy.top` |
+| `/money history all` | 查看币种流水 | `sparrow.command.economy.history` |
+| `/money history player <player>` | 按玩家查账 | `sparrow.command.economy.history` |
+| `/money history transaction <id>` | 查看整笔交易 | `sparrow.command.economy.history` |
+
+`sparrow.command.economy.pay.offline` 允许向离线玩家付款，默认 OP 拥有。查账列表接受 `--min`、`--max` 和 `--within`。
+
 ## 插件管理
 
 | 命令 | 用途 | 默认权限 |
