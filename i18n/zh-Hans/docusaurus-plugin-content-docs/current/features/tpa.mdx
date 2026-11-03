@@ -6,6 +6,8 @@ title: 🤝 传送请求
 
 玩家之间发送、接受或拒绝跨服传送请求。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
 | `/tpa <player>` | 请求传送到对方。 | `sparrow.command.tpa` |
@@ -14,10 +16,19 @@ title: 🤝 传送请求
 | `/tpa-deny [player]` | 拒绝请求，省略玩家时选择最新请求。 | `sparrow.command.tpa_deny` |
 | `/tpa-cancel [player]` | 撤销发出的请求，省略玩家时撤销全部。 | `sparrow.command.tpa_cancel` |
 
+### 附加权限
+
+| 权限 | 用途 |
+| --- | --- |
+| `sparrow.bypass.tpa_cooldown` | 跳过请求间隔和拒绝后的等待。 |
+| `sparrow.tpa.staff / sparrow.tpa.vip` | TPA 默认传送冷却与倒计时覆盖。 |
+
+## 使用说明
+
 ```yaml
 expire-seconds: 60
 request-cooldown-seconds: 10
-deny-cooldown-seconds: 120
+deny-cooldown-seconds: 120  # 被拒后再次向同一人请求的等待秒数
 ```
 
 请求默认 60 秒失效，两次请求间隔 10 秒，被拒绝后向同一玩家再次请求需等待 120 秒。`sparrow.bypass.tpa_cooldown` 跳过两种请求间隔。

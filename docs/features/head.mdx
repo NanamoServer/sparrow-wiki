@@ -6,9 +6,13 @@ Module `head` · Configuration `features/head.yml`
 
 Get a head from a player name or UUID. Omit the source to get your own head.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | --- | --- | --- |
 | `/head [source] [amount] [player] [--force] [--silent]` | Obtain a player head. | `sparrow.command.head[.other]` |
+
+## Usage
 
 ```text
 /head Notch
@@ -16,3 +20,11 @@ Get a head from a player name or UUID. Omit the source to get your own head.
 ```
 
 Amounts range from 1 to 6400. `--force` refreshes profile data. By default, Sparrow tries online player textures before the API. Source order, cache settings and endpoints are configurable.
+
+
+## Configuration example
+
+```yaml
+# Try the online skin first, then the configured API
+source-order: [online, api]
+```

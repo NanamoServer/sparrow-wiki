@@ -17,7 +17,7 @@ The default file enables only iron blocks. This example adds a custom elevator. 
 ```yaml
 elevators:
   "minecraft:iron_block":
-    max_distance: 64
+    max_distance: 64  # Maximum vertical distance between stops
     use_permission: ""
 
   "smc:lanzi/tiancai":

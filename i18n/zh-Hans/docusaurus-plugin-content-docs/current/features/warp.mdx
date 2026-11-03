@@ -6,6 +6,8 @@ title: 📍 传送点
 
 群组服共用的命名传送点。 玩家可从 `/warp-list` 或 `/edit-warp <name>` 打开详情，按权限传送、改名、迁移或删除。窗口内迁移和删除需要确认。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
 | `/warp <name> [player]` | 前往传送点，支持跨服玩家。 | `sparrow.command.warp[.other]` |
@@ -13,6 +15,17 @@ title: 📍 传送点
 | `/del-warp <name>` | 删除传送点。 | `sparrow.command.del_warp` |
 | `/warp-list` | 玩家打开可见传送点列表。 | `sparrow.command.warp_list` |
 | `/edit-warp <name> [rename <new_name>\|relocate]` | 查看、改名或移动传送点。 | `sparrow.command.edit_warp` |
+
+### 附加权限
+
+| 权限 | 用途 |
+| --- | --- |
+| `sparrow.warp.use.<小写名称>` | 启用 permission-restrict 后允许使用对应传送点。 |
+| `sparrow.warp.teleport.staff / sparrow.warp.teleport.vip` | Warp 默认冷却与倒计时覆盖。 |
+| `sparrow.command.edit_warp.rename` | 重命名传送点 |
+| `sparrow.command.edit_warp.relocate` | 迁移传送点 |
+
+## 使用说明
 
 ```text
 /set-warp market
@@ -25,3 +38,14 @@ title: 📍 传送点
 `rename`、`relocate` 另需 `sparrow.command.edit_warp.rename`、`sparrow.command.edit_warp.relocate`。删除使用 `/del-warp`。
 
 开启 `permission-restrict` 后，查看和使用传送点需要 `sparrow.warp.use.<小写名称>`；管理操作仍用命令权限。冷却、倒计时和到达效果在 `teleport-options` 中配置，见[传送选项](../teleport/overview.mdx)。
+
+![地标 gogo 的详情，包含世界、坐标、朝向和操作按钮](/img/features/warp-details.png)
+
+在 `/warp-list` 中选中地标，可先核对世界和落点坐标，再点「前往」。
+
+## 配置示例
+
+```yaml
+# 示例：每个传送点单独授权
+permission-restrict: true
+```

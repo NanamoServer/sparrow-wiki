@@ -6,8 +6,21 @@ Module `patrol` · Configuration `features/patrol.yml`
 
 Cycle through players across the network by teleporting to them. Omit the target to rotate through eligible players.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | --- | --- | --- |
 | `/patrol [targets]` | Cycle through players for patrol, including across servers. | `sparrow.command.patrol` |
 
-`sparrow.bypass.patrol` excludes a player. Spectators are skipped by default; set `skip-spectators: false` to include them.
+### Additional permissions
+
+| Permission | Purpose |
+| --- | --- |
+| `sparrow.bypass.patrol` | Exclude from patrol. |
+
+## Configuration example
+
+```yaml
+# Skip spectators when selecting a patrol target
+skip-spectators: true
+```

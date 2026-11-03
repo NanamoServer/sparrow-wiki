@@ -6,16 +6,27 @@ title: 🎲 随机传送
 
 在指定区域内寻找安全落点，支持跨服目的地。被传送玩家须在本服。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
 | `/rtp <player> <region> [--silent]` | 在配置的区域内随机传送。 | `sparrow.command.rtp[.other]` |
 | `/rtp-range <player> <server> <world> <min-radius> <max-radius> [options]` | 在指定方形范围内随机传送。 | `sparrow.command.rtp_range[.other]` |
 
+### 附加权限
+
+| 权限 | 用途 |
+| --- | --- |
+| `sparrow.rtp.staff / sparrow.rtp.vip` | RTP 默认冷却与倒计时覆盖。 |
+| `regions.<name>.permission` | 由服主指定，限制使用该区域 |
+
+## 使用说明
+
 ```yaml
 regions:
   wild:
     server: survival
-    permission: sparrow.rtp.wild
+    permission: sparrow.rtp.wild  # 示例区域所需的权限
     area:
       world:
         - x: [-5000, 5000]

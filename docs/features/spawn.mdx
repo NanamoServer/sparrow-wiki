@@ -6,13 +6,23 @@ Module `spawn` · Configuration `features/spawn.yml`
 
 Travel to the configured spawn, including on another backend. The command is unavailable until a destination is configured.
 
+## Command and permission reference
+
 | Command | Purpose | Default permission |
 | --- | --- | --- |
 | `/spawn` | Travel to the configured spawn. | `sparrow.command.spawn` |
 
+### Additional permissions
+
+| Permission | Purpose |
+| --- | --- |
+| `sparrow.spawn.staff` | Default Spawn cooldown and warmup override. |
+
+## Usage
+
 ```yaml
 destination:
-  server: lobby
+  server: lobby  # Use the destination backend server ID
   world: world
   x: 0.5
   y: 64

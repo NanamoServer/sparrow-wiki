@@ -6,13 +6,23 @@ title: 🏁 出生点
 
 前往配置中指定的出生点，支持其他子服。未配置目的地时命令不可用。
 
+## 命令与权限速查
+
 | 命令 | 用途 | 默认权限 |
 | --- | --- | --- |
 | `/spawn` | 前往配置中的出生点。 | `sparrow.command.spawn` |
 
+### 附加权限
+
+| 权限 | 用途 |
+| --- | --- |
+| `sparrow.spawn.staff` | Spawn 默认冷却与倒计时覆盖。 |
+
+## 使用说明
+
 ```yaml
 destination:
-  server: lobby
+  server: lobby  # 填写目标后端服务器的 ID
   world: world
   x: 0.5
   y: 64
