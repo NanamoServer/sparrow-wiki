@@ -72,12 +72,6 @@ Waypoint 让一个本服玩家看到指向目标的标记。**观察者**是看�
 将 `world` 和坐标替换为北门的实际位置。默认样式会显示标记、名称和距离。玩家进入北门五格范围时标记隐藏，离开后重新显示。
 
 ```java
-import net.kyori.adventure.text.Component;
-import net.momirealms.sparrow.service.waypoint.Waypoint;
-import net.momirealms.sparrow.service.waypoint.WaypointTarget;
-import net.momirealms.sparrow.service.waypoint.WaypointTracking;
-import org.bukkit.entity.Player;
-
 public final class NorthGate {
     public static WaypointTracking show(Player viewer) {
         return Waypoint.builder()
@@ -94,19 +88,6 @@ public final class NorthGate {
 标记在每次可见刷新时跟随队友，血量最多每 500 ms 读取一次。只有展示的整数血量变化时才构建新的文本组件。每次调用 `show` 都创建独立布局，两条追踪不会共用血量读数。
 
 ```java
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import net.kyori.adventure.text.Component;
-import net.momirealms.sparrow.service.waypoint.Waypoint;
-import net.momirealms.sparrow.service.waypoint.WaypointStyle;
-import net.momirealms.sparrow.service.waypoint.WaypointTarget;
-import net.momirealms.sparrow.service.waypoint.WaypointTracking;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointElements;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointLayout;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointView;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 public final class TeammateWaypoint {
     public static WaypointTracking show(Player viewer, Player teammate) {
         UUID id = teammate.getUniqueId();

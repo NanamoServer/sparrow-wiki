@@ -34,6 +34,24 @@ Sparrow 提供日常管理命令，以及家、传送点、传送请求、随机
 
 默认多词命令使用连字符，例如 `/set-home`，对应权限为 `sparrow.command.set_home`。
 
+## 多货币经济
+
+以金币别名 `/money` 为例。`/economy <币种 ID>` 后面可接相同子命令；`/economy history` 可跨币种查账。
+
+| 命令 | 用途 | 权限 |
+| - | - | - |
+| `/money` | 查看自己的余额 | `sparrow.command.economy.balance` |
+| `/money balance <player>` | 查看玩家的精确余额 | `sparrow.command.economy.inspect` |
+| `/money give <player> <amount> [reason] [-s]` | 增加余额 | `sparrow.command.economy.give` |
+| `/money take <player> <amount> [reason] [-s]` | 扣除余额 | `sparrow.command.economy.take` |
+| `/money pay <player> <amount>` | 转账 | `sparrow.command.economy.pay` |
+| `/money top [limit]` | 打开富豪榜 | `sparrow.command.economy.top` |
+| `/money history all` | 查看币种流水 | `sparrow.command.economy.history` |
+| `/money history player <player>` | 按玩家查账 | `sparrow.command.economy.history` |
+| `/money history transaction <id>` | 查看整笔交易 | `sparrow.command.economy.history` |
+
+`sparrow.command.economy.pay.offline` 允许向离线玩家付款，默认 OP 拥有。查账列表接受 `--min`、`--max` 和 `--within`。
+
 ## 插件管理
 
 | 命令 | 用途 | 默认权限 |
@@ -692,6 +710,28 @@ Spawn 支持冷却、倒计时和权限覆盖。其倒计时字段使用 `cancel
 
 安装 PlaceholderAPI 后可用 `sparrowhome_count`、`sparrowhome_limit`、`sparrowhome_remaining`、`sparrowhome_list`。Sparrow 文本中写作 `<papi:sparrowhome_count>`；无限上限和剩余数量返回 `-1`。
 
+# 多货币经济
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/economy>
+
+在 `modules.yml` 设置 `economy: true` 后重启。默认金币使用 `/money` 或 `/coins`，点券使用 `/points`。每种货币独立记账，新玩家余额为零。
+
+## 设置币种
+
+在 `plugins/Sparrow/features/economy/currencies/` 中编辑币种文件。文件名是币种 ID；想把金币改叫「云币」，只改 `coin.yml` 的 `display.name`。`commands.aliases` 决定命令名，`display.format` 和 `display.short-format` 可以使用 `<amount>`、`<name>`、`<symbol>`。`balance.precision` 支持 0～2；设为 2 时，实际余额 123.4993 显示为 123.49。
+
+`transfer.enabled` 控制玩家转账；默认金币可转，点券不可转。`transfer.permission` 可以额外限制付款人。`transfer.allow-offline-recipient` 默认关闭，玩家仍可向其他服的在线玩家转账。管理员可以给离线钱包增扣款；给在线目标增扣时，对方会收到通知，命令末尾加 `--silent` 或 `-s` 可静默操作。
+
+## 富豪榜与查账
+
+`/money top` 默认取全服前 50 个正余额钱包，包含离线玩家。可指定 1～1000 人，每页 10 人。翻页时名次固定，重新打开可看最新排名。
+
+管理员可用 `/money history player Alex --min 10 --within 7d` 查看 Alex 最近 7 天金额至少为 10 的金币流水。点开转账能看到付款人和收款人，返回后保留原筛选和页码。主配置 `features/economy/economy.yml` 中，`history.page-size` 默认 15，`history.retention-days` 默认 90。
+
+安装 PlaceholderAPI 后，可对本服在线玩家使用 `%sparroweco_balance_coin%`, `%sparroweco_integer_balance_coin%`, `%sparroweco_formatted_balance_coin%`, `%sparroweco_short_balance_coin%`. 将末尾的 `coin` 换成其他币种 ID 即可。
+
+[命令与权限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/commands.mdx) · [货币经济 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/economy.mdx)
+
 # 传送请求
 
 原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/tpa>
@@ -798,11 +838,6 @@ Back、DeathBack 和 World 的 `--unsafe` 允许搜索失败后使用原坐标�
 将当前版本 Sparrow 加入编译依赖，并声明插件依赖。下面的 `player` 是本服在线的 `SparrowPlayer`，`logger` 是你的插件日志器。
 
 ```java
-import java.util.logging.Level;
-import net.momirealms.sparrow.teleport.Teleport;
-import net.momirealms.sparrow.teleport.TeleportSubmission;
-import net.momirealms.sparrow.teleport.processor.post.PlaySound;
-
 TeleportSubmission submission = Teleport.builder()
         .server("lobby")
         .position("world", 0.5, 64, 0.5)
@@ -984,12 +1019,6 @@ Waypoint 让一个本服玩家看到指向目标的标记。**观察者**是看�
 将 `world` 和坐标替换为北门的实际位置。默认样式会显示标记、名称和距离。玩家进入北门五格范围时标记隐藏，离开后重新显示。
 
 ```java
-import net.kyori.adventure.text.Component;
-import net.momirealms.sparrow.service.waypoint.Waypoint;
-import net.momirealms.sparrow.service.waypoint.WaypointTarget;
-import net.momirealms.sparrow.service.waypoint.WaypointTracking;
-import org.bukkit.entity.Player;
-
 public final class NorthGate {
     public static WaypointTracking show(Player viewer) {
         return Waypoint.builder()
@@ -1006,19 +1035,6 @@ public final class NorthGate {
 标记在每次可见刷新时跟随队友，血量最多每 500 ms 读取一次。只有展示的整数血量变化时才构建新的文本组件。每次调用 `show` 都创建独立布局，两条追踪不会共用血量读数。
 
 ```java
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import net.kyori.adventure.text.Component;
-import net.momirealms.sparrow.service.waypoint.Waypoint;
-import net.momirealms.sparrow.service.waypoint.WaypointStyle;
-import net.momirealms.sparrow.service.waypoint.WaypointTarget;
-import net.momirealms.sparrow.service.waypoint.WaypointTracking;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointElements;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointLayout;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointView;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 public final class TeammateWaypoint {
     public static WaypointTracking show(Player viewer, Player teammate) {
         UUID id = teammate.getUniqueId();
@@ -1099,3 +1115,61 @@ HighlightSubmission preview = Highlight.builder()
 - 已看到轮廓的玩家切世界、重生或退出时，`onLeave(Player)` 对该玩家触发一次。其他玩家继续观看，离开的玩家返回原世界后需要重新提交。
 - 整场高亮释放后，`onEnd(Runnable)` 触发一次，包括请求被拒绝、无人可看、主动撤销、自然到期或 Sparrow 停用。最后一名观看者离开时，先触发他的离开回调。到期和主动撤销只触发结束回调。
 - 两种回调都在会话锁外按顺序执行，线程由触发事件决定。请求立即被拒绝时，`onEnd` 可能在 `commit` 返回前执行。
+
+# 货币经济 API
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/economy>
+
+下面用任务奖励和箱子商店举例。把当前版本的 Sparrow 加入插件的编译依赖（`compileOnly`），并声明 Sparrow 为服务端依赖，让它先加载。示例中的 `playerId`、`buyer`、`seller` 都是玩家 UUID。
+
+## 取得服务和币种
+
+```java
+EconomyApi api = EconomyApi.get();
+if (api == null) return;
+EconomyCurrency coin = api.currency("coin");
+if (coin == null) return;
+```
+
+模块未启用时，`get()` 返回 `null`。查币种用配置文件名对应的 ID，例如 `coin.yml` 用 `coin`。未注册的 ID 返回 `null`。把查到的 `EconomyCurrency` 传给后续操作，`api.currencies()` 可以列出已注册的币种。
+
+## 发奖励、扣款和转账
+
+```java
+var reward = api.give(playerId, coin, new BigDecimal("12.50"), "QuestPlugin");
+var debit = api.take(playerId, coin, new BigDecimal("2.00"), "QuestPlugin", "Entry fee");
+```
+
+每次写入都要填写 `actor`，管理员查账时能看到谁发起了操作。`reason` 可省略。金额用十进制字符串构造 `BigDecimal`，钱包按四位小数四舍五入；显示时才按币种精度向下截断。
+
+```java
+api.transfer(buyer, seller, coin, new BigDecimal("18.75"), "ChestShop", "3 golden apples")
+    .whenComplete((result, error) -> {
+        if (error != null) {
+            logger.log(java.util.logging.Level.SEVERE, "Payment failed", error);
+            return;
+        }
+        if (result.status() == EconomyResult.Status.SUCCESS) {
+            logger.info("Paid. Buyer: " + result.balance() + ", seller: " + result.recipientBalance());
+        } else {
+            logger.info("Payment declined: " + result.status());
+        }
+    });
+```
+
+`transfer` 在同一笔事务里扣买家的钱、给卖家入账，支持离线和跨服账户。余额不足会正常返回 `INSUFFICIENT_FUNDS`；还可能返回 `INVALID_AMOUNT`、`SAME_ACCOUNT` 或 `TRANSFER_DISABLED`。商店应在 `SUCCESS` 后发货，修改玩家背包时按服务端要求调度。
+
+同服涉及同一账户的写入按受理顺序执行，跨服由数据库决定顺序。后一笔业务若要求前一笔成功，先检查结果，再用 `thenCompose` 提交。
+
+## 读余额、排名和流水
+
+`api.peekBalance(playerId, coin)` 同步读取快照，尚未就绪时返回 `null`。需要权威余额或查询离线玩家时，用 `api.readBalance(playerId, coin)` 返回的 Future。要显示刚成交后的余额，直接取本笔 `result.balance()`。
+
+```java
+var ranks = api.top(coin, 10, 5);
+var query = net.momirealms.sparrow.feature.economy.history.EconomyHistoryQuery.search(
+    playerId, coin.id(), BigDecimal.ONE, null, java.time.Duration.ofDays(7));
+var firstPage = api.history(query, null, 20);
+```
+
+排名示例跳过前 10 名，取第 11～15 名的 UUID 和四位余额。`api.top(coin, limit)` 从榜首开始，接受任意正整数人数。每次查询独立取数。流水示例查最近 7 天、变动绝对值至少为 1 的成功记录；在 Future 完成后取 `page.entries()`，若 `page.next()` 非空，用原来的 `query` 和这个游标查询下一页。

@@ -72,12 +72,6 @@ Use `WaypointStyle.custom(layout)` to choose the elements and their arrangement.
 Replace `world` and the coordinates with the location of your gate. The default style shows a marker, the gate name and its distance. The marker hides within five blocks and returns when the viewer walks away.
 
 ```java
-import net.kyori.adventure.text.Component;
-import net.momirealms.sparrow.service.waypoint.Waypoint;
-import net.momirealms.sparrow.service.waypoint.WaypointTarget;
-import net.momirealms.sparrow.service.waypoint.WaypointTracking;
-import org.bukkit.entity.Player;
-
 public final class NorthGate {
     public static WaypointTracking show(Player viewer) {
         return Waypoint.builder()
@@ -94,19 +88,6 @@ public final class NorthGate {
 The marker follows the teammate on every visible refresh. Health is sampled at most once every 500 ms, and a new text component is built only when the displayed whole number changes. Each call to `show` creates its own layout, so two tracks never share a health reading.
 
 ```java
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import net.kyori.adventure.text.Component;
-import net.momirealms.sparrow.service.waypoint.Waypoint;
-import net.momirealms.sparrow.service.waypoint.WaypointStyle;
-import net.momirealms.sparrow.service.waypoint.WaypointTarget;
-import net.momirealms.sparrow.service.waypoint.WaypointTracking;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointElements;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointLayout;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointView;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 public final class TeammateWaypoint {
     public static WaypointTracking show(Player viewer, Player teammate) {
         UUID id = teammate.getUniqueId();

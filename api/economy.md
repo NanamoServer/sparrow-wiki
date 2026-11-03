@@ -1,0 +1,57 @@
+# Economy API
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/api/economy>
+
+The examples use a quest reward and a chest shop. Add your server’s Sparrow build as a compile-only dependency and declare Sparrow as a server dependency so it loads first. The variables `playerId`, `buyer` and `seller` are player UUIDs.
+
+## Get the service and currency
+
+```java
+EconomyApi api = EconomyApi.get();
+if (api == null) return;
+EconomyCurrency coin = api.currency("coin");
+if (coin == null) return;
+```
+
+When the module is unavailable, `get()` returns `null`. Look up the currency by its file ID (`coin` for `coin.yml`). An unknown ID returns `null`. Pass the resulting `EconomyCurrency` to wallet operations, or use `api.currencies()` to list registered currencies.
+
+## Credit, debit and transfer
+
+```java
+var reward = api.give(playerId, coin, new BigDecimal("12.50"), "QuestPlugin");
+var debit = api.take(playerId, coin, new BigDecimal("2.00"), "QuestPlugin", "Entry fee");
+```
+
+Supply an `actor` for every write so an administrator can identify its origin in history. The `reason` is optional. Construct `BigDecimal` from a decimal string. Wallets round to four decimal places on input and round down to the currency’s precision for display.
+
+```java
+api.transfer(buyer, seller, coin, new BigDecimal("18.75"), "ChestShop", "3 golden apples")
+    .whenComplete((result, error) -> {
+        if (error != null) {
+            logger.log(java.util.logging.Level.SEVERE, "Payment failed", error);
+            return;
+        }
+        if (result.status() == EconomyResult.Status.SUCCESS) {
+            logger.info("Paid. Buyer: " + result.balance() + ", seller: " + result.recipientBalance());
+        } else {
+            logger.info("Payment declined: " + result.status());
+        }
+    });
+```
+
+Use `transfer` to debit the buyer and credit the seller in one transaction, including offline and cross-server accounts. Insufficient funds returns `INSUFFICIENT_FUNDS` normally. Other refusals include `INVALID_AMOUNT`, `SAME_ACCOUNT` and `TRANSFER_DISABLED`. Deliver items only after `SUCCESS`, scheduling inventory changes on the appropriate server thread.
+
+On one backend, writes sharing an account run in acceptance order. The database orders writes across backends. If a second operation requires the first to succeed, check its status before submitting the second with `thenCompose`.
+
+## Read balances, rankings and history
+
+Use `api.peekBalance(playerId, coin)` for a synchronous snapshot. It returns `null` until ready. For an authoritative balance or an offline player, use the future from `api.readBalance(playerId, coin)`. To display the balance after a particular write, use its `result.balance()`.
+
+```java
+var ranks = api.top(coin, 10, 5);
+var query = net.momirealms.sparrow.feature.economy.history.EconomyHistoryQuery.search(
+    playerId, coin.id(), BigDecimal.ONE, null, java.time.Duration.ofDays(7));
+var firstPage = api.history(query, null, 20);
+```
+
+The ranking example skips ten wallets and returns ranks 11 through 15 with their UUIDs and four-decimal balances. Use `api.top(coin, limit)` to start at rank one with any positive integer limit. Each call reads the current ranking. The history example returns successful changes of at least one unit in either direction over the last seven days. Read `page.entries()` when the future completes. If `page.next()` is present, reuse the same query and pass that cursor to fetch the next page.

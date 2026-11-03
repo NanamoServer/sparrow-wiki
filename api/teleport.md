@@ -7,11 +7,6 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/api/teleport>
 Add the current Sparrow build as a compile dependency and declare your plugin's dependency on Sparrow. Here, `player` is a local online `SparrowPlayer`, and `logger` is your plugin's logger.
 
 ```java
-import java.util.logging.Level;
-import net.momirealms.sparrow.teleport.Teleport;
-import net.momirealms.sparrow.teleport.TeleportSubmission;
-import net.momirealms.sparrow.teleport.processor.post.PlaySound;
-
 TeleportSubmission submission = Teleport.builder()
         .server("lobby")
         .position("world", 0.5, 64, 0.5)

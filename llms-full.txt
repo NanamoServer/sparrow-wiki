@@ -34,6 +34,24 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/commands>
 
 Default multiword commands use hyphens, as in `/set-home`. Its permission is `sparrow.command.set_home`.
 
+## Multi-currency economy
+
+Examples use the coin alias `/money`. The same branches are available under `/economy <currency ID>`. Use `/economy history` to search across currencies.
+
+| Command | Purpose | Permission |
+| - | - | - |
+| `/money` | Show your balance | `sparrow.command.economy.balance` |
+| `/money balance <player>` | Inspect a player’s exact balance | `sparrow.command.economy.inspect` |
+| `/money give <player> <amount> [reason] [-s]` | Credit a wallet | `sparrow.command.economy.give` |
+| `/money take <player> <amount> [reason] [-s]` | Debit a wallet | `sparrow.command.economy.take` |
+| `/money pay <player> <amount>` | Pay a player | `sparrow.command.economy.pay` |
+| `/money top [limit]` | Open the rich list | `sparrow.command.economy.top` |
+| `/money history all` | Browse currency history | `sparrow.command.economy.history` |
+| `/money history player <player>` | Filter history by player | `sparrow.command.economy.history` |
+| `/money history transaction <id>` | Inspect one transaction | `sparrow.command.economy.history` |
+
+`sparrow.command.economy.pay.offline` allows payments to offline players and defaults to OP. History lists accept `--min`, `--max` and `--within`.
+
 ## Plugin management
 
 | Command | Purpose | Default permission |
@@ -692,6 +710,28 @@ The default limit is 3 homes. `sparrow.home.limit.<amount>` overrides `max-homes
 
 With PlaceholderAPI installed, use `sparrowhome_count`, `sparrowhome_limit`, `sparrowhome_remaining` and `sparrowhome_list`. In Sparrow text, write `<papi:sparrowhome_count>`. Unlimited limits and remaining counts return `-1`.
 
+# Multi-currency economy
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/features/economy>
+
+Set `economy: true` in `modules.yml` and restart. Use `/money` or `/coins` for coins and `/points` for points. Each wallet starts at zero for each currency.
+
+## Configure a currency
+
+Edit currency files under `plugins/Sparrow/features/economy/currencies/`. The file name is the currency ID. To rename coins for players, edit `display.name` in `coin.yml`. Set command names in `commands.aliases`. Both `display.format` and `display.short-format` accept `<amount>`, `<name>` and `<symbol>`. `balance.precision` accepts 0 through 2. At precision 2, a balance of 123.4993 displays as 123.49.
+
+`transfer.enabled` controls player transfers. Coins allow them by default and points disable them. Set `transfer.permission` to require an additional permission. With `transfer.allow-offline-recipient` off (the default), players can still pay someone online on another backend. Administrators can credit or debit offline wallets. Online targets receive a notice unless the administrator appends `--silent` or `-s`.
+
+## Rankings and transaction history
+
+`/money top` shows the top 50 positive balances across the network, including offline players. Request 1–1000 wallets, ten per page. Reopen the dialog to refresh the ranking.
+
+Use `/money history player Alex --min 10 --within 7d` to see Alex’s coin transactions of at least 10 over the past seven days. Open a transfer to see the payer and recipient. Returning restores the filtered page. In `features/economy/economy.yml`, `history.page-size` defaults to 15 and `history.retention-days` to 90.
+
+With PlaceholderAPI installed, use these for a player online on the local backend: `%sparroweco_balance_coin%`, `%sparroweco_integer_balance_coin%`, `%sparroweco_formatted_balance_coin%`, `%sparroweco_short_balance_coin%`. Replace the final `coin` with another currency ID.
+
+[Commands and permissions](https://nanamoserver.github.io/sparrow-wiki/commands.mdx) · [Economy API](https://nanamoserver.github.io/sparrow-wiki/api/economy.mdx)
+
 # Teleport requests
 
 Source: <https://nanamoserver.github.io/sparrow-wiki/features/tpa>
@@ -798,11 +838,6 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/api/teleport>
 Add the current Sparrow build as a compile dependency and declare your plugin's dependency on Sparrow. Here, `player` is a local online `SparrowPlayer`, and `logger` is your plugin's logger.
 
 ```java
-import java.util.logging.Level;
-import net.momirealms.sparrow.teleport.Teleport;
-import net.momirealms.sparrow.teleport.TeleportSubmission;
-import net.momirealms.sparrow.teleport.processor.post.PlaySound;
-
 TeleportSubmission submission = Teleport.builder()
         .server("lobby")
         .position("world", 0.5, 64, 0.5)
@@ -984,12 +1019,6 @@ Use `WaypointStyle.custom(layout)` to choose the elements and their arrangement.
 Replace `world` and the coordinates with the location of your gate. The default style shows a marker, the gate name and its distance. The marker hides within five blocks and returns when the viewer walks away.
 
 ```java
-import net.kyori.adventure.text.Component;
-import net.momirealms.sparrow.service.waypoint.Waypoint;
-import net.momirealms.sparrow.service.waypoint.WaypointTarget;
-import net.momirealms.sparrow.service.waypoint.WaypointTracking;
-import org.bukkit.entity.Player;
-
 public final class NorthGate {
     public static WaypointTracking show(Player viewer) {
         return Waypoint.builder()
@@ -1006,19 +1035,6 @@ public final class NorthGate {
 The marker follows the teammate on every visible refresh. Health is sampled at most once every 500 ms, and a new text component is built only when the displayed whole number changes. Each call to `show` creates its own layout, so two tracks never share a health reading.
 
 ```java
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import net.kyori.adventure.text.Component;
-import net.momirealms.sparrow.service.waypoint.Waypoint;
-import net.momirealms.sparrow.service.waypoint.WaypointStyle;
-import net.momirealms.sparrow.service.waypoint.WaypointTarget;
-import net.momirealms.sparrow.service.waypoint.WaypointTracking;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointElements;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointLayout;
-import net.momirealms.sparrow.service.waypoint.layout.WaypointView;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 public final class TeammateWaypoint {
     public static WaypointTracking show(Player viewer, Player teammate) {
         UUID id = teammate.getUniqueId();
@@ -1099,3 +1115,61 @@ Selecting another target replaces the previous selection. The limit is 32768 dis
 - `onLeave(Player)` runs once for a viewer who had a visible outline and changes world, respawns or disconnects. Other viewers keep their outline. Returning to the world requires a new submission.
 - `onEnd(Runnable)` runs once when the entire session releases its resources, including rejection, no viewers, removal, expiry and Sparrow shutdown. If the last viewer leaves, their leave callback runs first. Expiry and explicit removal trigger only the end callback.
 - Both callbacks run outside the session lock, in session order. The executing thread depends on the trigger. An immediately rejected submission can call `onEnd` before `commit` returns.
+
+# Economy API
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/api/economy>
+
+The examples use a quest reward and a chest shop. Add your server’s Sparrow build as a compile-only dependency and declare Sparrow as a server dependency so it loads first. The variables `playerId`, `buyer` and `seller` are player UUIDs.
+
+## Get the service and currency
+
+```java
+EconomyApi api = EconomyApi.get();
+if (api == null) return;
+EconomyCurrency coin = api.currency("coin");
+if (coin == null) return;
+```
+
+When the module is unavailable, `get()` returns `null`. Look up the currency by its file ID (`coin` for `coin.yml`). An unknown ID returns `null`. Pass the resulting `EconomyCurrency` to wallet operations, or use `api.currencies()` to list registered currencies.
+
+## Credit, debit and transfer
+
+```java
+var reward = api.give(playerId, coin, new BigDecimal("12.50"), "QuestPlugin");
+var debit = api.take(playerId, coin, new BigDecimal("2.00"), "QuestPlugin", "Entry fee");
+```
+
+Supply an `actor` for every write so an administrator can identify its origin in history. The `reason` is optional. Construct `BigDecimal` from a decimal string. Wallets round to four decimal places on input and round down to the currency’s precision for display.
+
+```java
+api.transfer(buyer, seller, coin, new BigDecimal("18.75"), "ChestShop", "3 golden apples")
+    .whenComplete((result, error) -> {
+        if (error != null) {
+            logger.log(java.util.logging.Level.SEVERE, "Payment failed", error);
+            return;
+        }
+        if (result.status() == EconomyResult.Status.SUCCESS) {
+            logger.info("Paid. Buyer: " + result.balance() + ", seller: " + result.recipientBalance());
+        } else {
+            logger.info("Payment declined: " + result.status());
+        }
+    });
+```
+
+Use `transfer` to debit the buyer and credit the seller in one transaction, including offline and cross-server accounts. Insufficient funds returns `INSUFFICIENT_FUNDS` normally. Other refusals include `INVALID_AMOUNT`, `SAME_ACCOUNT` and `TRANSFER_DISABLED`. Deliver items only after `SUCCESS`, scheduling inventory changes on the appropriate server thread.
+
+On one backend, writes sharing an account run in acceptance order. The database orders writes across backends. If a second operation requires the first to succeed, check its status before submitting the second with `thenCompose`.
+
+## Read balances, rankings and history
+
+Use `api.peekBalance(playerId, coin)` for a synchronous snapshot. It returns `null` until ready. For an authoritative balance or an offline player, use the future from `api.readBalance(playerId, coin)`. To display the balance after a particular write, use its `result.balance()`.
+
+```java
+var ranks = api.top(coin, 10, 5);
+var query = net.momirealms.sparrow.feature.economy.history.EconomyHistoryQuery.search(
+    playerId, coin.id(), BigDecimal.ONE, null, java.time.Duration.ofDays(7));
+var firstPage = api.history(query, null, 20);
+```
+
+The ranking example skips ten wallets and returns ranks 11 through 15 with their UUIDs and four-decimal balances. Use `api.top(coin, limit)` to start at rank one with any positive integer limit. Each call reads the current ranking. The history example returns successful changes of at least one unit in either direction over the last seven days. Read `page.entries()` when the future completes. If `page.next()` is present, reuse the same query and pass that cursor to fetch the next page.

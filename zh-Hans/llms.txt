@@ -24,6 +24,7 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 - [出生点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/spawn.md): 模块 spawn · 配置 features/spawn.yml
 - [传送点](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/warp.md): 模块 warp · 配置 features/warp.yml
 - [家](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/home.md): 模块 home · 配置 features/home.yml
+- [多货币经济](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/economy.md): 在 modules.yml 设置 economy: true 后重启。默认金币使用 /money 或 /coins，点券使用 /points。每种货币独立记账，新玩家余额为零。
 - [传送请求](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/tpa.md): 模块 tpa · 配置 features/tpa.yml
 
 ## 传送配置
@@ -36,3 +37,4 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 - [传送 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/teleport.md)
 - [Waypoint API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/waypoint.md): Waypoint 让一个本服玩家看到指向目标的标记。观察者是看到标记的玩家，目标是真实位置，锚点是标记的显示位置。目标很远时，标记可以投影到观察者附近；到达判定和距离文字仍使用真实目标。
 - [高亮 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/highlight.md): 通过 net.momirealms.sparrow.service.highlight.Highlight 向本服玩家显示方块轮廓。服务随 Sparrow 启动，关闭高亮命令后仍可使用。
+- [货币经济 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/economy.md): 下面用任务奖励和箱子商店举例。把当前版本的 Sparrow 加入插件的编译依赖（compileOnly），并声明 Sparrow 为服务端依赖，让它先加载。示例中的 playerId、buyer、seller 都是玩家 UUID。

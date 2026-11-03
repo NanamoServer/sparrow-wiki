@@ -24,6 +24,7 @@ Every link below points to the Markdown version of that page. All pages combined
 - [Spawn](https://nanamoserver.github.io/sparrow-wiki/features/spawn.md): Module spawn · Configuration features/spawn.yml
 - [Warps](https://nanamoserver.github.io/sparrow-wiki/features/warp.md): Module warp · Configuration features/warp.yml
 - [Homes](https://nanamoserver.github.io/sparrow-wiki/features/home.md): Module home · Configuration features/home.yml
+- [Multi-currency economy](https://nanamoserver.github.io/sparrow-wiki/features/economy.md): Set economy: true in modules.yml and restart. Use /money or /coins for coins and /points for points. Each wallet starts at zero for each currency.
 - [Teleport requests](https://nanamoserver.github.io/sparrow-wiki/features/tpa.md): Module tpa · Configuration features/tpa.yml
 
 ## Teleport configuration
@@ -36,3 +37,4 @@ Every link below points to the Markdown version of that page. All pages combined
 - [Teleport API](https://nanamoserver.github.io/sparrow-wiki/api/teleport.md)
 - [Waypoint API](https://nanamoserver.github.io/sparrow-wiki/api/waypoint.md): A waypoint shows one local player a marker for a target. The viewer sees the marker, the target is the real location, and the anchor is where the marker is drawn. A distant target can have an anchor close to the viewer. Arrival checks and distance labels still use the real target.
 - [Highlight API](https://nanamoserver.github.io/sparrow-wiki/api/highlight.md): Use net.momirealms.sparrow.service.highlight.Highlight to show block outlines to local players. The service starts with Sparrow and remains available when the command is disabled.
+- [Economy API](https://nanamoserver.github.io/sparrow-wiki/api/economy.md): The examples use a quest reward and a chest shop. Add your server’s Sparrow build as a compile-only dependency and declare Sparrow as a server dependency so it loads first. The variables playerId, buyer and seller are player UUIDs.

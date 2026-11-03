@@ -8,6 +8,24 @@ Source: <https://nanamoserver.github.io/sparrow-wiki/commands>
 
 Default multiword commands use hyphens, as in `/set-home`. Its permission is `sparrow.command.set_home`.
 
+## Multi-currency economy
+
+Examples use the coin alias `/money`. The same branches are available under `/economy <currency ID>`. Use `/economy history` to search across currencies.
+
+| Command | Purpose | Permission |
+| - | - | - |
+| `/money` | Show your balance | `sparrow.command.economy.balance` |
+| `/money balance <player>` | Inspect a player’s exact balance | `sparrow.command.economy.inspect` |
+| `/money give <player> <amount> [reason] [-s]` | Credit a wallet | `sparrow.command.economy.give` |
+| `/money take <player> <amount> [reason] [-s]` | Debit a wallet | `sparrow.command.economy.take` |
+| `/money pay <player> <amount>` | Pay a player | `sparrow.command.economy.pay` |
+| `/money top [limit]` | Open the rich list | `sparrow.command.economy.top` |
+| `/money history all` | Browse currency history | `sparrow.command.economy.history` |
+| `/money history player <player>` | Filter history by player | `sparrow.command.economy.history` |
+| `/money history transaction <id>` | Inspect one transaction | `sparrow.command.economy.history` |
+
+`sparrow.command.economy.pay.offline` allows payments to offline players and defaults to OP. History lists accept `--min`, `--max` and `--within`.
+
 ## Plugin management
 
 | Command | Purpose | Default permission |
