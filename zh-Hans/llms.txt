@@ -16,6 +16,7 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 - [玩家巡查](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/patrol.md): 模块 patrol · 配置 features/patrol.yml
 - [玩家头颅](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/head.md): 模块 head · 配置 features/head.yml
 - [维护模式](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/maintenance.md): 模块 maintenance · 配置 features/maintenance.yml
+- [在线时间统计](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/online-time.md): 模块 online_time · 配置文件 features/online_time.yml
 - [人数上限](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/player-limit.md): 模块 player_limit · 配置 features/player_limit.yml
 - [死亡消息](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/death-messages.md): 模块 death_messages · 配置 features/death_messages.yml
 - [封禁](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/ban.md): 模块 ban · 配置 features/ban.yml

@@ -16,6 +16,7 @@ Every link below points to the Markdown version of that page. All pages combined
 - [Patrol](https://nanamoserver.github.io/sparrow-wiki/features/patrol.md): Module patrol · Configuration features/patrol.yml
 - [Heads](https://nanamoserver.github.io/sparrow-wiki/features/head.md): Module head · Configuration features/head.yml
 - [Maintenance](https://nanamoserver.github.io/sparrow-wiki/features/maintenance.md): Module maintenance · Configuration features/maintenance.yml
+- [Online time](https://nanamoserver.github.io/sparrow-wiki/features/online-time.md): Module online_time · Configuration features/online_time.yml
 - [Player limit](https://nanamoserver.github.io/sparrow-wiki/features/player-limit.md): Module player_limit · Configuration features/player_limit.yml
 - [Death messages](https://nanamoserver.github.io/sparrow-wiki/features/death-messages.md): Module death_messages · Configuration features/death_messages.yml
 - [Bans](https://nanamoserver.github.io/sparrow-wiki/features/ban.md): Module ban · Configuration features/ban.yml
