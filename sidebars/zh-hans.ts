@@ -14,6 +14,7 @@ const sidebars: SidebarsConfig = {
         'features/patrol',
         'features/head',
         'features/maintenance',
+        'features/online-time',
         'features/player-limit',
         'features/death-messages',
         'features/ban',

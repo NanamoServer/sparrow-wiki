@@ -185,3 +185,16 @@ In `/item-lore editor`, each line is one lore entry. Clear the editor and save t
 | `sparrow.spawn.staff` | Default Spawn cooldown and warmup override. |
 
 Teleport override permissions are configurable in each feature's `teleport-options.overrides`; RTP region permissions use `regions.<name>.permission`.
+
+
+## Online time
+
+[Online time guide](./features/online-time.mdx)
+
+| Command | Purpose | Permission |
+| --- | --- | --- |
+| `/online-time` | Open overview | `sparrow.command.online_time.report` |
+| `/online-time new [date]` | New registrations | `sparrow.command.online_time.report` |
+| `/online-time retention` | Exact-day retention | `sparrow.command.online_time.report` |
+| `/online-time player <player>` | Player records | `sparrow.command.online_time.report` |
+| `/online-time calendar <player> [month]` | Records for a month | `sparrow.command.online_time.report` |

@@ -185,3 +185,16 @@ title: 🔑 命令与权限
 | `sparrow.spawn.staff` | Spawn 默认冷却与倒计时覆盖。 |
 
 传送覆盖权限可在各功能的 `teleport-options.overrides` 中修改；RTP 区域权限由 `regions.<名称>.permission` 指定。
+
+
+## 在线时间统计
+
+[在线时间统计详情](./features/online-time.mdx)
+
+| 命令 | 用途 | 权限 |
+| --- | --- | --- |
+| `/online-time` | 每日活跃概览 | `sparrow.command.online_time.report` |
+| `/online-time new [date]` | 新玩家名单 | `sparrow.command.online_time.report` |
+| `/online-time retention` | 精确日留存 | `sparrow.command.online_time.report` |
+| `/online-time player <player>` | 玩家在线记录 | `sparrow.command.online_time.report` |
+| `/online-time calendar <player> [month]` | 指定月份在线记录 | `sparrow.command.online_time.report` |
