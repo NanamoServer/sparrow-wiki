@@ -60,6 +60,7 @@ Use `death_messages` as the feature name to manage [Death messages](https://nana
 
 | Command | Purpose | Default permission |
 | - | - | - |
+| `/give <player> <item> [count]` | Give vanilla or CraftEngine items, including across servers. | `sparrow.command.give` |
 | `/heal [player [--value <amount>]]` | Restore health; hunger and effects are unchanged. | `sparrow.command.heal[.other]` |
 | `/feed [player [--value <amount>]]` | Restore food level. | `sparrow.command.feed[.other]` |
 | `/air <player> [--value <amount>]` | Set remaining air; omit the value to refill it. | `sparrow.command.air` |

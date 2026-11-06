@@ -18,4 +18,4 @@ Use [Commands and permissions](https://nanamoserver.github.io/sparrow-wiki/comma
 
 Use `/spr feature-list` in game to open the module list. Select a module to check its state and hot toggle support. Its detail dialog offers a toggle when permitted. `/spr feature-enable <module>` and `/spr feature-disable <module>` change the current state without saving it. Edit `modules.yml` to keep your choice after a reload or restart. Run `/spr reload` after editing settings; its feedback identifies changes that need a restart.
 
-Cross-server features require shared database and Redis connections, plus the Sparrow companion plugin on the proxy. PlaceholderAPI is optional for text placeholders; LuckPerms provides permission lookups.
+Cross-server features require shared database and Redis connections, plus the Sparrow companion plugin on the proxy. PlaceholderAPI is optional for text placeholders; LuckPerms provides permission lookups. Cross-server respawn needs a plugin that syncs the death state between servers, such as SparrowSync.
