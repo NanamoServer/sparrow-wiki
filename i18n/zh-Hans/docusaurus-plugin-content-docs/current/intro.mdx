@@ -20,4 +20,4 @@ Sparrow 提供日常管理命令，以及家、传送点、传送请求、随机
 
 用 `/spr feature-list` 在游戏中打开模块列表，选择模块可查看状态及热启停支持。有对应命令权限时可在详情中切换模块。`/spr feature-enable <模块>` 和 `/spr feature-disable <模块>` 只切换当前状态，不保存开关。需要在重载或重启后保留选择时，请修改 `modules.yml`。配置修改后执行 `/spr reload`，需要重启的设置以命令反馈为准。
 
-跨服功能需要子服共用数据库和 Redis，并在代理端安装 Sparrow 配套插件。PlaceholderAPI 是文本占位符的可选依赖；LuckPerms 用于权限查询。
+跨服功能需要子服共用数据库和 Redis，并在代理端安装 Sparrow 配套插件。PlaceholderAPI 是文本占位符的可选依赖；LuckPerms 用于权限查询。跨服复活需要能在服务器之间同步死亡状态的插件，例如 SparrowSync。

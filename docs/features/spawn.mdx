@@ -38,3 +38,88 @@ teleport-options:
 Configure the destination on each server and run `/spr reload`. Spawn uses the exact coordinates without a safe-location search.
 
 Spawn supports cooldowns, warmups and permission overrides. Its warmup fields use hyphens, such as `cancel-on-move` and `cancel-on-damage`.
+
+## Respawn points
+
+The `respawn` section decides where players respawn after death, with priority rules that also work across servers.
+
+When a player clicks **Respawn**, Sparrow picks the first rule that matches the death world and the player's permissions (or `default-targets` if none matches) and tries its targets in order. The first available target wins. If no target is available, vanilla respawn takes over.
+
+- Players land on the center of the target block.
+- Hardcore mode and leaving the End always use vanilla respawn.
+- Works on Paper and Folia, both on the server where the player dies and on the server where the player respawns.
+
+### Cross-server respawn
+
+A target on another server moves the still-dead player there, and the player respawns on arrival. The death state, such as health and the experience settlement from death, must be synced between servers by another plugin, such as SparrowSync. Without such a plugin, the player arrives with the target server's local data.
+
+### Personal respawn points
+
+With `record-personal-point: true`, sleeping in a bed or setting a respawn anchor is recorded as a shared personal respawn point, used by the `bed` and `anchor` targets on any server. Vanilla respawn points set before enabling are not imported; players need to sleep in a bed or use an anchor again.
+
+### Rules and targets
+
+| Key | Purpose |
+| --- | --- |
+| `default-targets` | Targets used when no rule matches. |
+| `rules[].id` | Rule name, required and unique. |
+| `rules[].worlds` | Optional list of death worlds. Omit for any world. |
+| `rules[].permissions` | Optional list of permissions; any one is enough. Omit for no requirement. |
+| `rules[].targets` | Required, same format as `default-targets`. |
+
+Rules are checked in order and the first match wins. When `worlds` and `permissions` are both set, both must match. If none of the matching rule's targets is available, vanilla respawn takes over without trying later rules or `default-targets`.
+
+Each target is a map. `type` is required. `worlds` and `permissions` can also be set on a single target, which is skipped unless they match. Other keys are options of the target type.
+
+| Type | Destination | Options |
+| --- | --- | --- |
+| `bed` | Shared personal bed, may be on another server. Skipped if the bed is gone or obstructed. | — |
+| `anchor` | Shared personal respawn anchor. Skipped without charge; one charge is used after respawning. | — |
+| `spawn` | The `/spawn` destination of this file. Skipped if not set. | — |
+| `world_spawn` | Spawn point of a world on this server. | `world`: optional, defaults to the death world |
+| `server_spawn` | Spawn point of this server's default respawn world. | — |
+| `location` | Fixed coordinates, no safe-location search. | `server`: optional, defaults to this server; `world`, `x`, `y`, `z`: required; `yaw`, `pitch`: optional, default 0 |
+| `home` | A home of the player. Requires the Home module. | `name`: optional. If omitted, the default home is tried first, then the other homes by name |
+| `warp` | A warp. Requires the Warp module; the player must be allowed to use it. | `name`: required |
+
+Targets on offline servers or unloaded worlds are skipped. Types registered by other plugins are written as `namespace:type`.
+
+### Configuration example
+
+```yaml
+respawn:
+  enabled: true
+  record-personal-point: true
+  default-targets:
+  - type: bed
+  - type: anchor
+  - type: world_spawn
+  rules:
+  - id: nether              # Nether deaths prefer the respawn anchor
+    worlds:
+    - world_nether
+    targets:
+    - type: anchor
+    - type: bed
+    - type: world_spawn
+      world: world
+  - id: home_respawn        # Players with this permission fall back to their home
+    permissions:
+    - sparrow.respawn.home  # Any permission node you choose
+    targets:
+    - type: bed
+    - type: anchor
+    - type: home
+    - type: world_spawn
+  - id: lobby_fallback      # Everyone else respawns on the lobby server
+    targets:
+    - type: bed
+    - type: location
+      server: lobby
+      world: world
+      x: 0.5
+      y: 64
+      z: 0.5
+```
+
+`enabled` is `false` by default. The generated `features/spawn.yml` lists every key and target type in its comments. Run `/spr reload` after editing.
