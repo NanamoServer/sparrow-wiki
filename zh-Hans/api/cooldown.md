@@ -1,0 +1,87 @@
+# 冷却 API
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/cooldown>
+
+用 `Cooldown` 给玩家的操作加上跨服冷却。Sparrow 按冷却 ID 和玩家 UUID 将记录存入 Redis。连接同一个 Redis 数据库的服务器共用冷却时间，玩家换服后接着计时，到期自动结束。玩家离线时，也可以用 UUID 查询或更新冷却。
+
+## 定义一项冷却
+
+把服务端正在使用的 Sparrow 加入插件的 `compileOnly` 依赖，并声明 Sparrow 为服务端依赖，让它先加载。用自己的插件名作命名空间，给每种操作分配独立的 ID。`Cooldown.of(...)` 只记录 ID，可以在静态字段初始化时调用。
+
+```java
+private static final Cooldown KIT_MENU = Cooldown.of(new SparrowKey("myplugin", "kit_menu"));
+private static final Cooldown LOBBY_TELEPORT = Cooldown.of(new SparrowKey("myplugin", "lobby_teleport"));
+```
+
+## 检查时直接开始冷却
+
+如果礼包菜单每 30 秒只能打开一次，就在开菜单前调用 `tryStart`。它在 Redis 中一次完成检查和写入，即使玩家在不同服务器上同时发起请求，也只有一次能开启冷却。传入正时长时，冷却写入后才会执行 `whenReady`。如果玩家已经在冷却中，`whenCooling` 收到剩余时间，原有冷却照常计时。
+
+```java
+UUID playerId = player.getUniqueId();
+
+KIT_MENU.tryStart(playerId, Duration.ofSeconds(30))
+        .whenCooling(remaining ->
+                player.sendMessage(Component.text("还要等 " + remaining.toSeconds() + " 秒。")))
+        .whenReady(() -> player.getScheduler().run(plugin, task -> this.openKitMenu(player), null))
+        .onError(error -> plugin.getLogger().log(Level.WARNING, "检查礼包菜单冷却失败", error));
+```
+
+其中 `player` 是 Bukkit 的 `Player`，`plugin` 是你的插件实例，`openKitMenu` 是你自己的菜单方法。打开菜单的操作由调度器安排到玩家所属线程执行。
+
+## 操作成功后再开始冷却
+
+传送成功才计入冷却时，先用 `check` 检查，再提交传送。等[传送 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/teleport.mdx)返回 `TeleportResult.Success` 后，调用 `start`。用 `check(...).future()` 可以把检查、传送和写入冷却串成一个 Future。把示例里的 `lobby` 和 `world` 换成实际的服务器 ID 和目标世界名。
+
+```java
+UUID playerId = player.getUniqueId();
+
+CompletableFuture<Duration> remainingTime = LOBBY_TELEPORT.check(playerId).future();
+CompletableFuture<Void> teleportRequest = remainingTime
+        .thenCompose(remaining -> {
+            if (!remaining.isZero()) {
+                long seconds = (remaining.toMillis() + 999) / 1000;
+                player.sendMessage(Component.text("还要等 " + seconds + " 秒。"));
+                return CompletableFuture.completedFuture(null);
+            }
+            return Teleport.builder()
+                    .server("lobby")
+                    .position("world", 0.5, 64, 0.5)
+                    .commit(player)
+                    .result()
+                    .thenCompose(result -> {
+                        if (result instanceof TeleportResult.Success) {
+                            return LOBBY_TELEPORT.start(playerId, Duration.ofMinutes(5));
+                        }
+                        return CompletableFuture.completedFuture(null);
+                    });
+        });
+```
+
+在命令或功能入口处理 `teleportRequest` 的异常。多个请求可能在冷却写入前都通过 `check`。如果一段冷却时间内只允许一个请求继续执行，用 `tryStart`。
+
+## CooldownCheck 的回调和 Future
+
+`check` 和 `tryStart` 都返回 `CooldownCheck`，由检查结果决定执行哪个回调。
+
+| 方法 | 用途 |
+| - | - |
+| `whenReady(action)` | 玩家可以继续操作。用 `check` 时，表示检查当时没有冷却。用 `tryStart` 并传入正时长时，表示冷却已经开始。 |
+| `whenCooling(action)` | 获取剩余时间。收到的 `Duration` 已向上取整到秒，不到一秒时也可以直接显示为一秒。 |
+| `onError(action)` | 处理检查失败。检查成功才会调用 `whenReady` 或 `whenCooling`。 |
+| `future()` | 与其他异步操作组合，或读取精确到毫秒的剩余时间。`Duration.ZERO` 对应 `whenReady`。这个 Future 用于观察结果，由 Sparrow 管理完成和取消。 |
+
+旧版的 `remaining(playerId)` 可以改成 `check(playerId).future()`。
+
+回调可能在 Redis 线程上执行。如果结果已经就绪，注册回调时会在当前线程立即执行。修改玩家或世界时，把具体操作调度到对应线程。回调抛出的异常由 Sparrow 记录，`onError` 处理的是检查本身的失败。
+
+## 方法速查
+
+| 方法 | 用途 |
+| - | - |
+| `check(playerId)` | 查询当前冷却，返回 `CooldownCheck`。查询不会改动冷却。 |
+| `tryStart(playerId, duration)` | 一次完成检查和开始，返回 `CooldownCheck`。传入 `Duration.ZERO` 会跳过 Redis，即使已有冷却也直接得到可以继续的结果。 |
+| `start(playerId, duration)` | 从写入时起重新计时，覆盖已有冷却。传入 `Duration.ZERO` 时，已有冷却照旧。返回 `CompletableFuture<Void>`，用于等待写入。 |
+| `clear(playerId)` | 提前结束当前冷却，返回 `CompletableFuture<Void>`，用于等待删除。`tryStart` 后操作失败时可以用它撤销冷却。如果这期间可能已开启下一次冷却，需要在插件里协调撤销时机，避免清掉新记录。 |
+
+时长可传 `Duration.ZERO`，或至少一毫秒的正时长。如果使用 `check` 加 `start`，并且零时长表示完全跳过冷却，也要跳过 `check`。

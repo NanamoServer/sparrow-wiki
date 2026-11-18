@@ -1,0 +1,75 @@
+# Countdown API
+
+Source: <https://nanamoserver.github.io/sparrow-wiki/api/countdown>
+
+Use `Countdown` to delay an action for a player on the current server, show the time left, or let movement or damage interrupt the wait. A countdown ends when the player leaves the server. To limit how often a player can repeat an action across servers, use the [Cooldown API](https://nanamoserver.github.io/sparrow-wiki/api/cooldown.mdx).
+
+Add the Sparrow build used on your server as a `compileOnly` dependency and declare Sparrow as a server dependency so it loads first. The entry point is `net.momirealms.sparrow.service.countdown.Countdown`.
+
+## Choose how to count time
+
+| Builder | Clock and callbacks | Callback interval |
+| - | - | - |
+| `Countdown.syncBuilder()` | Counts server ticks and runs tasks on the player's owning thread. Server lag can stretch the wait. | `interval(int ticks)`, defaults to 1 tick. `onTick` runs at each interval between start and finish. |
+| `Countdown.asyncBuilder()` | Counts elapsed time and runs tasks asynchronously. Use it for reads and display updates, and schedule any player or world changes on the appropriate thread. | `interval(long millis)`, defaults to 50 ms. `onSecond` runs at the start and when the displayed second changes. A long interval can skip seconds. |
+
+Set a non-negative `duration(Duration)` before calling `start(player)`. Use a fresh builder and fresh stateful tasks for each countdown. `start` accepts a Bukkit `Player` or `BukkitSparrowPlayer` and can be called from any thread. The synchronous builder converts the duration in milliseconds to ticks, rounding up at 50 ms per tick. With `Duration.ZERO`, the countdown finishes as soon as it starts and still runs its start and end callbacks. The interval controls task updates. The duration controls when the countdown ends.
+
+## Run an action after a tick-based countdown
+
+This example waits two seconds' worth of server ticks before opening a menu. `player` is the local Bukkit player, and `openKitMenu` is your plugin's menu method. `onFinish` runs on the player's owning thread when the countdown reaches the end.
+
+```java
+SyncCountdownSession menuDelay = Countdown.syncBuilder()
+        .duration(Duration.ofSeconds(2))
+        .onFinish(countdown -> this.openKitMenu(countdown.player()))
+        .start(player);
+```
+
+## Use a countdown as a teleport warmup
+
+This warmup shows five seconds in the action bar. Moving more than half a block from the starting position, changing worlds, or taking damage interrupts it. The plugin's `lobby_warmup` group keeps one warmup per player. A new countdown in the same group ends the old one with `Countdown.REPLACED` and waits for its cleanup before starting. Countdown sessions without a group run independently. Both builders can use the same group ID.
+
+```java
+AsyncCountdownSession warmup = Countdown.asyncBuilder()
+        .duration(Duration.ofSeconds(5))
+        .group(new SparrowKey("myplugin", "lobby_warmup"))
+        .task(CountdownTasks.actionBar(countdown ->
+                Component.text("Teleporting in " + countdown.remainingSeconds() + " s")))
+        .task(CountdownTasks.cancelOnMove(0.5))
+        .task(CountdownTasks.cancelOnDamage())
+        .onCancel((countdown, reason) -> {
+            if (Countdown.MOVED.equals(reason) || Countdown.DAMAGED.equals(reason)) {
+                countdown.player().sendMessage(Component.text("Teleport warmup interrupted."));
+            }
+        })
+        .start(player);
+
+TeleportSubmission pending = Teleport.builder()
+        .server("lobby")
+        .position("world", 0.5, 64, 0.5)
+        .condition(warmup.result())
+        .commit(player);
+```
+
+Replace `lobby` and `world` with your server ID and destination world. The [Teleport API](https://nanamoserver.github.io/sparrow-wiki/api/teleport.mdx#waiting-results-and-cancellation) can prepare the destination while the countdown runs. Pass `warmup.result()` directly to `condition` so the teleport can stop the countdown if the teleport ends early. A future derived with `thenApply` or another chaining method does not pass cancellation back to the countdown.
+
+## Use built-in tasks or write your own
+
+| `CountdownTasks` method | What it does |
+| - | - |
+| `actionBar(text)`, `title(text)`, `chat(text)` | Show the time in the action bar, subtitle, or chat. Updates at the start and when the remaining second changes. |
+| `bossBar(text, color, overlay)` | Updates the title when the remaining second changes and the progress bar at each interval. Takes `BossEvent.BossBarColor` and `BossEvent.BossBarOverlay`. |
+| `sound(sound)` | Plays an Adventure `Sound` at the start and when the remaining second changes. |
+| `cancelOnMove(distance)` | Checks at each interval. Cancels with `MOVED` if the player is farther than `distance` blocks from the start or changes worlds. |
+| `cancelOnDamage()` | Cancels with `DAMAGED` when the player takes damage. Cancelled damage events do not count. |
+
+Display tasks accept a function from the session to an Adventure `Component`, or a `TranslatableComponent` whose first argument is filled with the remaining seconds. `remainingSeconds()` rounds up, and `progress()` gives the remaining fraction between 0 and 1. Use `remainingTicks()` or `remainingMillis()` when you need the builder's native unit.
+
+For custom behavior, implement `CountdownTask<CountdownSession>` and attach it with `task(...)`. You can override `onStart`, `onTick`, or `onEnd`. Tasks run in the order you add them. `onEnd` runs for tasks that received `onStart`, with a `null` reason on natural completion. Use `CountdownTask<SyncCountdownSession>` or `CountdownTask<AsyncCountdownSession>` for tasks that need methods specific to one builder. During disconnect or shutdown, cleanup callbacks can run on the thread that ends the session.
+
+## Observe or stop a countdown
+
+Keep the session returned by `start`. Call `session.cancel(Countdown.CANCELLED)` to stop it, or pass your own `SparrowKey` to report a feature-specific reason. The call returns `true` if it ended the countdown. The result future completes normally when time runs out and exceptionally with `CountdownCancelledException` when the countdown is interrupted through `cancel(reason)`. Call `reason()` on the exception to read the key. Cancelling the future itself with `session.result().cancel(false)` also stops the countdown and gives cleanup callbacks the reason `Countdown.CANCELLED`.
+
+Use `onFinish` when time runs out and `onCancel` to read the reason for an interruption. If the countdown is interrupted before it starts, `onCancel` may never run. If the player is already unavailable on the current server, `start` returns a session that has already ended with `Countdown.QUIT`, and no tasks run. The result future can complete before cleanup, and its callbacks have no player-thread guarantee.

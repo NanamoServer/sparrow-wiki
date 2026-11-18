@@ -1,0 +1,75 @@
+# 倒计时 API
+
+原文：<https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/countdown>
+
+用 `Countdown` 让本服玩家等待一段时间再执行操作。等待时可以显示剩余时间，也可以在玩家移动或受伤时打断。玩家离开本服后，倒计时随之结束。要限制玩家跨服重复使用一项功能，请用[冷却 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/cooldown.mdx)。
+
+把服务端正在使用的 Sparrow 加入插件的 `compileOnly` 依赖，并声明 Sparrow 为服务端依赖，让它先加载。入口是 `net.momirealms.sparrow.service.countdown.Countdown`。
+
+## 选择计时方式
+
+| 构建器 | 如何计时和执行任务 | 回调间隔 |
+| - | - | - |
+| `Countdown.syncBuilder()` | 按服务器 tick 计时，任务在玩家所属线程执行。服务器卡顿时，等待时间会变长。 | `interval(int ticks)`，默认 1 tick。`onTick` 在开始和结束之间按间隔调用。 |
+| `Countdown.asyncBuilder()` | 按实际经过的时间计时，任务在异步线程执行。可以直接读取数据和更新显示，修改玩家或世界时要把具体操作调度到对应线程。 | `interval(long millis)`，默认 50 毫秒。`onSecond` 在开始时和显示的秒数变化时调用，间隔过长时可能跳过几秒。 |
+
+调用 `start(player)` 前，先用 `duration(Duration)` 设置非负时长。每场倒计时用新的构建器，带状态的任务也要重新创建。`start` 接受 Bukkit `Player` 或 `BukkitSparrowPlayer`，可从任意线程调用。同步构建器按每 tick 50 毫秒换算时长，向上取整。传入 `Duration.ZERO` 时，倒计时一开始就走完，开始和结束回调仍会执行。间隔决定任务多久更新一次，总时长决定倒计时何时走完。
+
+## 等待指定 tick 后执行操作
+
+下面按服务器 tick 等待，正常速度下约两秒，然后打开礼包菜单。`player` 是本服的 Bukkit 玩家，`openKitMenu` 是你自己的菜单方法。倒计时走完时，`onFinish` 在玩家所属线程执行。
+
+```java
+SyncCountdownSession menuDelay = Countdown.syncBuilder()
+        .duration(Duration.ofSeconds(2))
+        .onFinish(countdown -> this.openKitMenu(countdown.player()))
+        .start(player);
+```
+
+## 用倒计时做传送预热
+
+下面在动作栏显示五秒预热。玩家离开起点超过半格、切换世界或受到伤害时，预热会被打断。`lobby_warmup` 分组让每名玩家只保留一场预热。同组的新倒计时会以 `Countdown.REPLACED` 结束旧倒计时，等旧任务清理完再开始。未设置分组的倒计时各自运行，同步和异步倒计时可以使用同一个分组 ID。
+
+```java
+AsyncCountdownSession warmup = Countdown.asyncBuilder()
+        .duration(Duration.ofSeconds(5))
+        .group(new SparrowKey("myplugin", "lobby_warmup"))
+        .task(CountdownTasks.actionBar(countdown ->
+                Component.text("还有 " + countdown.remainingSeconds() + " 秒传送")))
+        .task(CountdownTasks.cancelOnMove(0.5))
+        .task(CountdownTasks.cancelOnDamage())
+        .onCancel((countdown, reason) -> {
+            if (Countdown.MOVED.equals(reason) || Countdown.DAMAGED.equals(reason)) {
+                countdown.player().sendMessage(Component.text("传送预热被打断了。"));
+            }
+        })
+        .start(player);
+
+TeleportSubmission pending = Teleport.builder()
+        .server("lobby")
+        .position("world", 0.5, 64, 0.5)
+        .condition(warmup.result())
+        .commit(player);
+```
+
+把 `lobby` 和 `world` 换成实际的服务器 ID 和目标世界名。[传送 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/teleport.mdx#等待结果与取消)可以在倒计时期间准备目的地。把 `warmup.result()` 直接传给 `condition`，传送提前结束时才能停止倒计时。经过 `thenApply` 等方法派生的 Future 无法把取消传回倒计时。
+
+## 使用内置任务或自定义任务
+
+| `CountdownTasks` 方法 | 用途 |
+| - | - |
+| `actionBar(text)`、`title(text)`、`chat(text)` | 在动作栏、副标题或聊天栏显示时间，在开始时和剩余秒数变化时更新。 |
+| `bossBar(text, color, overlay)` | 剩余秒数变化时刷新标题，每个间隔更新进度。颜色和分段样式使用 `BossEvent.BossBarColor` 和 `BossEvent.BossBarOverlay`。 |
+| `sound(sound)` | 在开始时和剩余秒数变化时播放 Adventure `Sound`。 |
+| `cancelOnMove(distance)` | 每个间隔检查一次。离开起点超过 `distance` 格或切换世界时，以 `MOVED` 打断。 |
+| `cancelOnDamage()` | 玩家受伤时以 `DAMAGED` 打断。被取消的伤害事件不计入。 |
+
+显示任务可以接收一个函数，根据会话生成 Adventure `Component`，也可以接收 `TranslatableComponent`，由任务把剩余秒数填入第一个参数。`remainingSeconds()` 向上取整，`progress()` 返回 0 到 1 之间的剩余比例。需要按 tick 或毫秒读取时，用 `remainingTicks()` 或 `remainingMillis()`。
+
+自定义任务可以实现 `CountdownTask<CountdownSession>`，覆写需要的 `onStart`、`onTick` 或 `onEnd`，再用 `task(...)` 加到构建器上。任务按添加顺序执行。收到过 `onStart` 的任务才会收到 `onEnd`，自然走完时结束原因为 `null`。要用某种会话特有的方法，可以实现 `CountdownTask<SyncCountdownSession>` 或 `CountdownTask<AsyncCountdownSession>`。玩家离线或服务停止时，清理回调可能在结束会话的线程上执行。
+
+## 获取结果或打断倒计时
+
+保留 `start` 返回的会话。可以用 `session.cancel(Countdown.CANCELLED)` 主动打断，也可以传入自己命名空间下的 `SparrowKey` 标记原因。这次调用成功结束倒计时就返回 `true`。时间走完时，结果 Future 正常完成。通过 `cancel(reason)` 打断时，它以 `CountdownCancelledException` 异常完成，可以从异常的 `reason()` 取出原因。直接调用 `session.result().cancel(false)` 也会打断倒计时，清理回调收到 `Countdown.CANCELLED`。
+
+用 `onFinish` 处理自然结束，用 `onCancel` 读取打断原因。倒计时还没开始就被打断时，`onCancel` 可能不会执行。调用 `start` 时如果玩家已经不在本服，返回的会话已因 `Countdown.QUIT` 结束，任务都不会执行。结果 Future 可能先于清理完成，它的回调也没有玩家线程保证。

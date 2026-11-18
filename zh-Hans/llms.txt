@@ -40,3 +40,5 @@ English：[llms.txt](https://nanamoserver.github.io/sparrow-wiki/llms.txt)
 - [Waypoint API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/waypoint.md): Waypoint 让一个本服玩家看到指向目标的标记。观察者是看到标记的玩家，目标是真实位置，锚点是标记的显示位置。目标很远时，标记可以投影到观察者附近；到达判定和距离文字仍使用真实目标。
 - [高亮 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/highlight.md): 通过 net.momirealms.sparrow.service.highlight.Highlight 向本服玩家显示方块轮廓。服务随 Sparrow 启动，关闭高亮命令后仍可使用。
 - [货币经济 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/economy.md): 下面用任务奖励和箱子商店举例。把当前版本的 Sparrow 加入插件的编译依赖（compileOnly），并声明 Sparrow 为服务端依赖，让它先加载。示例中的 playerId、buyer、seller 都是玩家 UUID。
+- [冷却 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/cooldown.md): 用 Cooldown 给玩家的操作加上跨服冷却。Sparrow 按冷却 ID 和玩家 UUID 将记录存入 Redis。连接同一个 Redis 数据库的服务器共用冷却时间，玩家换服后接着计时，到期自动结束。玩家离线时，也可以用 UUID 查询或更新冷却。
+- [倒计时 API](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/api/countdown.md): 用 Countdown 让本服玩家等待一段时间再执行操作。等待时可以显示剩余时间，也可以在玩家移动或受伤时打断。玩家离开本服后，倒计时随之结束。要限制玩家跨服重复使用一项功能，请用冷却 API。
