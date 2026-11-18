@@ -37,6 +37,15 @@
 
 管理[死亡消息](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/death-messages.mdx)时，模块名填写 `death_messages`。需要在重载或重启后保留模块开关时，请修改 `modules.yml`。
 
+### 欢迎与进退服公告
+
+[欢迎模块](https://nanamoserver.github.io/sparrow-wiki/zh-Hans/features/greetings.mdx)的默认规则使用以下权限。
+
+| 权限 | 用途 |
+| - | - |
+| `sparrow.greetings.silent` | 隐藏当事人的公开进退服公告，私人欢迎照常发送。 |
+| `sparrow.greetings.vip` | 老玩家上线时匹配 VIP 公告。 |
+
 ## 管理与玩家记录
 
 | 命令 | 用途 | 默认权限 |
