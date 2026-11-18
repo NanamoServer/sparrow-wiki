@@ -46,6 +46,8 @@ const sidebars: SidebarsConfig = {
         'api/waypoint',
         'api/highlight',
         'api/economy',
+        'api/cooldown',
+        'api/countdown',
       ],
     },
   ],
