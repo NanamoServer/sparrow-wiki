@@ -17,6 +17,7 @@ const sidebars: SidebarsConfig = {
         'features/online-time',
         'features/player-limit',
         'features/death-messages',
+        'features/greetings',
         'features/ban',
         'features/back',
         'features/rtp',

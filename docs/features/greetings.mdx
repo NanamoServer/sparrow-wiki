@@ -1,0 +1,77 @@
+---
+title: 👋 Welcomes and network announcements
+---
+
+Enable `greetings: true` in `modules.yml` on each participating backend. Edit `features/greetings.yml` and run `/spr reload` on each backend you change.
+
+## When players receive messages
+
+| When | Default behavior |
+| --- | --- |
+| First profile creation | The network shares one profile per player UUID. Creating it sends no message. If the player disconnects before entering the game, their next login counts as a return visit and the first welcome is skipped. |
+| Entering the first backend through the proxy | Once a newcomer enters play, they receive private chat lines and a title. Other players receive one `first_join` announcement. A returning player triggers `network_join` and matches one login announcement. |
+| Switching from the lobby to survival | The lobby suppresses the vanilla quit message and survival suppresses the vanilla join message. Neither sends a greeting by default. Add a `server_switch` rule on the destination backend to announce transfers. |
+| Disconnecting from the proxy | Leaving a backend records the player's name, vanish status and permissions at departure. Once the proxy connection has also closed, the last ready backend uses that record to send one `network_quit` announcement, network-wide by default. A disconnect without a matching departure record stays silent. |
+
+## Privacy and the player's own copy
+
+By default, players using Sparrow vanish or holding `sparrow.greetings.silent` join and leave silently. A hidden or silent newcomer still receives their private welcome. Set `suppress-vanished` to `false` to turn off the vanish filter, or set `silent-permission` to `''` to skip the silence permission check.
+
+Each announcement has its own `include_subject` setting. In the example below, newcomers see only their private welcome while other players see the newcomer announcement. Returning players see their own login announcement along with everyone else. The setting has no effect on logout announcements because the player has disconnected.
+
+## Configuration example
+
+```yaml
+enabled: true
+takeover:
+  join-message: true
+  quit-message: true
+privacy:
+  suppress-vanished: true
+  silent-permission: sparrow.greetings.silent
+
+announcements:
+  - id: newcomer
+    event: first_join
+    permission: ''
+    audience: network
+    include_subject: false
+    messages:
+      - '<gold>Welcome <arg:player_name> to the server!</gold>'
+  - id: vip_login
+    event: network_join
+    permission: sparrow.greetings.vip
+    audience: network
+    include_subject: true
+    messages:
+      - '<gold>[VIP]</gold> <green>[+]</green> <arg:player_name>'
+  - id: login
+    event: network_join
+    permission: ''
+    audience: network
+    include_subject: true
+    messages:
+      - '<green>[+]</green> <arg:player_name>'
+  - id: logout
+    event: network_quit
+    permission: ''
+    audience: network
+    include_subject: false
+    messages:
+      - '<red>[-]</red> <arg:player_name>'
+
+welcomes:
+  - id: first_steps
+    event: first_join
+    permission: ''
+    messages:
+      - '<gold>Welcome, <arg:player_name>!</gold>'
+    title:
+      text: 'Welcome!'
+      subtitle: 'Type /help to get started'
+      fade_in: 500ms
+      stay: 3s
+      fade_out: 1s
+```
+
+`announcements` and `welcomes` each use the first rule matching both the event and the player's permission. Keep the VIP rule above the general login rule. `permission: ''` matches everyone. `audience: network` reaches participating backends and `server` reaches only the local backend. Text supports MiniMessage. `<arg:player_name>` names the player who triggered the event, while `<papi:...>` uses each recipient. Switch rules can also use `<arg:from_server>` and `<arg:to_server>`.
